@@ -1,47 +1,73 @@
 # SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
 # SPDX-FileCopyrightText: 2012 ownCloud GmbH
+# SPDX-FileCopyrightText: 2026 Karsaaz (rebrand to Karsaaz Sync)
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-# keep the application name and short name the same or different for dev and prod build
-# or some migration logic will behave differently for each build
+# Karsaaz rebrand:
+#   - APPLICATION_NAME ≠ "Nextcloud" → Theme::isBranded() returns true at
+#     runtime, which enables the branded-mode code paths in libsync.
+#   - Executable name kebab-cased ('karsaaz-sync') so it's a valid Linux
+#     command and a sensible Windows .exe basename.
+#   - The 'Dev' suffix is preserved for NEXTCLOUD_DEV builds so dev binaries
+#     can coexist with installed Karsaaz Sync builds.
 if(NEXTCLOUD_DEV)
-    set( APPLICATION_NAME       "NextcloudDev" )
-    set( APPLICATION_SHORTNAME  "NextcloudDev" )
-    set( APPLICATION_EXECUTABLE "nextclouddev" )
-    set( APPLICATION_ICON_NAME  "Nextcloud" )
+    set( APPLICATION_NAME       "Karsaaz Sync Dev" )
+    set( APPLICATION_SHORTNAME  "KarsaazSyncDev" )
+    set( APPLICATION_EXECUTABLE "karsaaz-sync-dev" )
 else()
-    set( APPLICATION_NAME       "Nextcloud" )
-    set( APPLICATION_SHORTNAME  "Nextcloud" )
-    set( APPLICATION_EXECUTABLE "nextcloud" )
-    set( APPLICATION_ICON_NAME  "${APPLICATION_SHORTNAME}" )
+    set( APPLICATION_NAME       "Karsaaz Sync" )
+    set( APPLICATION_SHORTNAME  "KarsaazSync" )
+    set( APPLICATION_EXECUTABLE "karsaaz-sync" )
 endif()
+# Karsaaz: ICON_NAME deliberately falls back to "Nextcloud" — the theme/
+# directory still ships only the upstream SVG set under theme/colored/nextcloud/,
+# theme/black/nextcloud/, theme/white/nextcloud/. Once Karsaaz-branded SVGs are
+# dropped under theme/colored/KarsaazSync/ (etc.) — see /.fork-reports/phase-5-rebrand.md
+# section "Outstanding visual-asset work" — change this to ${APPLICATION_SHORTNAME}.
+set( APPLICATION_ICON_NAME      "Nextcloud" )
 
 set( APPLICATION_CONFIG_NAME "${APPLICATION_EXECUTABLE}" )
-set( APPLICATION_DOMAIN     "nextcloud.com" )
-set( APPLICATION_VENDOR     "Nextcloud GmbH" )
+set( APPLICATION_DOMAIN     "karsaaz.com" )
+set( APPLICATION_VENDOR     "Karsaaz" )
 # Phase-2 sever: APPLICATION_UPDATE_URL defaults to empty so the auto-updater
 # (Sparkle on macOS, OCUpdater on Win/Linux) is disabled. Set to a Karsaaz-
 # operated appcast URL only if/when Karsaaz signs and hosts its own builds.
 set( APPLICATION_UPDATE_URL "" CACHE STRING "URL for updater (empty = disabled)" )
 set( APPLICATION_HELP_URL   "https://karsaaz.com/support" CACHE STRING "URL for the help menu" )
 
+# Karsaaz: this conditional was for a macOS-specific icon swap that only fired
+# when APPLICATION_NAME == "Nextcloud". Since we renamed it, the branch can
+# never fire; leaving the logic in place for clarity but it's now inert.
 if(APPLE AND APPLICATION_NAME STREQUAL "Nextcloud" AND EXISTS "${CMAKE_SOURCE_DIR}/theme/colored/Nextcloud-macOS-icon.svg")
     set( APPLICATION_ICON_NAME "Nextcloud-macOS" )
     message("Using macOS-specific application icon: ${APPLICATION_ICON_NAME}")
 endif()
 
 set( APPLICATION_ICON_SET   "SVG" )
-set( APPLICATION_SERVER_URL "" CACHE STRING "URL for the server to use. If entered, the UI field will be pre-filled with it" )
+# Karsaaz pre-fills the live LAN server URL by default. APPLICATION_SERVER_URL_ENFORCE
+# keeps the wizard from offering a different one. Override at CMake time with
+# -DAPPLICATION_SERVER_URL=https://your-prod-url when building Karsaaz prod packages.
+set( APPLICATION_SERVER_URL "http://192.168.18.61:3030" CACHE STRING "URL for the server to use. If entered, the UI field will be pre-filled with it" )
 set( APPLICATION_SERVER_URL_ENFORCE ON ) # If set and APPLICATION_SERVER_URL is defined, the server can only connect to the pre-defined URL
-set( APPLICATION_REV_DOMAIN "com.nextcloud.desktopclient" )
-set( DEVELOPMENT_TEAM "NKUJUXUJ3B" CACHE STRING "Apple Development Team ID" )
-set( APPLICATION_VIRTUALFILE_SUFFIX "nextcloud" CACHE STRING "Virtual file suffix (not including the .)")
+set( APPLICATION_REV_DOMAIN "com.karsaaz.sync.desktop" )
+# DEVELOPMENT_TEAM is an Apple Developer Team ID — required for code-signing
+# on macOS. Upstream value belongs to Nextcloud GmbH; clear by default so
+# Karsaaz builds either set their own at CMake time or skip code-signing.
+set( DEVELOPMENT_TEAM "" CACHE STRING "Apple Development Team ID" )
+set( APPLICATION_VIRTUALFILE_SUFFIX "karsaaz" CACHE STRING "Virtual file suffix (not including the .)")
 set( APPLICATION_OCSP_STAPLING_ENABLED OFF )
 set( APPLICATION_FORBID_BAD_SSL OFF )
 
-set( LINUX_PACKAGE_SHORTNAME "nextcloud" )
+set( LINUX_PACKAGE_SHORTNAME "karsaaz-sync" )
 set( LINUX_APPLICATION_ID "${APPLICATION_REV_DOMAIN}.${LINUX_PACKAGE_SHORTNAME}")
 
+# Karsaaz: THEME_CLASS still points at NextcloudTheme. We deliberately keep
+# the upstream NextcloudTheme class intact (Phase-2 only changed its
+# wizardUrlHint to empty); the brand cosmetics (name, vendor, colors, icons)
+# are all driven by the APPLICATION_* variables above + the runtime
+# Theme::isBranded() check (theme.cpp:128), which now returns true because
+# APPLICATION_NAME != "Nextcloud". A future fork can subclass to
+# 'KarsaazTheme' under src/libsync/ if more granular overrides are needed.
 set( THEME_CLASS            "NextcloudTheme" )
 set( WIN_SETUP_BITMAP_PATH  "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
 
@@ -64,8 +90,8 @@ option( DO_NOT_USE_PROXY "Do not use system wide proxy, instead always do a dire
 
 option( WIN_DISABLE_USERNAME_PREFILL "Do not prefill the Windows user name when creating a new account" OFF )
 
-## Theming options
-set(NEXTCLOUD_BACKGROUND_COLOR "#0082c9" CACHE STRING "Default Nextcloud background color")
+## Theming options — Karsaaz brand colors (see workspace AGENTS.md §3)
+set(NEXTCLOUD_BACKGROUND_COLOR "#1e3a8a" CACHE STRING "Default Karsaaz background color (Karsaaz navy)")
 set( APPLICATION_WIZARD_HEADER_BACKGROUND_COLOR ${NEXTCLOUD_BACKGROUND_COLOR} CACHE STRING "Hex color of the wizard header background")
 set( APPLICATION_WIZARD_HEADER_TITLE_COLOR "#ffffff" CACHE STRING "Hex color of the text in the wizard header")
 option( APPLICATION_WIZARD_USE_CUSTOM_LOGO "Use the logo from ':/client/theme/colored/wizard_logo.(png|svg)' else the default application icon is used" ON )
