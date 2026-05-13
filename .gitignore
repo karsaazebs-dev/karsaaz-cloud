@@ -1,0 +1,57 @@
+# Build artifacts
+build/
+build-*/
+out/
+cmake-build-*/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps/
+
+# Qt
+*.user
+*.user.*
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+Makefile.*
+*.qm
+
+# Object files / binaries
+*.o
+*.obj
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.app/
+*.a
+*.lib
+*.exp
+*.pdb
+*.ilk
+
+# Editor / OS
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+*~
+
+# Secrets / local config
+*.env
+.env
+*.log
