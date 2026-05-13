@@ -523,11 +523,11 @@
     <string name="placeholder_share_internal_e2ee_keyword_description" translatable="false">All 12 words together make a very strong password, letting only you view and make use of your encrypted files. Please write it down and keep it somewhere safe.</string>
     <string name="placeholder_share_no_internet_connection" translatable="false">No internet connection</string>
     <string name="placeholder_status" translatable="false">☁️ My custom status</string>
-    <string name="placeholder_random_link" translatable="false">https://nextcloud.localhost/nextcloud</string>
-    <string name="placeholder_random_account" translatable="false">firstname@example.nextcloud.com</string>
+    <string name="placeholder_random_link" translatable="false">https://cloud.example.com/karsaaz</string>
+    <string name="placeholder_random_account" translatable="false">firstname@example.com</string>
     <string name="placeholder_date" translatable="false">12. Dec 2020 - 23:10:20</string>
     <string name="placeholder_date_2" translatable="false">10. Dec 2020 - 10:10:10</string>
-    <string name="placeholder_sso" translatable="false">Grant Nextcloud News access to your Nextcloud account incrediblyLong_username_with_123456789_number@Nextcloud_dummy.com?</string>
+    <string name="placeholder_sso" translatable="false">Grant Karsaaz News access to your Karsaaz account incrediblyLong_username_with_123456789_number@karsaaz_dummy.com?</string>
     <string name="placeholder_example_phone_number" translatable="false">+49 123 456 789 12</string>
     <string name="placeholder_uuid" translatable="false">d7edb387-0b61-4e4e-a728-ffab3055d700</string>
     <string name="placeholder_job_name" translatable="false">Job name</string>
@@ -561,10 +561,10 @@
     <string name="placeholder_template" translatable="false">Template</string>
     <string name="placeholder_widget_first_line" translatable="false">First line</string>
     <string name="placeholder_widget_second_line" translatable="false">Subline</string>
-    <string name="placeholder_search_in_nextcloud" translatable="false">Search in Nextcloud</string>
+    <string name="placeholder_search_in_nextcloud" translatable="false">Search in Karsaaz Sync</string>
     <string name="placeholder_files" translatable="false">Files</string>
     <string name="placeholder_in_folder" translatable="false">in TestFolder</string>
-    <string name="placeholder_example_mail" translatable="false">example@nextcloud.com</string>
+    <string name="placeholder_example_mail" translatable="false">example@karsaaz.com</string>
     <string name="placeholder_scan_indicator" translatable="false">Low battery, upload might take longer</string>
 
     <string name="auto_upload_on_wifi">Only upload on unmetered Wi-Fi</string>
@@ -891,8 +891,8 @@
 
     <string name="sync_in_progress">Fetching most recent version of the file.</string>
 
-    <string name="store_short_desc">The self-hosted productivity platform that keeps you in control</string>
-    <string name="store_full_desc">The self-hosted productivity platform that keeps you in control.\n\nFeatures:\n* Easy, modern interface, suited to the theme of your server\n* Upload files to your Nextcloud server\n* Share them with others\n* Keep your favorite files and folders synced\n* Search across all folders on your server\n* Auto Upload for photos and videos taken by your device\n* Keep up to date with notifications\n* Multi-account support\n* Secure access to your data with fingerprint or PIN\n* Integration with DAVx⁵ (formerly known as DAVdroid) for easy setup of calendar and contacts synchronization\n\nPlease report all issues at https://github.com/nextcloud/android/issues and discuss this app at https://help.nextcloud.com/c/clients/android\n\nNew to Nextcloud? Nextcloud is a private file sync and share and communication server. It is libre software, and you can host it yourself or pay a company to do it for you. That way, you are in control of your photos, your calendar and contact data, your documents and everything else.\n\nCheck out Nextcloud at https://nextcloud.com</string>
+    <string name="store_short_desc">Karsaaz Sync — your private, secure ERP cloud client</string>
+    <string name="store_full_desc">Karsaaz Sync is the official desktop and mobile client for Karsaaz Cloud — the internal file-storage, document-editing, and collaboration platform of Karsaaz EBS.\n\nFeatures:\n* Upload files to your Karsaaz Cloud server\n* Share them with colleagues inside your organization\n* Keep your favorite files and folders synced\n* Search across all folders on your server\n* Auto Upload for photos and videos taken by your device\n* Keep up to date with notifications\n* Multi-account support\n* Secure access to your data with fingerprint or PIN\n* Integration with DAVx⁵ (formerly known as DAVdroid) for easy setup of calendar and contacts synchronization\n\nFor support: support@karsaaz.com or https://karsaaz.com/support\n\nKarsaaz Sync is built from the open-source Nextcloud Android client (GPL-2.0-or-later); modified source is available on request. Not affiliated with or endorsed by Nextcloud GmbH.</string>
 
     <string name="contactlist_item_icon">User icon for contact list</string>
     <string name="activity_icon">Activity</string>

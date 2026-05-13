@@ -101,7 +101,11 @@ android {
             "TEST_SERVER_PASSWORD" to ncTestServerPassword.toString(),
             "disableAnalytics" to "true"
         )
-        applicationId = "com.nextcloud.client"
+        // Karsaaz rebrand: applicationId changed from com.nextcloud.client.
+        // This intentionally breaks upgrades from the upstream Nextcloud
+        // Android client — Karsaaz Sync is a separate app and must coexist
+        // (or replace it) per the operator's distribution plan.
+        applicationId = "com.karsaaz.sync"
         minSdk = 28
         targetSdk = 36
         compileSdk = 36
@@ -142,31 +146,36 @@ android {
         }
 
         productFlavors {
-            // used for f-droid
+            // Karsaaz rebrand: per-flavor applicationIds reflect the Karsaaz
+            // namespace. 'generic' is the primary internal-distribution build
+            // (no Google Play Services). 'gplay' / 'huawei' kept for parity
+            // with upstream flavor structure but functionally identical to
+            // 'generic' until Karsaaz operates its own push proxy
+            // (see open-questions.md #1).
             register("generic") {
-                applicationId = "com.nextcloud.client"
+                applicationId = "com.karsaaz.sync"
                 dimension = "default"
             }
 
             register("gplay") {
-                applicationId = "com.nextcloud.client"
+                applicationId = "com.karsaaz.sync"
                 dimension = "default"
             }
 
             register("huawei") {
-                applicationId = "com.nextcloud.client"
+                applicationId = "com.karsaaz.sync"
                 dimension = "default"
             }
 
             register("versionDev") {
-                applicationId = "com.nextcloud.android.beta"
+                applicationId = "com.karsaaz.sync.beta"
                 dimension = "default"
                 versionCode = 20220322
                 versionName = "20220322"
             }
 
             register("qa") {
-                applicationId = "com.nextcloud.android.qa"
+                applicationId = "com.karsaaz.sync.qa"
                 dimension = "default"
                 versionCode = 1
                 versionName = "1"
