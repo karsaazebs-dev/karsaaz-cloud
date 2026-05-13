@@ -153,10 +153,15 @@ static QLatin1String platform()
 
 QByteArray Utility::userAgentString()
 {
-    return QStringLiteral("Mozilla/5.0 (%1) mirall/%2 (%3, %4-%5 ClientArchitecture: %6 OsArchitecture: %7)")
-        .arg(platform(),
-            QStringLiteral(MIRALL_VERSION_STRING),
-            qApp->applicationName(),
+    // Karsaaz rebrand: the deployed Karsaaz Cloud server rejects User-Agents
+    // containing the literal substrings "mirall", "Nextcloud-android",
+    // "Nextcloud-iOS", "ownCloud-android", or "ownCloud-iOS" (see workspace
+    // AGENTS.md §7). We therefore emit a Karsaaz-Sync-prefixed UA that
+    // intentionally avoids both. Format chosen to remain RFC 7231 compliant
+    // and to keep enough diagnostic information for server logs.
+    return QStringLiteral("Karsaaz-Sync/%1 (%2; %3-%4; %5/%6)")
+        .arg(QStringLiteral(MIRALL_VERSION_STRING),
+            platform(),
             QSysInfo::productType(),
             QSysInfo::kernelVersion(),
             QSysInfo::buildCpuArchitecture(),

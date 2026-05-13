@@ -19,8 +19,11 @@ endif()
 set( APPLICATION_CONFIG_NAME "${APPLICATION_EXECUTABLE}" )
 set( APPLICATION_DOMAIN     "nextcloud.com" )
 set( APPLICATION_VENDOR     "Nextcloud GmbH" )
-set( APPLICATION_UPDATE_URL "https://updates.nextcloud.org/client/" CACHE STRING "URL for updater" )
-set( APPLICATION_HELP_URL   "" CACHE STRING "URL for the help menu" )
+# Phase-2 sever: APPLICATION_UPDATE_URL defaults to empty so the auto-updater
+# (Sparkle on macOS, OCUpdater on Win/Linux) is disabled. Set to a Karsaaz-
+# operated appcast URL only if/when Karsaaz signs and hosts its own builds.
+set( APPLICATION_UPDATE_URL "" CACHE STRING "URL for updater (empty = disabled)" )
+set( APPLICATION_HELP_URL   "https://karsaaz.com/support" CACHE STRING "URL for the help menu" )
 
 if(APPLE AND APPLICATION_NAME STREQUAL "Nextcloud" AND EXISTS "${CMAKE_SOURCE_DIR}/theme/colored/Nextcloud-macOS-icon.svg")
     set( APPLICATION_ICON_NAME "Nextcloud-macOS" )

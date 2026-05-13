@@ -91,17 +91,21 @@ void WelcomePage::setupCreateAccountButton()
     });
 #else // WITH_WEBENGINE
     connect(_ui->createAccountButton, &QPushButton::clicked, this, [this](bool /*checked*/) {
+        // Phase-2 sever: Karsaaz Cloud has no public registration flow.
+        // The create-account path is inert; admins provision users server-side.
         _ocWizard->setRegistration(true);
-        Utility::openBrowser(QStringLiteral("https://nextcloud.com/register"));
     });
 #endif // WITH_WEBENGINE
 }
 
 void WelcomePage::setupHostYourOwnServerLabel()
 {
+    // Phase-2 sever: previously linked to docs.nextcloud.com/server/.../installation.
+    // Karsaaz is an internal deployment; the "host your own server" CTA is hidden
+    // by clearing the URL (empty href → label rendered as plain text, no link).
     _ui->hostYourOwnServerLabel->setText(tr("Host your own server"));
     _ui->hostYourOwnServerLabel->setAlignment(Qt::AlignCenter);
-    _ui->hostYourOwnServerLabel->setUrl(QUrl("https://docs.nextcloud.com/server/latest/admin_manual/installation/#installation"));
+    _ui->hostYourOwnServerLabel->setUrl(QUrl());
 }
 
 int WelcomePage::nextId() const

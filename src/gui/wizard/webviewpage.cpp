@@ -39,7 +39,10 @@ void WebViewPage::initializePage() {
 
     QString url;
     if (_ocWizard->registration()) {
-        url = "https://nextcloud.com/register";
+        // Phase-2 sever: Karsaaz does not host a public sign-up flow.
+        // Registration path is intentionally inert; users must be provisioned
+        // by an admin on the Karsaaz Cloud server.
+        url = QString();
     } else {
         url = Utility::trailingSlashPath(_ocWizard->ocUrl()) + "index.php/login/flow";
     }
