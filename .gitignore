@@ -1,0 +1,12 @@
+*.env
+.env
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+build/
+.gradle/
+local.properties
+*.keystore
+*.jks
