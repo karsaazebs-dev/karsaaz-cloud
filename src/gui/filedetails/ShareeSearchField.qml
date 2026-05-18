@@ -8,8 +8,8 @@ import QtQuick.Window
 import QtQuick.Layouts
 import QtQuick.Controls
 
-import com.nextcloud.desktopclient
-import com.nextcloud.desktopclient as NC
+import com.karsaaz.sync.desktop
+import com.karsaaz.sync.desktop as NC
 import Style
 import "../tray"
 

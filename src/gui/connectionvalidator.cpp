@@ -120,7 +120,7 @@ void ConnectionValidator::slotStatusFound(const QUrl &url, const QJsonObject &in
     QString serverVersion = CheckServerJob::version(info);
 
     // status.php was found.
-    qCInfo(lcConnectionValidator) << "** Application: Nextcloud found: "
+    qCInfo(lcConnectionValidator) << "** Application: Karsaaz Cloud found: "
                                   << url << " with version "
                                   << CheckServerJob::versionString(info)
                                   << "(" << serverVersion << ")";

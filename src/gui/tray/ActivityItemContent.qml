@@ -9,7 +9,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Style
 import Qt5Compat.GraphicalEffects
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 
 RowLayout {
     id: root

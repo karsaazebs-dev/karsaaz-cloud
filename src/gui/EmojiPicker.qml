@@ -8,7 +8,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import Style
-import com.nextcloud.desktopclient 1.0 as NC
+import com.karsaaz.sync.desktop 1.0 as NC
 import "./tray"
 
 ColumnLayout {

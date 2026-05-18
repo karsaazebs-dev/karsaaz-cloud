@@ -11,8 +11,8 @@ import "../"
 import "../filedetails/"
 
 import Style
-import com.nextcloud.desktopclient
-import com.nextcloud.desktopclient as NC
+import com.karsaaz.sync.desktop
+import com.karsaaz.sync.desktop as NC
 
 Button {
     id: root

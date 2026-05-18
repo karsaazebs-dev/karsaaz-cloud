@@ -9,7 +9,7 @@ import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 import Style
 
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 
 TextField {
     id: root

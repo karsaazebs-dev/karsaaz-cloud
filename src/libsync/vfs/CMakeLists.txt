@@ -5,9 +5,12 @@
 # that create directories for the build.
 #file(GLOB VIRTUAL_FILE_SYSTEM_PLUGINS RELATIVE ${CMAKE_CURRENT_LIST_DIR} "*")
 
-# Karsaaz: cfapi disabled - requires Inkscape on Windows for icon generation.
-# Without cfapi we keep the simpler "suffix" placeholder plugin which works fine.
-list(APPEND VIRTUAL_FILE_SYSTEM_PLUGINS "suffix" "xattr")
+# Karsaaz: re-enabled cfapi after Inkscape was installed (the icon generator
+# the cfapi shellext needs lives under src/libsync/vfs/cfapi/shellext/).
+# cfapi provides Windows-native Cloud Files API placeholders ("Files on
+# Demand"); the suffix plugin is the cross-platform fallback. xattr is
+# Linux/macOS only — its CMakeLists no-ops on Windows so listing it is safe.
+list(APPEND VIRTUAL_FILE_SYSTEM_PLUGINS "suffix" "xattr" "cfapi")
 
 message("list of plugins ${VIRTUAL_FILE_SYSTEM_PLUGINS}")
 

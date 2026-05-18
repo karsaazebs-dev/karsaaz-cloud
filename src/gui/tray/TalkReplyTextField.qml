@@ -7,7 +7,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 import Style
 
 TextField {

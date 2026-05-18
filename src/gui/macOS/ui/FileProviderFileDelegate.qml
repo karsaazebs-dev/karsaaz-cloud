@@ -11,7 +11,7 @@ import Style 1.0
 import "../../filedetails"
 import "../../tray"
 
-import com.nextcloud.desktopclient 1.0
+import com.karsaaz.sync.desktop 1.0
 
 Item {
     id: root

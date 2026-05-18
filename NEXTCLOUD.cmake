@@ -47,7 +47,7 @@ set( APPLICATION_ICON_SET   "SVG" )
 # Karsaaz pre-fills the live LAN server URL by default. APPLICATION_SERVER_URL_ENFORCE
 # keeps the wizard from offering a different one. Override at CMake time with
 # -DAPPLICATION_SERVER_URL=https://your-prod-url when building Karsaaz prod packages.
-set( APPLICATION_SERVER_URL "http://192.168.18.61:3030" CACHE STRING "URL for the server to use. If entered, the UI field will be pre-filled with it" )
+set( APPLICATION_SERVER_URL "http://192.168.18.97:3030" CACHE STRING "URL for the server to use. If entered, the UI field will be pre-filled with it" )
 set( APPLICATION_SERVER_URL_ENFORCE ON ) # If set and APPLICATION_SERVER_URL is defined, the server can only connect to the pre-defined URL
 set( APPLICATION_REV_DOMAIN "com.karsaaz.sync.desktop" )
 # DEVELOPMENT_TEAM is an Apple Developer Team ID — required for code-signing

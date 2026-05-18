@@ -10,7 +10,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQml.Models
 import Style
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 import "./tray"
 
 ApplicationWindow {

@@ -8,7 +8,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Style
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 
 Repeater {
     id: root

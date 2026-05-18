@@ -7,7 +7,7 @@ import QtQml
 import QtQuick
 import QtQuick.Controls
 import Style
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 
 MouseArea {
     id: unifiedSearchResultMouseArea

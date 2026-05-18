@@ -6,7 +6,7 @@
 import QtQuick
 import QtQuick.Window
 import Style
-import com.nextcloud.desktopclient
+import com.karsaaz.sync.desktop
 import QtQuick.Layouts
 import QtQuick.Controls
 

@@ -9,7 +9,7 @@ import QtQuick.Layouts
 
 import Style
 
-import com.nextcloud.desktopclient as NC
+import com.karsaaz.sync.desktop as NC
 
 RowLayout {
     id: root
