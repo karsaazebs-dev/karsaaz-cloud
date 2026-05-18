@@ -1,0 +1,31 @@
+{
+    "root":  "frontend",
+    "include":  {
+                    "coreDirs":  [
+                                     "css",
+                                     "img",
+                                     "js",
+                                     "l10n",
+                                     "src",
+                                     "templates",
+                                     "fonts"
+                                 ],
+                    "appDirs":  [
+                                    "css",
+                                    "img",
+                                    "js",
+                                    "l10n",
+                                    "src",
+                                    "templates",
+                                    "fonts"
+                                ],
+                    "rootDirs":  [
+                                     "dist"
+                                 ]
+                },
+    "generatedBy":  "tools/create-web-split-folders.ps1",
+    "notes":  [
+                  "Generated view only. Edit source files in repository root.",
+                  "Only UI/frontend directories are included."
+              ]
+}

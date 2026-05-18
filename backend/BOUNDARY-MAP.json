@@ -1,0 +1,36 @@
+{
+    "root":  "backend",
+    "include":  {
+                    "rootDirs":  [
+                                     "config",
+                                     "lib",
+                                     "ocs",
+                                     "ocs-provider",
+                                     "resources"
+                                 ],
+                    "coreFrontendDirExcludes":  [
+                                                    "css",
+                                                    "img",
+                                                    "js",
+                                                    "l10n",
+                                                    "src",
+                                                    "templates",
+                                                    "fonts"
+                                                ],
+                    "rootFiles":  [
+                                      "index.php",
+                                      "remote.php",
+                                      "public.php",
+                                      "cron.php",
+                                      "status.php",
+                                      "occ",
+                                      "console.php",
+                                      "version.php"
+                                  ]
+                },
+    "generatedBy":  "tools/create-web-split-folders.ps1",
+    "notes":  [
+                  "Generated view only. Edit source files in repository root.",
+                  "Frontend directories are excluded from backend/core and backend/apps/* views."
+              ]
+}
