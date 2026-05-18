@@ -37,7 +37,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/online_status"
-            style="@style/Nextcloud.Material.TextButton"
+            style="@style/Karsaaz.Material.TextButton"
             android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/online_status_item_height"
@@ -56,7 +56,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/status_message"
-            style="@style/Nextcloud.Material.TextButton"
+            style="@style/Karsaaz.Material.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/online_status_item_height"
             android:layout_weight="1"
@@ -98,7 +98,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/add_account"
-        style="@style/Nextcloud.Material.TextButton"
+        style="@style/Karsaaz.Material.TextButton"
         android:layout_width="0dp"
         android:layout_height="@dimen/account_action_button_height"
         android:layout_marginStart="@dimen/account_action_button_margin"
@@ -119,7 +119,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/manage_accounts"
-        style="@style/Nextcloud.Material.TextButton"
+        style="@style/Karsaaz.Material.TextButton"
         android:layout_width="0dp"
         android:layout_height="@dimen/account_action_button_height"
         android:layout_marginStart="@dimen/account_action_button_margin"

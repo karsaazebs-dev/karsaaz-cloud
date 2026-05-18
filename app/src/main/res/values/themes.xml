@@ -1,5 +1,5 @@
 <!--
-  ~ Nextcloud - Android Client
+  ~ Karsaaz Sync - Android Client
   ~
   ~ SPDX-FileCopyrightText: 2024 Alper Ozturk <alper.ozturk@nextcloud.com>
   ~ SPDX-FileCopyrightText: 2022 Tobias Kaminsky <tobias@kaminsky.me>
@@ -21,7 +21,7 @@
         <item name="windowActionModeOverlay">true</item>
         <item name="windowNoTitle">true</item>
         <item name="textInputStyle">@style/Widget.App.TextInputLayout</item>
-        <item name="popupMenuStyle">@style/Nextcloud.Widget.PopupMenu</item>
+        <item name="popupMenuStyle">@style/Karsaaz.Widget.PopupMenu</item>
         <item name="bottomSheetDialogTheme">@style/ThemeOverlay.App.BottomSheetDialog</item>
         <item name="actionModeStyle">@style/App.ActionMode</item>
     </style>

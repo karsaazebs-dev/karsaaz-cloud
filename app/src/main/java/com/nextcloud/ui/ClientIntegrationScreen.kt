@@ -122,7 +122,7 @@ private fun ClientIntegrationScreenPreviewVertical() {
                     listOf(LayoutButton("Click2", "Primary"))
                 ),
                 LayoutRow(
-                    listOf(LayoutURL("Analytics report created", "https://nextcloud.com"))
+                    listOf(LayoutURL("Analytics report created", "https://karsaaz.com"))
                 )
             )
         )
@@ -130,7 +130,7 @@ private fun ClientIntegrationScreenPreviewVertical() {
 
     ClientIntegrationScreen(
         clientIntegrationUI,
-        "http://nextcloud.local"
+        "http://192.168.18.61:3030"
     )
 }
 
@@ -149,13 +149,13 @@ private fun ClientIntegrationScreenPreviewHorizontal() {
                     listOf(LayoutButton("Click2", "Primary"))
                 ),
                 LayoutRow(
-                    listOf(LayoutURL("Analytics report created", "https://nextcloud.com"))
+                    listOf(LayoutURL("Analytics report created", "https://karsaaz.com"))
                 )
             )
         )
     )
 
-    ClientIntegrationScreen(clientIntegrationUI, "http://nextcloud.local")
+    ClientIntegrationScreen(clientIntegrationUI, "http://192.168.18.61:3030")
 }
 
 @Composable
@@ -169,5 +169,5 @@ private fun ClientIntegrationScreenPreviewEmpty() {
         )
     )
 
-    ClientIntegrationScreen(clientIntegrationUI, "http://nextcloud.local")
+    ClientIntegrationScreen(clientIntegrationUI, "http://192.168.18.61:3030")
 }

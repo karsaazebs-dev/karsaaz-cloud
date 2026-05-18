@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Nextcloud - Android Client
+  ~ Karsaaz Sync - Android Client
   ~
   ~ SPDX-FileCopyrightText: 2019-2024 Nextcloud GmbH and Nextcloud contributors
   ~ SPDX-License-Identifier: AGPL-3.0-or-later OR GPL-2.0-only
@@ -13,19 +13,19 @@
     <!-- App name  and other strings-->
     <!-- SPDX-FileCopyrightText: 2026 Karsaaz (rebrand edits) -->
     <string name="app_name">Karsaaz Sync</string>
-    <string name="account_type">nextcloud</string>     <!-- WARNING: do NOT change after release; account_type migration is unsupported on upgrade. Kept as 'nextcloud' for compatibility with the upstream Nextcloud server protocol. -->
-    <string name="authority">org.nextcloud</string>    <!-- Kept for same reason as account_type. -->
-    <string name="users_and_groups_search_authority">com.nextcloud.android.providers.UsersAndGroupsSearchProvider</string>
-    <string name="users_and_groups_share_with">com.nextcloud.android.providers.UsersAndGroupsSearchProvider.action.SHARE_WITH</string>
-    <string name="document_provider_authority">org.nextcloud.documents</string>
-    <string name="file_provider_authority">org.nextcloud.files</string>
-    <string name="image_cache_provider_authority">org.nextcloud.imageCache.provider</string>
-    <string name="db_file">nextcloud.db</string>
-    <string name="db_name">nextcloud</string>
-    <string name="data_folder">nextcloud</string>
+    <string name="account_type">karsaaz</string>
+    <string name="authority">com.karsaaz.sync</string>
+    <string name="users_and_groups_search_authority">com.karsaaz.sync.providers.UsersAndGroupsSearchProvider</string>
+    <string name="users_and_groups_share_with">com.karsaaz.sync.providers.UsersAndGroupsSearchProvider.action.SHARE_WITH</string>
+    <string name="document_provider_authority">com.karsaaz.sync.documents</string>
+    <string name="file_provider_authority">com.karsaaz.sync.files</string>
+    <string name="image_cache_provider_authority">com.karsaaz.sync.imageCache.provider</string>
+    <string name="db_file">karsaaz.db</string>
+    <string name="db_name">karsaaz</string>
+    <string name="data_folder">karsaaz</string>
     <string name="default_display_name_for_root_folder">Karsaaz Sync</string>
     <!-- User-Agent: MUST NOT contain literal 'Nextcloud-android' or 'mirall' — Karsaaz server actively blocks those (see workspace AGENTS.md §7). -->
-    <string name="nextcloud_user_agent">Karsaaz-Sync/%1$s%2$s (Android)</string>
+    <string name="karsaaz_user_agent">Karsaaz-Sync/%1$s%2$s (Android)</string>
     <string name="only_office_user_agent">Mozilla/5.0 (Android %1$s) Mobile Karsaaz-Sync/%2$s</string>
     <string name="name_for_branded_user_agent">Karsaaz-Sync</string>
 
@@ -52,7 +52,7 @@
     <bool name="share_with_users_feature">true</bool>
     <bool name="show_external_links">true</bool>
     <bool name="show_outdated_server_warning">true</bool>
-    <bool name="is_branded_client">false</bool>
+    <bool name="is_branded_client">true</bool>
     <bool name="is_branded_plus_client">false</bool>
 
     <!-- Calendar & Contacts backup -->
@@ -158,5 +158,4 @@
 
     <string name="buildNumber" translatable="false"></string>
 </resources>
-
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Nextcloud - Android Client
+  ~ Karsaaz Sync - Android Client
   ~
   ~ SPDX-FileCopyrightText: 2022 Álvaro Brey  <alvaro@alvarobrey.com>
   ~ SPDX-FileCopyrightText: 2016-2022 Andy Scherzinger <info@andy-scherzinger.de>
@@ -331,14 +331,14 @@
     </style>
 
     <!-- Text styles -->
-    <style name="NextcloudTextAppearanceHeadline" parent="@style/TextAppearance.AppCompat.Headline">
+    <style name="KarsaazTextAppearanceHeadline" parent="@style/TextAppearance.AppCompat.Headline">
         <item name="android:textSize">26sp</item>
         <item name="android:textColor">@color/text_color</item>
     </style>
 
-    <style name="NextcloudTextAppearanceMedium" parent="@style/TextAppearance.AppCompat.Medium"></style>
+    <style name="KarsaazTextAppearanceMedium" parent="@style/TextAppearance.AppCompat.Medium"></style>
 
-    <style name="NextcloudTextAppearanceSectionTitle" parent="@style/TextAppearance.AppCompat.Small">
+    <style name="KarsaazTextAppearanceSectionTitle" parent="@style/TextAppearance.AppCompat.Small">
         <item name="android:textColor">@color/primary</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/activity_list_item_title_header_text_size</item>
@@ -381,7 +381,7 @@
         <item name="android:textColorPrimary">@color/text_color</item>
     </style>
 
-    <style name="Nextcloud.Widget.PopupMenu" parent="@style/Widget.Material3.PopupMenu">
+    <style name="Karsaaz.Widget.PopupMenu" parent="@style/Widget.Material3.PopupMenu">
         <item name="popupMenuBackground">@color/bg_default</item>
     </style>
 
@@ -444,12 +444,12 @@
         <item name="materialButtonStyle">@style/Widget.App.Button.BottomSheetItem</item>
     </style>
 
-    <style name="Nextcloud.Material.TextButton" parent="Widget.Material3.Button.TextButton.Icon">
+    <style name="Karsaaz.Material.TextButton" parent="Widget.Material3.Button.TextButton.Icon">
         <item name="android:typeface">sans</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="Widget.Nextcloud.AppWidget.Container" parent="android:Widget">
+    <style name="Widget.Karsaaz.AppWidget.Container" parent="android:Widget">
         <item name="android:id">@android:id/background</item>
         <item name="android:background">?android:attr/colorBackground</item>
     </style>

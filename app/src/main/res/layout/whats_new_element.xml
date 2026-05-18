@@ -35,7 +35,7 @@
         android:layout_marginStart="@dimen/standard_margin"
         android:gravity="center"
         android:text=""
-        android:textAppearance="@style/NextcloudTextAppearanceHeadline"
+        android:textAppearance="@style/KarsaazTextAppearanceHeadline"
         android:textColor="@color/text_color_inverse"
         android:textStyle="bold"/>
 

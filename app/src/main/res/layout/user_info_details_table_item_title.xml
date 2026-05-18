@@ -11,4 +11,4 @@
     android:layout_height="wrap_content"
     android:paddingTop="@dimen/standard_padding"
     android:paddingBottom="@dimen/standard_padding"
-    android:textAppearance="@style/NextcloudTextAppearanceSectionTitle" />
+    android:textAppearance="@style/KarsaazTextAppearanceSectionTitle" />

@@ -180,7 +180,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/sharesList_internal_show_all"
-                style="@style/Nextcloud.Material.TextButton"
+                style="@style/Karsaaz.Material.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/show_all" />
@@ -225,7 +225,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/sharesList_external_show_all"
-                style="@style/Nextcloud.Material.TextButton"
+                style="@style/Karsaaz.Material.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/show_all" />

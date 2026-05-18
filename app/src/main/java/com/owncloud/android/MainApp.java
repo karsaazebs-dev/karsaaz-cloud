@@ -826,8 +826,8 @@ public class MainApp extends Application implements HasAndroidInjector, NetworkC
     }
 
     public static String getUserAgent() {
-        // Mozilla/5.0 (Android) Nextcloud-android/2.1.0
-        return getUserAgent(R.string.nextcloud_user_agent);
+        // Karsaaz-Sync/<version><brand> (Android)
+        return getUserAgent(R.string.karsaaz_user_agent);
     }
 
     public static void showMessage(int messageId) {

@@ -34,7 +34,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/sort_button"
-                style="@style/Nextcloud.Material.TextButton"
+                style="@style/Karsaaz.Material.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="7dp"
