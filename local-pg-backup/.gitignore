@@ -1,0 +1,4 @@
+dumps/
+logs/
+*.sql
+*.log

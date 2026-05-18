@@ -1,0 +1,39 @@
+# ── Secrets — NEVER commit ──
+.env
+*.env
+.env.*
+!.env.example
+
+# ── Backups ──
+backups/
+*.sql
+*.tar.gz
+*.tar
+*.zip
+
+# ── Docker image tarballs (too large for GitHub) ──
+docker-backups/
+
+# ── Logs ──
+*.log
+logs/
+
+# ── OS junk ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Screenshots / binary assets ──
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# ── Generated PDFs (HTML source is committed, PDFs regenerated on demand) ──
+*.pdf
+
+# ── Editor / IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo

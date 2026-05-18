@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karsaaz Sync — Full Developer Requirements Brief</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; }
+  .header { background: #1e3a8a; color: white; padding: 40px 48px; }
+  .header h1 { font-size: 26px; font-weight: 700; }
+  .header p { margin-top: 6px; font-size: 14px; opacity: 0.85; }
+  .header .meta { margin-top: 16px; display: flex; gap: 24px; font-size: 13px; opacity: 0.75; }
+  .body { max-width: 900px; margin: 36px auto; padding: 0 24px 60px; }
+  .section-title { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 1.2px; text-transform: uppercase; margin: 36px 0 12px; }
+  .card { background: white; border-radius: 10px; padding: 24px 28px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+  h2 { font-size: 16px; font-weight: 700; color: #1e3a8a; margin-bottom: 14px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+  h3 { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  p { font-size: 13.5px; line-height: 1.7; color: #475569; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+  th { background: #f1f5f9; text-align: left; padding: 9px 13px; font-weight: 600; color: #334155; font-size: 12px; }
+  td { padding: 9px 13px; border-top: 1px solid #e2e8f0; color: #475569; vertical-align: top; line-height: 1.6; }
+  tr:hover td { background: #fafbff; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .green  { background: #dcfce7; color: #166534; }
+  .blue   { background: #dbeafe; color: #1e40af; }
+  .orange { background: #ffedd5; color: #9a3412; }
+  .red    { background: #fee2e2; color: #991b1b; }
+  .gray   { background: #f1f5f9; color: #475569; }
+  .yellow { background: #fef9c3; color: #854d0e; }
+  .highlight { background: #eff6ff; border-left: 4px solid #1e3a8a; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 13px; color: #1e40af; line-height: 1.6; }
+  .warn { background: #fff7ed; border-left: 4px solid #f97316; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 13px; color: #c2410c; line-height: 1.6; }
+  .critical { background: #fef2f2; border-left: 4px solid #dc2626; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; font-size: 13px; color: #991b1b; line-height: 1.6; }
+  ul { padding-left: 18px; }
+  li { font-size: 13.5px; color: #475569; line-height: 1.8; }
+  code { background: #f1f5f9; padding: 1px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 12px; color: #1e3a8a; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .footer { text-align: center; font-size: 11px; color: #94a3b8; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+  @media print { body { background: white; } .card { box-shadow: none; border: 1px solid #e2e8f0; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Karsaaz Sync — Full Developer Requirements Brief</h1>
+  <p>Building branded sync clients for Karsaaz Cloud — the internal file storage layer of Karsaaz EBS ERP</p>
+  <div class="meta">
+    <span>Version 2.0</span>
+    <span>Confidential — Internal Use Only</span>
+    <span>Platform: Karsaaz Cloud (self-hosted)</span>
+    <span>May 2026</span>
+  </div>
+</div>
+
+<div class="body">
+
+  <!-- ─── SECTION 1: OVERVIEW ─── -->
+  <div class="section-title">1. Overview</div>
+  <div class="card">
+    <h2>What is Karsaaz Cloud?</h2>
+    <p>Karsaaz Cloud is the internal file storage, document editing, and collaboration platform for Karsaaz EBS (Enterprise Business Suite). It is a fully self-hosted, airgapped, rebranded private cloud server — running entirely on Karsaaz infrastructure with zero dependency on any external service.</p>
+    <p>Think of it as Karsaaz's own private Google Drive — fully under our control, on our servers, branded as Karsaaz.</p>
+
+    <h3>Current Status</h3>
+    <table>
+      <tr><th>Component</th><th>Status</th><th>Notes</th></tr>
+      <tr><td>Web Browser (server)</td><td><span class="badge green">Live &amp; Done</span></td><td>100% rebranded, running on LAN</td></tr>
+      <tr><td>Android App</td><td><span class="badge yellow">Not Started</span></td><td>Open source available — needs rebrand</td></tr>
+      <tr><td>iOS App</td><td><span class="badge yellow">Not Started</span></td><td>Requires Mac to build</td></tr>
+      <tr><td>Desktop App (Win/Mac/Linux)</td><td><span class="badge yellow">Not Started</span></td><td>Open source available — needs rebrand</td></tr>
+      <tr><td>WebDAV (file sync protocol)</td><td><span class="badge green">Live &amp; Open</span></td><td>Built-in — any WebDAV client can connect now</td></tr>
+    </table>
+
+    <div class="highlight">
+      <strong>The server is already live and fully configured.</strong> The developer's job is to fork, rebrand, and build the client apps. No server-side changes are needed.
+    </div>
+  </div>
+
+  <!-- ─── SECTION 2: SERVER INFO ─── -->
+  <div class="section-title">2. Server Configuration (Already Done)</div>
+  <div class="card">
+    <h2>Live Server Details</h2>
+
+    <h3>Connection Details</h3>
+    <table>
+      <tr><th>Item</th><th>Value</th></tr>
+      <tr><td>Server URL (LAN / current)</td><td><code>http://192.168.18.61:3030</code></td></tr>
+      <tr><td>Server URL (production)</td><td>To be confirmed — domain TBD</td></tr>
+      <tr><td>Protocol</td><td>HTTP (LAN). HTTPS via reverse proxy before public launch.</td></tr>
+      <tr><td>Product name (API response)</td><td><code>Karsaaz Cloud</code></td></tr>
+      <tr><td>Office product name</td><td><code>Karsaaz Cloud Office</code></td></tr>
+      <tr><td>Version</td><td>31.0.14.1</td></tr>
+    </table>
+
+    <h3>Key API Endpoints</h3>
+    <table>
+      <tr><th>Endpoint</th><th>Purpose</th><th>Status</th></tr>
+      <tr><td><code>/status.php</code></td><td>Server info — returns productname, version, installed status</td><td><span class="badge green">Open</span></td></tr>
+      <tr><td><code>/ocs/v2.php/cloud/capabilities</code></td><td>Server capabilities, theming, branding config</td><td><span class="badge green">Open</span></td></tr>
+      <tr><td><code>/remote.php/dav/files/{user}/</code></td><td>WebDAV file sync — used by all desktop &amp; mobile apps</td><td><span class="badge green">Open</span></td></tr>
+      <tr><td><code>/ocs/v2.php/cloud/users/{user}</code></td><td>User profile API</td><td><span class="badge blue">Auth required</span></td></tr>
+      <tr><td><code>/index.php/login</code></td><td>Web login page</td><td><span class="badge green">Open</span></td></tr>
+      <tr><td><code>/apps/files/</code></td><td>Web file manager (browser only)</td><td><span class="badge blue">Auth required</span></td></tr>
+    </table>
+
+    <h3>What Has Been Disabled on the Server</h3>
+    <table>
+      <tr><th>Feature</th><th>Status</th><th>Why</th></tr>
+      <tr><td>Nextcloud app store</td><td><span class="badge red">Disabled</span></td><td>Airgap — no internet connection</td></tr>
+      <tr><td>Update checker</td><td><span class="badge red">Disabled</span></td><td>Airgap — we control updates manually</td></tr>
+      <tr><td>Federation / server-to-server sharing</td><td><span class="badge red">Disabled</span></td><td>Internal use only</td></tr>
+      <tr><td>Lookup server (user discovery)</td><td><span class="badge red">Disabled</span></td><td>Airgap</td></tr>
+      <tr><td>Knowledge base / help links</td><td><span class="badge red">Disabled</span></td><td>Replaced with karsaaz.com links</td></tr>
+      <tr><td>Download links to Nextcloud apps</td><td><span class="badge red">Disabled</span></td><td>Replaced with karsaaz.com/cloud/clients</td></tr>
+      <tr><td>SimpleSignUp link</td><td><span class="badge red">Disabled</span></td><td>No public registration</td></tr>
+      <tr><td>Telemetry / usage survey</td><td><span class="badge red">Disabled</span></td><td>Privacy</td></tr>
+    </table>
+
+    <h3>What Is Enabled</h3>
+    <table>
+      <tr><th>Feature</th><th>Status</th></tr>
+      <tr><td>WebDAV file sync</td><td><span class="badge green">Enabled</span></td></tr>
+      <tr><td>Karsaaz Cloud Office (Collabora — spreadsheets, docs, presentations)</td><td><span class="badge green">Enabled</span></td></tr>
+      <tr><td>2-Factor Authentication (TOTP)</td><td><span class="badge green">Enforced for admins</span></td></tr>
+      <tr><td>Email notifications (Gmail SMTP)</td><td><span class="badge green">Enabled</span></td></tr>
+      <tr><td>File sharing between users</td><td><span class="badge green">Enabled</span></td></tr>
+      <tr><td>File versioning (restore old versions)</td><td><span class="badge green">Enabled</span></td></tr>
+      <tr><td>Trash bin</td><td><span class="badge green">Enabled</span></td></tr>
+      <tr><td>OCS REST API</td><td><span class="badge green">Enabled</span></td></tr>
+    </table>
+
+    <h3>Server Tech Stack (for reference)</h3>
+    <table>
+      <tr><th>Component</th><th>Technology</th><th>Version</th></tr>
+      <tr><td>Application server</td><td>PHP / Apache</td><td>PHP 8.x, Apache 2.4</td></tr>
+      <tr><td>Database</td><td>PostgreSQL</td><td>16-alpine</td></tr>
+      <tr><td>Cache</td><td>Redis</td><td>7-alpine</td></tr>
+      <tr><td>Office engine</td><td>Collabora Online (LibreOffice in browser)</td><td>24.04.13.1</td></tr>
+      <tr><td>Container</td><td>Docker / Docker Compose</td><td>Latest</td></tr>
+      <tr><td>Host OS</td><td>Windows 11 (Docker Desktop)</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <!-- ─── SECTION 3: OPEN SOURCE CODE ─── -->
+  <div class="section-title">3. Open Source Client Code</div>
+
+  <!-- ANDROID -->
+  <div class="card">
+    <h2>Android App</h2>
+    <div class="two-col">
+      <div>
+        <h3>Source Code</h3>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>GitHub</td><td><code>github.com/nextcloud/android</code></td></tr>
+          <tr><td>License</td><td>GPL v2+</td></tr>
+          <tr><td>Current version</td><td>~3.27.x</td></tr>
+          <tr><td>Min Android</td><td>Android 6.0 (API 23)</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Tech Stack</h3>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>Primary language</td><td>Kotlin</td></tr>
+          <tr><td>Secondary</td><td>Java (legacy modules)</td></tr>
+          <tr><td>Build system</td><td>Gradle</td></tr>
+          <tr><td>Architecture</td><td>MVVM + Clean Architecture</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <h3>Key Libraries / Dependencies</h3>
+    <table>
+      <tr><th>Library</th><th>Purpose</th></tr>
+      <tr><td>OkHttp + Retrofit</td><td>HTTP client for API calls &amp; WebDAV sync</td></tr>
+      <tr><td>Dagger / Hilt</td><td>Dependency injection</td></tr>
+      <tr><td>Glide</td><td>Image loading and caching</td></tr>
+      <tr><td>ExoPlayer</td><td>Video/audio playback</td></tr>
+      <tr><td>Material Components</td><td>UI components</td></tr>
+      <tr><td>WorkManager</td><td>Background sync jobs</td></tr>
+      <tr><td>Room</td><td>Local database (offline cache)</td></tr>
+    </table>
+
+    <h3>Build Requirements</h3>
+    <ul>
+      <li>Android Studio (free — developer.android.com/studio)</li>
+      <li>Java JDK 17+</li>
+      <li>Android SDK (auto-installed by Android Studio)</li>
+      <li>For Play Store: Google Play Developer account ($25 one-time)</li>
+      <li>For internal distribution: no account needed — share APK directly</li>
+    </ul>
+
+    <h3>What Needs to Change</h3>
+    <table>
+      <tr><th>File / Setting</th><th>Change</th></tr>
+      <tr><td><code>app/build.gradle</code> — applicationId</td><td><code>com.nextcloud.client</code> → <code>com.karsaaz.sync</code></td></tr>
+      <tr><td><code>strings.xml</code> — app_name</td><td>"Nextcloud" → "Karsaaz Sync"</td></tr>
+      <tr><td><code>UserAgentUtil.kt</code></td><td>User-Agent → <code>Karsaaz-Sync/1.0.0</code></td></tr>
+      <tr><td>App icon files</td><td>Replace Nextcloud icon with Karsaaz logo (all densities: mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi)</td></tr>
+      <tr><td>Primary color</td><td><code>#0082C9</code> → <code>#1e3a8a</code></td></tr>
+      <tr><td>All hardcoded "nextcloud.com" URLs</td><td>→ <code>karsaaz.com</code></td></tr>
+      <tr><td>Default server URL</td><td>Pre-fill with Karsaaz Cloud server address</td></tr>
+    </table>
+  </div>
+
+  <!-- iOS -->
+  <div class="card">
+    <h2>iOS App</h2>
+    <div class="two-col">
+      <div>
+        <h3>Source Code</h3>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>GitHub</td><td><code>github.com/nextcloud/ios</code></td></tr>
+          <tr><td>License</td><td>GPL v2+</td></tr>
+          <tr><td>Min iOS</td><td>iOS 15.0+</td></tr>
+          <tr><td>Supports</td><td>iPhone &amp; iPad</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Tech Stack</h3>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>Language</td><td>Swift (primary), Obj-C (legacy)</td></tr>
+          <tr><td>Build system</td><td>Xcode + Swift Package Manager</td></tr>
+          <tr><td>Architecture</td><td>MVC + MVVM (mixed)</td></tr>
+          <tr><td>UI Framework</td><td>UIKit + SwiftUI</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <h3>Key Libraries / Dependencies</h3>
+    <table>
+      <tr><th>Library</th><th>Purpose</th></tr>
+      <tr><td>Alamofire</td><td>HTTP networking &amp; WebDAV</td></tr>
+      <tr><td>Realm</td><td>Local database (offline cache)</td></tr>
+      <tr><td>SnapKit</td><td>UI layout constraints</td></tr>
+      <tr><td>NCCommunication</td><td>Nextcloud-specific API wrapper (internal lib)</td></tr>
+      <tr><td>TOCropViewController</td><td>Image cropping</td></tr>
+    </table>
+
+    <h3>Build Requirements</h3>
+    <ul>
+      <li><strong>Mac computer is mandatory</strong> — iOS cannot be built on Windows or Linux</li>
+      <li>Xcode 15+ (free from Mac App Store)</li>
+      <li>Apple Developer account ($99/year) — required for TestFlight &amp; App Store</li>
+      <li>For internal distribution: use "Ad Hoc" provisioning profile or Apple Business Manager</li>
+    </ul>
+
+    <div class="warn">
+      <strong>Note:</strong> iOS development requires physical Mac hardware. This cannot be bypassed. If the team does not have a Mac, iOS app cannot be built.
+    </div>
+
+    <h3>What Needs to Change</h3>
+    <table>
+      <tr><th>File / Setting</th><th>Change</th></tr>
+      <tr><td>Bundle Identifier (Xcode project)</td><td><code>com.nextcloud.ios</code> → <code>com.karsaaz.sync</code></td></tr>
+      <tr><td>Display name</td><td>"Nextcloud" → "Karsaaz Sync"</td></tr>
+      <tr><td>User-Agent (NCCommunication)</td><td>→ <code>Karsaaz-Sync/1.0.0</code></td></tr>
+      <tr><td>App icons (Assets.xcassets)</td><td>Replace all icon sizes with Karsaaz logo</td></tr>
+      <tr><td>Brand color</td><td><code>#0082C9</code> → <code>#1e3a8a</code></td></tr>
+      <tr><td>All "nextcloud.com" URLs</td><td>→ <code>karsaaz.com</code></td></tr>
+      <tr><td>Default server URL</td><td>Pre-fill with Karsaaz Cloud server address</td></tr>
+    </table>
+  </div>
+
+  <!-- DESKTOP -->
+  <div class="card">
+    <h2>Desktop App (Windows / macOS / Linux)</h2>
+    <div class="two-col">
+      <div>
+        <h3>Source Code</h3>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>GitHub</td><td><code>github.com/nextcloud/desktop</code></td></tr>
+          <tr><td>License</td><td>GPL v2+</td></tr>
+          <tr><td>One codebase</td><td>Compiles to Win / Mac / Linux</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Tech Stack</h3>
+        <table>
+          <tr><th>Item</th><th>Detail</th></tr>
+          <tr><td>Language</td><td>C++17</td></tr>
+          <tr><td>UI Framework</td><td>Qt 6.x</td></tr>
+          <tr><td>Build system</td><td>CMake</td></tr>
+          <tr><td>Installer (Win)</td><td>NSIS</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <h3>Key Libraries / Dependencies</h3>
+    <table>
+      <tr><th>Library</th><th>Purpose</th></tr>
+      <tr><td>Qt 6 (Core, Gui, Widgets, Network)</td><td>Cross-platform UI &amp; networking</td></tr>
+      <tr><td>OpenSSL</td><td>HTTPS / TLS encryption</td></tr>
+      <tr><td>libsync (internal)</td><td>WebDAV sync engine</td></tr>
+      <tr><td>SQLite</td><td>Local sync state database</td></tr>
+      <tr><td>Sparkle (macOS)</td><td>Auto-update mechanism</td></tr>
+    </table>
+
+    <h3>Build Requirements</h3>
+    <ul>
+      <li>Qt 6.2+ (qt.io — free open-source edition)</li>
+      <li>CMake 3.16+</li>
+      <li>Windows: Visual Studio 2019/2022 with C++ workload</li>
+      <li>macOS: Xcode command-line tools</li>
+      <li>Linux: GCC/Clang, make, libssl-dev, qt6-dev packages</li>
+      <li>This is the most complex app to build — recommend Android first</li>
+    </ul>
+
+    <h3>What Needs to Change</h3>
+    <table>
+      <tr><th>File / Setting</th><th>Change</th></tr>
+      <tr><td><code>CMakeLists.txt</code> — APPLICATION_NAME</td><td>"Nextcloud" → "Karsaaz Sync"</td></tr>
+      <tr><td><code>CMakeLists.txt</code> — APPLICATION_DOMAIN</td><td>→ <code>karsaaz.com</code></td></tr>
+      <tr><td>User-Agent (mirall)</td><td><code>mirall/3.x</code> → <code>Karsaaz-Sync/1.0.0</code></td></tr>
+      <tr><td>App icons (all formats)</td><td>Replace .ico, .icns, .png with Karsaaz logo</td></tr>
+      <tr><td>Brand color</td><td><code>#0082C9</code> → <code>#1e3a8a</code></td></tr>
+      <tr><td>Installer name (NSIS/DMG)</td><td>"Nextcloud" → "Karsaaz Sync"</td></tr>
+      <tr><td>Default server URL</td><td>Pre-fill with Karsaaz Cloud server address</td></tr>
+      <tr><td>Help / docs links</td><td>→ <code>karsaaz.com</code></td></tr>
+    </table>
+  </div>
+
+  <!-- WEB -->
+  <div class="card">
+    <h2>Web Browser — Already Done</h2>
+    <p>The web platform is fully rebranded and live. No work needed here. Listed for completeness.</p>
+    <table>
+      <tr><th>Item</th><th>Detail</th></tr>
+      <tr><td>GitHub</td><td><code>github.com/nextcloud/server</code></td></tr>
+      <tr><td>Language</td><td>PHP 8.x (backend), Vue.js / JavaScript (frontend)</td></tr>
+      <tr><td>Theming</td><td>Custom theme at <code>/themes/karsaaz/</code> — overrides all branding</td></tr>
+      <tr><td>Product name</td><td>Karsaaz Cloud (confirmed via <code>/status.php</code>)</td></tr>
+      <tr><td>Office suite</td><td>Karsaaz Cloud Office (Collabora Online — LibreOffice in browser)</td></tr>
+      <tr><td>Status</td><td><span class="badge green">100% complete</span></td></tr>
+    </table>
+  </div>
+
+  <!-- WEBDAV -->
+  <div class="card">
+    <h2>WebDAV — What It Is</h2>
+    <p>WebDAV is the file sync protocol used by all desktop and mobile apps to connect to Karsaaz Cloud. It is NOT a separate app — it is the communication method built into the server. Think of it as the server address you paste into any sync app to connect it.</p>
+    <table>
+      <tr><th>Item</th><th>Value</th></tr>
+      <tr><td>WebDAV endpoint</td><td><code>http://192.168.18.61:3030/remote.php/dav/files/{username}/</code></td></tr>
+      <tr><td>Status</td><td><span class="badge green">Open &amp; working</span></td></tr>
+      <tr><td>Who uses it</td><td>All sync apps (Android, iOS, Desktop) — they use this address internally</td></tr>
+      <tr><td>Works with</td><td>Karsaaz Sync app, Windows File Explorer (Map Network Drive), macOS Finder, Cyberduck</td></tr>
+    </table>
+  </div>
+
+  <!-- ─── SECTION 4: CRITICAL REQUIREMENT ─── -->
+  <div class="section-title">4. Critical Server Requirement</div>
+  <div class="card">
+    <h2>User-Agent — MUST Read This</h2>
+    <p>The Karsaaz Cloud server identifies connecting clients by their User-Agent header. This is the single most important technical requirement for the developer.</p>
+
+    <div class="critical">
+      <strong>CRITICAL:</strong> The User-Agent string in ALL Karsaaz Sync apps MUST NOT contain any of the following words:<br><br>
+      <code>mirall</code> &nbsp;·&nbsp; <code>Nextcloud-android</code> &nbsp;·&nbsp; <code>Nextcloud-iOS</code> &nbsp;·&nbsp; <code>ownCloud-android</code> &nbsp;·&nbsp; <code>ownCloud-iOS</code><br><br>
+      If any of these appear in the User-Agent, the server is configured to block the connection.
+    </div>
+
+    <h3>Required User-Agent Format</h3>
+    <table>
+      <tr><th>App</th><th>Required User-Agent</th></tr>
+      <tr><td>Android</td><td><code>Karsaaz-Sync/1.0.0 (Android {version})</code></td></tr>
+      <tr><td>iOS</td><td><code>Karsaaz-Sync/1.0.0 (iOS {version})</code></td></tr>
+      <tr><td>Desktop</td><td><code>Karsaaz-Sync/1.0.0 (Windows/macOS/Linux)</code></td></tr>
+    </table>
+
+    <div class="highlight">
+      This is a one-line change in each app's source code. It is simple but absolutely required. The server will reject any connection with the official Nextcloud User-Agent.
+    </div>
+  </div>
+
+  <!-- ─── SECTION 5: BRANDING SPECS ─── -->
+  <div class="section-title">5. Branding Specifications</div>
+  <div class="card">
+    <h2>Visual Identity — Apply to All Apps</h2>
+    <table>
+      <tr><th>Element</th><th>Value</th></tr>
+      <tr><td>App name</td><td>Karsaaz Sync</td></tr>
+      <tr><td>Company name</td><td>Karsaaz</td></tr>
+      <tr><td>Server product name</td><td>Karsaaz Cloud</td></tr>
+      <tr><td>Primary color</td><td><code>#1e3a8a</code> (Karsaaz navy blue)</td></tr>
+      <tr><td>Text on primary</td><td><code>#ffffff</code></td></tr>
+      <tr><td>Package / Bundle ID</td><td><code>com.karsaaz.sync</code></td></tr>
+      <tr><td>Website</td><td><code>karsaaz.com</code></td></tr>
+      <tr><td>Support / help URL</td><td><code>karsaaz.com/support</code></td></tr>
+      <tr><td>Legal / privacy URL</td><td><code>karsaaz.com/legal</code></td></tr>
+    </table>
+
+    <h3>Strings to Replace Everywhere</h3>
+    <table>
+      <tr><th>Replace This</th><th>With This</th></tr>
+      <tr><td>"Nextcloud"</td><td>"Karsaaz Cloud" (in context of the server) or "Karsaaz Sync" (in context of the app)</td></tr>
+      <tr><td>"Nextcloud GmbH"</td><td>"Karsaaz"</td></tr>
+      <tr><td>"nextcloud.com"</td><td>"karsaaz.com"</td></tr>
+      <tr><td>"com.nextcloud"</td><td>"com.karsaaz"</td></tr>
+    </table>
+  </div>
+
+  <!-- ─── SECTION 6: LICENSE ─── -->
+  <div class="section-title">6. Legal &amp; License</div>
+  <div class="card">
+    <h2>GPL v2 License Requirements</h2>
+    <table>
+      <tr><th>Requirement</th><th>Detail</th></tr>
+      <tr><td>Can we fork &amp; rebrand?</td><td>✅ Yes — GPL allows it</td></tr>
+      <tr><td>Can we sell the app?</td><td>✅ Yes — GPL allows commercial use</td></tr>
+      <tr><td>Attribution required?</td><td>✅ Keep one paragraph in Settings → About: "Built on open-source software (GPL v2)"</td></tr>
+      <tr><td>Source code — internal only</td><td>✅ No need to publish source code for internal staff distribution</td></tr>
+      <tr><td>Source code — Play Store / App Store</td><td>⚠️ Must make modified source code publicly available (GitHub is fine)</td></tr>
+    </table>
+  </div>
+
+  <!-- ─── SECTION 7: PHASES ─── -->
+  <div class="section-title">7. Recommended Development Phases</div>
+  <div class="card">
+    <h2>Build Order</h2>
+    <table>
+      <tr><th>Phase</th><th>App</th><th>Effort</th><th>Why First</th></tr>
+      <tr>
+        <td><span class="badge blue">Phase 1</span></td>
+        <td><strong>Android</strong></td>
+        <td>1–2 weeks</td>
+        <td>Largest user base, simplest build, no paid accounts needed for internal APK</td>
+      </tr>
+      <tr>
+        <td><span class="badge blue">Phase 2</span></td>
+        <td><strong>Desktop (Windows)</strong></td>
+        <td>2–3 weeks</td>
+        <td>Staff on Windows PCs benefit from folder-level sync (like Dropbox)</td>
+      </tr>
+      <tr>
+        <td><span class="badge blue">Phase 3</span></td>
+        <td><strong>iOS</strong></td>
+        <td>1–2 weeks (needs Mac)</td>
+        <td>Lower priority — requires Apple hardware and $99/year account</td>
+      </tr>
+      <tr>
+        <td><span class="badge gray">Optional</span></td>
+        <td><strong>Desktop (macOS / Linux)</strong></td>
+        <td>1 week extra (same codebase)</td>
+        <td>Same code as Windows — minimal extra effort once Windows is done</td>
+      </tr>
+    </table>
+
+    <div class="highlight">
+      <strong>Note:</strong> The browser experience is already 100% complete. Sync apps are optional enhancements for staff who want files on their devices. ERP integration works via API — no sync apps required for ERP workflows.
+    </div>
+  </div>
+
+  <!-- ─── SECTION 8: CONTACT ─── -->
+  <div class="section-title">8. Contact &amp; Resources</div>
+  <div class="card">
+    <h2>For Developer Reference</h2>
+    <table>
+      <tr><th>Resource</th><th>Detail</th></tr>
+      <tr><td>Live server (LAN)</td><td><code>http://192.168.18.61:3030</code></td></tr>
+      <tr><td>Status check</td><td><code>http://192.168.18.61:3030/status.php</code></td></tr>
+      <tr><td>Capabilities API</td><td><code>http://192.168.18.61:3030/ocs/v2.php/cloud/capabilities?format=json</code></td></tr>
+      <tr><td>Android source</td><td><code>github.com/nextcloud/android</code></td></tr>
+      <tr><td>iOS source</td><td><code>github.com/nextcloud/ios</code></td></tr>
+      <tr><td>Desktop source</td><td><code>github.com/nextcloud/desktop</code></td></tr>
+      <tr><td>Server source</td><td><code>github.com/nextcloud/server</code></td></tr>
+      <tr><td>Test credentials</td><td>To be provided separately by Karsaaz EBS team</td></tr>
+      <tr><td>Production server URL</td><td>To be confirmed (HTTPS domain before public launch)</td></tr>
+    </table>
+  </div>
+
+  <div class="footer">
+    Karsaaz Cloud — Developer Requirements Brief v2.0 &nbsp;·&nbsp; Confidential — Internal Use Only &nbsp;·&nbsp; May 2026
+  </div>
+
+</div>
+</body>
+</html>
