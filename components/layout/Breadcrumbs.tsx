@@ -64,35 +64,37 @@ export function Breadcrumbs({ className, items }: BreadcrumbsProps) {
   if (crumbs.length <= 1) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className={cn("flex items-center text-sm", className)}>
-      <ol className="flex items-center gap-1">
-        <li>
-          <Link
-            href="/dashboard"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Home"
-          >
-            <Home className="h-4 w-4" />
-          </Link>
-        </li>
-        {crumbs.map((crumb, i) => (
-          <li key={crumb.href} className="flex items-center gap-1">
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            {i === crumbs.length - 1 ? (
-              <span className="font-medium text-foreground" aria-current="page">
-                {crumb.label}
-              </span>
-            ) : (
-              <Link
-                href={crumb.href}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {crumb.label}
-              </Link>
-            )}
+    <div className="px-6 py-4 border-b bg-background">
+      <nav aria-label="Breadcrumb" className={cn("flex items-center text-sm", className)}>
+        <ol className="flex items-center gap-1">
+          <li>
+            <Link
+              href="/dashboard"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Home"
+            >
+              <Home className="h-4 w-4" />
+            </Link>
           </li>
-        ))}
-      </ol>
-    </nav>
+          {crumbs.map((crumb, i) => (
+            <li key={crumb.href} className="flex items-center gap-1">
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              {i === crumbs.length - 1 ? (
+                <span className="font-medium text-foreground" aria-current="page">
+                  {crumb.label}
+                </span>
+              ) : (
+                <Link
+                  href={crumb.href}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {crumb.label}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </div>
   );
 }

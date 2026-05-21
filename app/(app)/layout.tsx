@@ -39,9 +39,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Content */}
         <main className="flex-1 overflow-auto">
           <div className="h-full">
-            <div className="px-6 py-4 border-b bg-background">
-              <Breadcrumbs />
-            </div>
+            <Breadcrumbs />
             <div className="p-6">{children}</div>
           </div>
         </main>

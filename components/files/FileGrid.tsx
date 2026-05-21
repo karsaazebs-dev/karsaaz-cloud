@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileIcon } from "@/components/files/FileIcon";
 import { FileContextMenu } from "@/components/files/FileContextMenu";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +11,7 @@ import type { KarsaazFile } from "@/lib/types/file.types";
 
 interface FileGridProps {
   files: KarsaazFile[];
+  selectedFiles?: KarsaazFile[];
   onNavigate: (file: KarsaazFile) => void;
   onSelectionChange?: (selected: KarsaazFile[]) => void;
   onAction?: (action: string, file: KarsaazFile) => void;
@@ -18,11 +19,17 @@ interface FileGridProps {
 
 export function FileGrid({
   files,
+  selectedFiles = [],
   onNavigate,
   onSelectionChange,
   onAction,
 }: FileGridProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Sync internal selected state when selectedFiles prop updates
+  useEffect(() => {
+    setSelected(new Set(selectedFiles.map((f) => f.id)));
+  }, [selectedFiles]);
 
   function toggleSelect(fileId: string, file: KarsaazFile) {
     const next = new Set(selected);

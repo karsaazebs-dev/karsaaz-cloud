@@ -34,13 +34,13 @@
   --radius: 0.5rem;
 
   /* Sidebar */
-  --sidebar: 224 63% 20%;
-  --sidebar-foreground: 0 0% 100%;
-  --sidebar-muted: 224 40% 30%;
-  --sidebar-muted-foreground: 215 40% 75%;
-  --sidebar-accent: 224 63% 28%;
-  --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 224 40% 28%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-muted: 210 40% 96.1%;
+  --sidebar-muted-foreground: 215.4 16.3% 46.9%;
+  --sidebar-accent: 210 40% 96.1%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214.3 31.8% 91.4%;
 }
 
 .dark {
@@ -138,13 +138,16 @@ html {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground));
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getFolderSegments } from "@/lib/utils/files";
 
@@ -27,11 +27,7 @@ export function FileBreadcrumbs({ path, onNavigate }: FileBreadcrumbsProps) {
                 className="font-medium text-foreground truncate max-w-[200px]"
                 aria-current="page"
               >
-                {i === 0 ? (
-                  <Home className="h-4 w-4 inline-block" />
-                ) : (
-                  seg.name
-                )}
+                {seg.name}
               </span>
             ) : (
               <button
@@ -41,7 +37,7 @@ export function FileBreadcrumbs({ path, onNavigate }: FileBreadcrumbsProps) {
                   i === 0 && "shrink-0"
                 )}
               >
-                {i === 0 ? <Home className="h-4 w-4 inline-block" /> : seg.name}
+                {seg.name}
               </button>
             )}
           </span>
@@ -50,3 +46,4 @@ export function FileBreadcrumbs({ path, onNavigate }: FileBreadcrumbsProps) {
     </nav>
   );
 }
+

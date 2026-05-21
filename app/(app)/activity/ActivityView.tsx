@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useActivityPage, ACTIVITY_TYPES } from "@/lib/hooks/useActivity";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -53,9 +54,15 @@ function ActivityItem({ item }: { item: OCSActivity }) {
 }
 
 export function ActivityView() {
-  const [activeType, setActiveType] = useState("all");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const filterParam = searchParams.get("filter") || searchParams.get("type") || "all";
+
+  // Map URL parameter to API type
+  const apiType = filterParam === "shares" || filterParam === "shared" ? "shared" : filterParam;
+
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
-    useActivityPage(activeType);
+    useActivityPage(apiType);
 
   const allActivities = data?.pages.flatMap((p) => p) ?? [];
 
@@ -74,20 +81,25 @@ export function ActivityView() {
 
       {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
-        {ACTIVITY_TYPES.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setActiveType(t.value)}
-            className={cn(
-              "px-3 py-1 rounded-full text-sm border transition-colors",
-              activeType === t.value
-                ? "bg-primary text-primary-foreground border-primary"
-                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+        {ACTIVITY_TYPES.map((t) => {
+          const filterValue = t.value === "shared" ? "shares" : t.value;
+          const isSelected = filterParam === filterValue || (t.value === "all" && !["files", "file_created", "file_changed", "file_deleted", "shares"].includes(filterParam));
+
+          return (
+            <button
+              key={t.value}
+              onClick={() => router.push(`/activity?filter=${filterValue}`)}
+              className={cn(
+                "px-3 py-1 rounded-full text-sm border transition-colors",
+                isSelected
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+              )}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Activity list */}
