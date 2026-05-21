@@ -61,8 +61,8 @@ class PushService implements ISetupCheck {
 				'link' => [
 					'type' => 'highlight',
 					'id' => 'link',
-					'name' => 'https://nextcloud.com/enterprise',
-					'link' => 'https://nextcloud.com/enterprise',
+					'name' => 'https://karsaaz.com/support',
+					'link' => 'https://karsaaz.com/support',
 				],
 			],
 		);

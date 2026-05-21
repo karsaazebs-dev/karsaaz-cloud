@@ -58,7 +58,7 @@ class BackgroundService {
 		'jenna-kim-the-globe.webp' => [
 			'attribution' => 'Globe (Jenna Kim - Nextcloud GmbH, CC-BY-SA-4.0)',
 			'description' => 'Background picture of white clouds on in front of a blue sky',
-			'attribution_url' => 'https://nextcloud.com/trademarks/',
+			'attribution_url' => 'https://karsaaz.com/legal',
 			'dark_variant' => 'jenna-kim-the-globe-dark.webp',
 			'background_color' => self::DEFAULT_BACKGROUND_COLOR,
 			'primary_color' => self::DEFAULT_COLOR,

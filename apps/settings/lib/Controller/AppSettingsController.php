@@ -206,7 +206,7 @@ class AppSettingsController extends Controller {
 		}
 
 		// Always allowed hosts
-		if ($urlInfo['host'] === 'nextcloud.com') {
+		if ($urlInfo['host'] === 'karsaaz.com') {
 			return true;
 		}
 

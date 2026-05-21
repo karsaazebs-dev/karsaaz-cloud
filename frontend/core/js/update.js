@@ -69,11 +69,11 @@
 				self.setErrorMessage(message);
 				var updateUnsuccessful = $('<p>');
 				if(message === 'Exception: Updates between multiple major versions and downgrades are unsupported.') {
-					updateUnsuccessful.append(t('core', 'The update was unsuccessful. For more information <a href="{url}">check our forum post</a> covering this issue.', {'url': 'https://help.nextcloud.com/t/updates-between-multiple-major-versions-are-unsupported/7094'}));
+					updateUnsuccessful.append(t('core', 'The update was unsuccessful. For more information <a href="{url}">contact support</a> covering this issue.', {'url': 'https://karsaaz.com/support'}));
 				} else if (OC.Update.options.productName === 'Nextcloud') {
 					updateUnsuccessful.append(t('core', 'The update was unsuccessful. ' +
 						'Please report this issue to the ' +
-						'<a href="https://github.com/nextcloud/server/issues" target="_blank">Nextcloud community</a>.'));
+						'<a href="https://karsaaz.com/support" target="_blank">Karsaaz support</a>.'));
 				}
 				updateUnsuccessful.appendTo($el);
 			});

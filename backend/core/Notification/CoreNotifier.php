@@ -53,7 +53,7 @@ class CoreNotifier implements INotifier {
 		if ($notification->getSubject() === 'repair_exposing_links') {
 			$notification->setParsedSubject($l->t('Some of your link shares have been removed'));
 			$notification->setParsedMessage($l->t('Due to a security bug we had to remove some of your link shares. Please see the link for more information.'));
-			$notification->setLink('https://nextcloud.com/security/advisory/?id=NC-SA-2019-003');
+			$notification->setLink('https://karsaaz.com/support');
 			return $notification;
 		}
 
@@ -63,7 +63,7 @@ class CoreNotifier implements INotifier {
 			$notification->setIcon($this->url->getAbsoluteURL($this->url->imagePath('core', 'places/contacts.svg')));
 			$action = $notification->createAction();
 			$label = $l->t('Learn more ↗');
-			$link = $this->config->getSystemValueString('one-click-instance.link', 'https://nextcloud.com/enterprise/');
+			$link = $this->config->getSystemValueString('one-click-instance.link', 'https://karsaaz.com/support');
 			$action->setLabel($label)
 				->setParsedLabel($label)
 				->setLink($link, IAction::TYPE_WEB)
