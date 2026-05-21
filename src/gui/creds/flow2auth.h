@@ -16,7 +16,7 @@ namespace OCC {
 /**
  * Job that does the authorization, grants and fetches the access token via Login Flow v2
  *
- * See: https://docs.nextcloud.com/server/latest/developer_manual/client_apis/LoginFlow/index.html#login-flow-v2
+ * See the Karsaaz Cloud client login-flow documentation for the v2 browser flow.
  */
 class Flow2Auth : public QObject
 {

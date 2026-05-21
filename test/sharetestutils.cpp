@@ -228,7 +228,7 @@ QNetworkReply *ShareTestHelper::qnamOverride(QNetworkAccessManager::Operation op
     qDebug() << req.url() << reqPath << op;
 
     // Properly formatted PROPFIND URL goes something like:
-    // https://cloud.nextcloud.com/remote.php/dav/files/claudio/Readme.md
+    // https://karsaaz.com/remote.php/dav/files/claudio/Readme.md
     if(reqPath.endsWith(testFileName) && req.attribute(QNetworkRequest::CustomVerbAttribute).toString() == "PROPFIND") {
 
         reply = new FakePropfindReply(fakeFolder.remoteModifier(), op, req, this);

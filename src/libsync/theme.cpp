@@ -474,9 +474,8 @@ QString Theme::helpUrl() const
 #ifdef APPLICATION_HELP_URL
     return QString::fromLatin1(APPLICATION_HELP_URL);
 #else
-    // Phase-2 sever: previously linked to docs.nextcloud.com. Karsaaz routes
-    // help through APPLICATION_HELP_URL (set in NEXTCLOUD.cmake). An empty
-    // string is the safe fallback when no help URL is configured.
+    // Karsaaz routes help through APPLICATION_HELP_URL (set in NEXTCLOUD.cmake).
+    // An empty string is the safe fallback when no help URL is configured.
     return {};
 #endif
 }

@@ -27,9 +27,8 @@ NextcloudTheme::NextcloudTheme()
 
 QString NextcloudTheme::wizardUrlHint() const
 {
-    // Phase-2 sever: Karsaaz does not host a public sign-up service like
-    // try.nextcloud.com. Returning an empty string suppresses the "try a
-    // public provider" hint in the connection wizard.
+    // Karsaaz does not host a public sign-up service. Returning an empty
+    // string suppresses the "try a public provider" hint in the wizard.
     return {};
 }
 

@@ -71,7 +71,7 @@ private slots:
 
             auto xmlResponse = "<?xml version=\"1.0\"?>\n<owncloudclient><version>600.0.0</version><versionstring>Nextcloud Client 600.0.0</versionstring><downloadurl>"_ba;
             xmlResponse.append(downloadTarget.toEncoded());
-            xmlResponse.append("</downloadurl><web>https://nextcloud.com/install</web></owncloudclient>"_ba);
+            xmlResponse.append("</downloadurl><web>https://karsaaz.com/install</web></owncloudclient>"_ba);
 
             responder.write(xmlResponse, headers);
         });

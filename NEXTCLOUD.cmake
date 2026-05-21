@@ -24,7 +24,7 @@ endif()
 # theme/black/nextcloud/, theme/white/nextcloud/. Once Karsaaz-branded SVGs are
 # dropped under theme/colored/KarsaazSync/ (etc.) — see /.fork-reports/phase-5-rebrand.md
 # section "Outstanding visual-asset work" — change this to ${APPLICATION_SHORTNAME}.
-set( APPLICATION_ICON_NAME      "Nextcloud" )
+set( APPLICATION_ICON_NAME      "KarsaazSync" )
 
 set( APPLICATION_CONFIG_NAME "${APPLICATION_EXECUTABLE}" )
 set( APPLICATION_DOMAIN     "karsaaz.com" )

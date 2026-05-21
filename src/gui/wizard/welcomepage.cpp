@@ -100,7 +100,6 @@ void WelcomePage::setupCreateAccountButton()
 
 void WelcomePage::setupHostYourOwnServerLabel()
 {
-    // Phase-2 sever: previously linked to docs.nextcloud.com/server/.../installation.
     // Karsaaz is an internal deployment; the "host your own server" CTA is hidden
     // by clearing the URL (empty href → label rendered as plain text, no link).
     _ui->hostYourOwnServerLabel->setText(tr("Host your own server"));
