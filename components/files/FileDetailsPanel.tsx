@@ -6,14 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { FileIcon } from "@/components/files/FileIcon";
 import {
   X,
-  Star,
   Tag,
   Plus,
   Check,
   Mic,
   Send,
   Share2,
-  UserPlus,
   Link,
   Trash2,
   History,
@@ -25,6 +23,7 @@ import {
   Mail,
   Loader2,
 } from "lucide-react";
+import { StarIcon, YellowStarIcon } from "@/components/icons/CustomIcons";
 import { formatFileSize, formatFileDate } from "@/lib/utils/files";
 import { useFileVersions } from "@/lib/hooks/useVersionsTrash";
 import {
@@ -58,6 +57,7 @@ interface FileDetailsPanelProps {
   onClose: () => void;
   onAction: (action: string, file: KarsaazFile) => void;
   initialTab?: DetailTab;
+  onTagsChange?: () => void;
 }
 
 export type DetailTab = "activity" | "sharing" | "versions";
@@ -125,6 +125,7 @@ export function FileDetailsPanel({
   onClose,
   onAction,
   initialTab = "activity",
+  onTagsChange,
 }: FileDetailsPanelProps) {
   const [tab, setTab] = useState<DetailTab>(initialTab);
 
@@ -164,7 +165,7 @@ export function FileDetailsPanel({
         try {
           const map = JSON.parse(savedTags);
           setFileTags(map[file.name] || []);
-        } catch (e) {}
+        } catch (e) { }
       } else {
         setFileTags([]);
       }
@@ -174,7 +175,7 @@ export function FileDetailsPanel({
       if (savedAvailable) {
         try {
           setAvailableTags(JSON.parse(savedAvailable));
-        } catch (e) {}
+        } catch (e) { }
       } else {
         setAvailableTags(DEFAULT_TAGS);
       }
@@ -192,7 +193,8 @@ export function FileDetailsPanel({
       const map = JSON.parse(saved);
       map[file.name] = next;
       localStorage.setItem("karsaaz-file-tags", JSON.stringify(map));
-    } catch (e) {}
+      onTagsChange?.();
+    } catch (e) { }
   };
 
   const handleCreateTagSubmit = () => {
@@ -206,6 +208,7 @@ export function FileDetailsPanel({
     const next = [...availableTags, newTag];
     setAvailableTags(next);
     localStorage.setItem("karsaaz-all-tags", JSON.stringify(next));
+    onTagsChange?.();
 
     // Auto toggle on file
     handleToggleTag(newTag.name);
@@ -317,14 +320,11 @@ export function FileDetailsPanel({
                       onClick={() => onAction("favorite", file)}
                       className="gap-2 cursor-pointer"
                     >
-                      <Star
-                        className={cn(
-                          "h-4 w-4",
-                          file.isFavorite
-                            ? "text-yellow-500 fill-yellow-500"
-                            : "text-muted-foreground"
-                        )}
-                      />
+                      {file.isFavorite ? (
+                        <YellowStarIcon className="h-4 w-4" />
+                      ) : (
+                        <StarIcon className="h-4 w-4 text-muted-foreground" />
+                      )}
                       <span>
                         {file.isFavorite ? "Remove from favourites" : "Add to favourites"}
                       </span>
@@ -455,7 +455,7 @@ export function FileDetailsPanel({
                 className={cn(
                   "flex-1 py-3 text-xs font-bold transition-all relative outline-none",
                   tab === t
-                    ? "text-primary"
+                    ? "text-[#A855F7]"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -463,7 +463,7 @@ export function FileDetailsPanel({
                 {tab === t && (
                   <motion.div
                     layoutId="activeTabUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#A855F7]"
                   />
                 )}
               </button>

@@ -16,7 +16,6 @@ import {
   Scissors,
   Trash2,
   Share2,
-  Star,
   StarOff,
   Info,
   FolderOpen,
@@ -24,6 +23,7 @@ import {
   Bell,
   MessageSquare,
 } from "lucide-react";
+import { StarIcon } from "@/components/icons/CustomIcons";
 import type { KarsaazFile } from "@/lib/types/file.types";
 import { isOfficeFile } from "@/lib/utils/officeFiles";
 
@@ -116,7 +116,7 @@ export function FileContextMenu({
           </>
         ) : (
           <>
-            <Star className="mr-2 h-4 w-4" />
+            <StarIcon className="mr-2 h-4 w-4" />
             Add to favorites
           </>
         )}

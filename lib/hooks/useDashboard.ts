@@ -11,7 +11,7 @@ import {
   setWeatherLocation,
   useWeatherPersonalAddress,
 } from "@/lib/api/ocs";
-import { listFiles } from "@/lib/api/webdav";
+import { listFiles, listFilesDeep } from "@/lib/api/webdav";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -88,6 +88,19 @@ export function useSharedWithMe() {
   });
 }
 
+export function useAllFilesDeep() {
+  const { basicAuth, username } = useAuth();
+  return useQuery({
+    queryKey: ["allFilesDeep", username],
+    queryFn: async () => {
+      const davPath = `/remote.php/dav/files/${username}/`;
+      return await listFilesDeep(davPath, { basicAuth: basicAuth! });
+    },
+    enabled: !!basicAuth && !!username,
+    staleTime: 5 * 60_000,
+  });
+}
+
 // ── Weather ─────────────────────────────────────────────────────────────────
 
 export function useWeatherLocation() {
@@ -140,7 +153,11 @@ export function useWeatherUsePersonalAddress() {
 }
 
 // Widget layout persistence — stored in localStorage for now
-export type WidgetId = "quota" | "recent" | "activity" | "sharedWithMe" | "weather";
+export type WidgetId =
+  | "chartFileType"
+  | "chartMonthlyUploads"
+  | "chartActivityTrends"
+  | "chartStorage";
 
 export interface WidgetLayout {
   id: WidgetId;
@@ -150,11 +167,10 @@ export interface WidgetLayout {
 }
 
 const DEFAULT_WIDGETS: WidgetLayout[] = [
-  { id: "quota", label: "Storage", enabled: true, order: 0 },
-  { id: "weather", label: "Weather", enabled: true, order: 1 },
-  { id: "recent", label: "Recent Files", enabled: true, order: 2 },
-  { id: "activity", label: "Recent Activity", enabled: true, order: 3 },
-  { id: "sharedWithMe", label: "Shared with Me", enabled: true, order: 4 },
+  { id: "chartFileType", label: "File Type Distribution", enabled: true, order: 0 },
+  { id: "chartMonthlyUploads", label: "Monthly Uploads", enabled: true, order: 1 },
+  { id: "chartActivityTrends", label: "Activity Trends", enabled: true, order: 2 },
+  { id: "chartStorage", label: "Storage Usage", enabled: true, order: 3 },
 ];
 
 const STORAGE_KEY = "karsaaz-dashboard-layout";
@@ -164,14 +180,20 @@ export function loadWidgetLayout(): WidgetLayout[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved) as WidgetLayout[];
+      const validIds = new Set<WidgetId>([
+        "chartFileType",
+        "chartMonthlyUploads",
+        "chartActivityTrends",
+        "chartStorage",
+      ]);
+      const parsed = (JSON.parse(saved) as WidgetLayout[]).filter((w) => validIds.has(w.id));
       const seen = new Set(parsed.map((w) => w.id));
       // Append any widgets added since the layout was saved so new features surface.
       const merged = [...parsed];
       for (const def of DEFAULT_WIDGETS) {
         if (!seen.has(def.id)) merged.push({ ...def, order: merged.length });
       }
-      return merged;
+      return merged.map((w, index) => ({ ...w, order: index }));
     }
   } catch {
     // ignore

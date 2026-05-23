@@ -20,11 +20,11 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QuotaWidget } from "./widgets/QuotaWidget";
-import { RecentFilesWidget } from "./widgets/RecentFilesWidget";
-import { ActivityWidget } from "./widgets/ActivityWidget";
-import { SharedWithMeWidget } from "./widgets/SharedWithMeWidget";
-import { WeatherWidget } from "./widgets/WeatherWidget";
+import { FileTypeChart } from "./widgets/FileTypeChart";
+import { MonthlyUploadsChart } from "./widgets/MonthlyUploadsChart";
+import { ActivityTrendsChart } from "./widgets/ActivityTrendsChart";
+import { StorageChart } from "./widgets/StorageChart";
+import { StatsCards } from "./StatsCards";
 import {
   loadWidgetLayout,
   saveWidgetLayout,
@@ -36,11 +36,10 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 
 const WIDGET_CONTENT: Record<WidgetId, React.ReactNode> = {
-  quota: <QuotaWidget />,
-  weather: <WeatherWidget />,
-  recent: <RecentFilesWidget />,
-  activity: <ActivityWidget />,
-  sharedWithMe: <SharedWithMeWidget />,
+  chartFileType: <FileTypeChart />,
+  chartMonthlyUploads: <MonthlyUploadsChart />,
+  chartActivityTrends: <ActivityTrendsChart />,
+  chartStorage: <StorageChart />,
 };
 
 interface SortableWidgetProps {
@@ -166,18 +165,18 @@ export function DashboardGrid() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" style={{ fontFamily: "var(--font-plus-jakarta), sans-serif" }}>
       {/* Dashboard header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Your Karsaaz Cloud overview</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground font-medium">Your Karsaaz Cloud overview</p>
         </div>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setShowCustomizer(!showCustomizer)}
-          className="gap-2"
+          className="gap-2 rounded-xl font-bold border-slate-200/80 hover:bg-slate-50 transition-colors"
         >
           <Settings2 className="h-4 w-4" />
           Customize
@@ -198,6 +197,9 @@ export function DashboardGrid() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Stats Cards Overview */}
+      <StatsCards />
 
       {/* Widget grid */}
       <DndContext

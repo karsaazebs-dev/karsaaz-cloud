@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -17,14 +17,12 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  Star,
   Share2,
-  Pin,
-  UserPlus,
 } from "lucide-react";
 import { formatFileSize, formatFileDate } from "@/lib/utils/files";
 import { cn } from "@/lib/utils";
 import type { KarsaazFile } from "@/lib/types/file.types";
+import { PinIcon, StarIcon, YellowStarIcon, AddPersonIcon } from "@/components/icons/CustomIcons";
 
 interface FileListProps {
   files: KarsaazFile[];
@@ -44,6 +42,15 @@ export function FileList({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [pinnedFiles, setPinnedFiles] = useState<string[]>([]);
+  // Local override set: tracks ids the user toggled locally so the star is instant
+  const [localFavorites, setLocalFavorites] = useState<Set<string>>(() => new Set(
+    files.filter((f) => f.isFavorite).map((f) => f.id)
+  ));
+
+  // Keep localFavorites in sync when server data arrives (e.g. after refetch)
+  useEffect(() => {
+    setLocalFavorites(new Set(files.filter((f) => f.isFavorite).map((f) => f.id)));
+  }, [files]);
 
   // Load pinned files from localStorage on mount
   useEffect(() => {
@@ -51,7 +58,7 @@ export function FileList({
     if (saved) {
       try {
         setPinnedFiles(JSON.parse(saved));
-      } catch (e) {}
+      } catch (e) { }
     }
   }, []);
 
@@ -65,18 +72,22 @@ export function FileList({
 
   // Sync rowSelection state with selectedFiles prop
   useEffect(() => {
-    if (selectedFiles.length === 0) {
-      setRowSelection({});
-    } else {
-      const newSel: RowSelectionState = {};
-      files.forEach((file, index) => {
-        if (selectedFiles.some((f) => f.id === file.id)) {
-          newSel[index] = true;
-        }
-      });
+    const newSel: RowSelectionState = {};
+    selectedFiles.forEach((file) => {
+      newSel[file.id] = true;
+    });
+
+    // Compare with current rowSelection to avoid redundant state updates
+    const keys1 = Object.keys(rowSelection);
+    const keys2 = Object.keys(newSel);
+    const hasChanged =
+      keys1.length !== keys2.length ||
+      keys1.some((k) => rowSelection[k] !== newSel[k]);
+
+    if (hasChanged) {
       setRowSelection(newSel);
     }
-  }, [selectedFiles, files]);
+  }, [selectedFiles, rowSelection]);
 
   const columns: ColumnDef<KarsaazFile>[] = [
     {
@@ -122,7 +133,7 @@ export function FileList({
           <div className="flex items-center justify-between min-w-0 w-full group/cell">
             <div className="flex items-center gap-3.5 min-w-0">
               <FileIcon file={file} size="sm" className="shrink-0" />
-              <span className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+              <span className="truncate text-sm font-medium text-foreground group-hover:text-[#A855F7] transition-colors">
                 {file.name}
               </span>
             </div>
@@ -144,24 +155,35 @@ export function FileList({
                   )}
                   title={isPinned ? "Unpin" : "Pin"}
                 >
-                  <Pin className="h-4 w-4 rotate-45" />
+                  <PinIcon className="h-4 w-4" />
                 </button>
 
                 {/* Star Action */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    // Toggle locally first for instant feedback
+                    setLocalFavorites((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(file.id)) next.delete(file.id);
+                      else next.add(file.id);
+                      return next;
+                    });
                     onAction?.("favorite", file);
                   }}
                   className={cn(
                     "transition-all duration-150 hover:scale-110 outline-none cursor-pointer",
-                    file.isFavorite
-                      ? "text-yellow-500 fill-yellow-500 opacity-100"
+                    localFavorites.has(file.id)
+                      ? "opacity-100"
                       : "text-muted-foreground/30 hover:text-muted-foreground/70"
                   )}
-                  title={file.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                  title={localFavorites.has(file.id) ? "Remove from favorites" : "Add to favorites"}
                 >
-                  <Star className="h-4 w-4" />
+                  {localFavorites.has(file.id) ? (
+                    <YellowStarIcon className="h-4 w-4" />
+                  ) : (
+                    <StarIcon className="h-4 w-4" />
+                  )}
                 </button>
 
                 {/* Share Action */}
@@ -186,7 +208,7 @@ export function FileList({
                     className="text-muted-foreground/30 hover:text-purple-600 transition-colors shrink-0 outline-none cursor-pointer hover:scale-110"
                     title="Share"
                   >
-                    <UserPlus className="h-4 w-4" />
+                    <AddPersonIcon className="h-4 w-4" />
                   </button>
                 )}
               </div>
@@ -240,8 +262,15 @@ export function FileList({
     },
   ];
 
+  // Sort: pinned files always go first, then the table's active sort
+  const sortedData = useMemo(() => {
+    const pinned = files.filter((f) => pinnedFiles.includes(f.id));
+    const unpinned = files.filter((f) => !pinnedFiles.includes(f.id));
+    return [...pinned, ...unpinned];
+  }, [files, pinnedFiles]);
+
   const table = useReactTable({
-    data: files,
+    data: sortedData,
     columns,
     state: { sorting, rowSelection },
     onSortingChange: setSorting,
@@ -249,17 +278,18 @@ export function FileList({
       const next =
         typeof updater === "function" ? updater(rowSelection) : updater;
       setRowSelection(next);
-      onSelectionChange?.(files.filter((_, i) => next[i]));
+      onSelectionChange?.(sortedData.filter((file) => next[file.id]));
     },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     enableRowSelection: true,
+    getRowId: (row) => row.id,
   });
 
   // Calculate totals for footer
-  const fileCount = files.filter((f) => f.type === "file").length;
-  const folderCount = files.filter((f) => f.type === "directory").length;
-  const totalSize = files.reduce((acc, f) => acc + (f.size || 0), 0);
+  const fileCount = sortedData.filter((f) => f.type === "file").length;
+  const folderCount = sortedData.filter((f) => f.type === "directory").length;
+  const totalSize = sortedData.reduce((acc, f) => acc + (f.size || 0), 0);
 
   return (
     <div className="w-full flex flex-col min-h-0 bg-background border rounded-xl overflow-hidden shadow-sm select-none">
@@ -271,7 +301,11 @@ export function FileList({
                 {hg.headers.map((header) => (
                   <th
                     key={header.id}
-                    className="px-4 py-4 text-left font-medium text-muted-foreground whitespace-nowrap"
+                    className={cn(
+                      "px-4 py-4 text-left font-medium text-muted-foreground whitespace-nowrap",
+                      header.id === "size" && "hidden sm:table-cell",
+                      header.id === "lastModified" && "hidden sm:table-cell"
+                    )}
                     style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder
@@ -308,7 +342,11 @@ export function FileList({
                   {row.getVisibleCells().map((cell) => (
                     <td
                       key={cell.id}
-                      className="px-4 py-4 align-middle"
+                      className={cn(
+                        "px-4 py-4 align-middle",
+                        cell.column.id === "size" && "hidden sm:table-cell",
+                        cell.column.id === "lastModified" && "hidden sm:table-cell"
+                      )}
                       style={{ width: cell.column.getSize() }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

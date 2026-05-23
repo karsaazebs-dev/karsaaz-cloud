@@ -165,7 +165,7 @@ export function fileStatToKarsaazFile(stat: FileStat): KarsaazFile {
     lastModified: new Date(stat.lastmod),
     etag: (stat.etag as string) || "",
     permissions: Number(props["oc:permissions"] ?? 0),
-    isFavorite: props["oc:favorite"] === 1,
+    isFavorite: Number(props["oc:favorite"]) === 1,
     isShared: shareTypes.length > 0,
     shareTypes,
     tags: Array.isArray(props["oc:tags"]) ? (props["oc:tags"] as string[]) : [],
@@ -449,6 +449,23 @@ export async function createFolder(
   const client = createWebDAVClient(username, password);
   const relativePath = davPath.replace(/^\/remote\.php\/dav/, "");
   await client.createDirectory(relativePath);
+}
+
+export async function createFile(
+  davPath: string,
+  mimeType: string,
+  opts: AuthOptions
+): Promise<void> {
+  // PUT an empty file with the correct MIME type so the office editor initialises it
+  await webdavFetch(`${BACKEND_URL}${davPath}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Basic ${opts.basicAuth}`,
+      "Content-Type": mimeType,
+      "Content-Length": "0",
+    },
+    body: "",
+  });
 }
 
 export async function deleteFile(

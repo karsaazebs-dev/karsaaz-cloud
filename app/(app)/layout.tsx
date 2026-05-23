@@ -6,6 +6,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { useUIStore } from "@/lib/stores/ui.store";
+import { Suspense } from "react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { sidebarOpen, setSidebarOpen } = useUIStore();
@@ -28,7 +29,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
-        <Sidebar />
+        <Suspense fallback={<div className="w-60 bg-white border-r border-slate-200" />}>
+          <Sidebar />
+        </Suspense>
       </div>
 
       {/* Main area */}

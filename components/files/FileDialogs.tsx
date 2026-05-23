@@ -272,6 +272,93 @@ export function BulkDeleteDialog({
   );
 }
 
+// ── New File Dialog (Word / Excel) ────────────────────────────────────────────
+
+const newFileSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(240, "Name too long")
+    .regex(/^[^/\\:*?"<>|]+$/, "Invalid characters in file name"),
+});
+
+type NewFileFormData = z.infer<typeof newFileSchema>;
+
+interface NewFileDialogProps {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  fileType: "word" | "excel";
+  onConfirm: (name: string) => Promise<void>;
+}
+
+export function NewFileDialog({
+  open,
+  onOpenChange,
+  fileType,
+  onConfirm,
+}: NewFileDialogProps) {
+  const isWord = fileType === "word";
+  const ext = isWord ? ".docx" : ".xlsx";
+  const label = isWord ? "Word Document" : "Excel Spreadsheet";
+  const placeholder = isWord ? "My Document" : "My Spreadsheet";
+  const icon = isWord ? "📄" : "📊";
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<NewFileFormData>({ resolver: zodResolver(newFileSchema) });
+
+  async function onSubmit(data: NewFileFormData) {
+    // Strip extension if user typed it, then re-add to avoid duplicates
+    const base = data.name.replace(/\.(docx|xlsx)$/i, "");
+    await onConfirm(`${base}${ext}`);
+    reset();
+    onOpenChange(false);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) reset(); }}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span>{icon}</span>
+            <span>New {label}</span>
+          </DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+          <div className="space-y-2">
+            <Label htmlFor="file-name">File name</Label>
+            <div className="flex items-center gap-1.5">
+              <Input
+                id="file-name"
+                autoFocus
+                placeholder={placeholder}
+                className="flex-1"
+                {...register("name")}
+              />
+              <span className="text-sm text-muted-foreground font-medium shrink-0">{ext}</span>
+            </div>
+            {errors.name && (
+              <p className="text-xs text-destructive">{errors.name.message}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ── Move / Copy to Folder Dialog ──────────────────────────────────────────────
 
 const destinationSchema = z.object({

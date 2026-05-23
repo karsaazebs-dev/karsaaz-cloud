@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { FileIcon } from "@/components/files/FileIcon";
 import { FileContextMenu } from "@/components/files/FileContextMenu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Star, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { formatFileDate } from "@/lib/utils/files";
 import { cn } from "@/lib/utils";
 import type { KarsaazFile } from "@/lib/types/file.types";
+import { StarIcon, YellowStarIcon } from "@/components/icons/CustomIcons";
 
 interface FileGridProps {
   files: KarsaazFile[];
@@ -122,7 +123,7 @@ export function FileGrid({
             {(file.isFavorite || file.isShared) && (
               <div className="flex justify-center gap-1 mt-1">
                 {file.isFavorite && (
-                  <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                  <YellowStarIcon className="h-3 w-3" />
                 )}
                 {file.isShared && (
                   <Share2 className="h-3 w-3 text-blue-500" />

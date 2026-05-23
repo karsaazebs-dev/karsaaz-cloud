@@ -11,6 +11,8 @@ import {
   listFavorites,
 } from "@/lib/api/webdav";
 import { toast } from "sonner";
+import type { KarsaazFile } from "@/lib/types/file.types";
+import { normalizePath } from "@/lib/utils/files";
 
 type SessionData = { basicAuth?: string } & Record<string, unknown>;
 
@@ -86,10 +88,37 @@ export function useEmptyTrash() {
 
 export function useFavorites() {
   const basicAuth = useAuth();
-  return useQuery({
+  return useQuery<KarsaazFile[]>({
     queryKey: ["favorites"],
-    queryFn: () => listFavorites({ basicAuth: basicAuth! }),
+    queryFn: async () => {
+      if (basicAuth) {
+        try {
+          const serverFavs = await listFavorites({ basicAuth });
+          if (typeof window !== "undefined" && Array.isArray(serverFavs)) {
+            const favsMap: Record<string, KarsaazFile> = {};
+            for (const f of serverFavs) {
+              const normPath = normalizePath(f.path);
+              favsMap[normPath] = { ...f, path: normPath, isFavorite: true };
+            }
+            localStorage.setItem("karsaaz-favorites", JSON.stringify(favsMap));
+            return Object.values(favsMap);
+          }
+        } catch (err) {
+          console.error("Failed to fetch favorites from server, falling back to localStorage:", err);
+        }
+      }
+
+      if (typeof window === "undefined") return [];
+      try {
+        const saved = localStorage.getItem("karsaaz-favorites");
+        if (saved) {
+          const favsMap = JSON.parse(saved);
+          return Object.values(favsMap) as KarsaazFile[];
+        }
+      } catch (e) {}
+      return [];
+    },
     enabled: !!basicAuth,
-    staleTime: 30_000,
+    staleTime: 5_000,
   });
 }

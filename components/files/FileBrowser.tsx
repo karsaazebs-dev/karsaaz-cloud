@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useFiles, useFileActions } from "@/lib/hooks/useFiles";
+import { useFiles, useFileActions, useCreateFile } from "@/lib/hooks/useFiles";
 import { FileList } from "@/components/files/FileList";
 import { FileGrid } from "@/components/files/FileGrid";
 import { FileBreadcrumbs } from "@/components/files/FileBreadcrumbs";
@@ -13,6 +13,7 @@ import { FileDetailsPanel, type DetailTab } from "@/components/files/FileDetails
 import { ShareDialog } from "@/components/files/ShareDialog";
 import {
   NewFolderDialog,
+  NewFileDialog,
   RenameDialog,
   DeleteDialog,
   BulkDeleteDialog,
@@ -27,7 +28,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from "@/lib/stores/ui.store";
-import { buildFilePath, getFileIcon } from "@/lib/utils/files";
+import { buildFilePath, getFileIcon, normalizePath } from "@/lib/utils/files";
 import { isOfficeFile } from "@/lib/utils/officeFiles";
 import { toast } from "sonner";
 import type { KarsaazFile } from "@/lib/types/file.types";
@@ -43,7 +44,7 @@ interface FileBrowserProps {
   initialPath?: string;
 }
 
-type DialogType = "newFolder" | "rename" | "delete" | "upload" | "bulkDelete" | "move" | "copy" | "share" | null;
+type DialogType = "newFolder" | "newWord" | "newExcel" | "rename" | "delete" | "upload" | "bulkDelete" | "move" | "copy" | "share" | null;
 
 interface DialogState {
   type: DialogType;
@@ -68,6 +69,28 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [peopleFilter, setPeopleFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all");
+
+  const [tagsVersion, setTagsVersion] = useState(0);
+  const [availableTags, setAvailableTags] = useState<{ name: string; colorClass: string }[]>([]);
+
+  useEffect(() => {
+    const savedAvailable = localStorage.getItem("karsaaz-all-tags");
+    if (savedAvailable) {
+      try {
+        setAvailableTags(JSON.parse(savedAvailable));
+      } catch (e) {}
+    } else {
+      const defaultTags = [
+        { name: "Red", colorClass: "bg-red-500" },
+        { name: "Orange", colorClass: "bg-orange-500" },
+        { name: "Yellow", colorClass: "bg-yellow-500" },
+        { name: "Blue", colorClass: "bg-blue-500" },
+      ];
+      setAvailableTags(defaultTags);
+      localStorage.setItem("karsaaz-all-tags", JSON.stringify(defaultTags));
+    }
+  }, [tagsVersion]);
 
   useEffect(() => {
     setCurrentPath(pathParam);
@@ -81,13 +104,38 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
 
   const { data: filesRaw, isLoading, error } = useFiles(davPath ?? "");
   const actions = useFileActions(davPath ?? "");
+  const createFileMutation = useCreateFile(davPath ?? "");
 
   // Load recently opened files
   const { data: recentFiles, isLoading: isRecentLoading } = useRecentFiles(10);
 
   const files = useMemo(() => {
     if (!filesRaw) return [];
-    return [...filesRaw].sort((a, b) => {
+
+    let savedTagsMap: Record<string, string[]> = {};
+    let savedFavsMap: Record<string, any> = {};
+    if (typeof window !== "undefined") {
+      const savedTags = localStorage.getItem("karsaaz-file-tags");
+      if (savedTags) {
+        try {
+          savedTagsMap = JSON.parse(savedTags);
+        } catch (e) {}
+      }
+      const savedFavs = localStorage.getItem("karsaaz-favorites");
+      if (savedFavs) {
+        try {
+          savedFavsMap = JSON.parse(savedFavs);
+        } catch (e) {}
+      }
+    }
+
+    const hydrated = filesRaw.map((f) => ({
+      ...f,
+      tags: savedTagsMap[f.name] || [],
+      isFavorite: !!savedFavsMap[normalizePath(f.path)],
+    }));
+
+    return hydrated.sort((a, b) => {
       if (a.type === "directory" && b.type !== "directory") return -1;
       if (a.type !== "directory" && b.type === "directory") return 1;
       const dir = fileSortDirection === "asc" ? 1 : -1;
@@ -98,7 +146,7 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
       if (av > bv) return 1 * dir;
       return 0;
     });
-  }, [filesRaw, fileSortField, fileSortDirection]);
+  }, [filesRaw, fileSortField, fileSortDirection, tagsVersion]);
 
   // Apply filters dynamically
   const filteredFiles = useMemo(() => {
@@ -145,8 +193,13 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
       }
     }
 
+    // Tag filter
+    if (tagFilter !== "all") {
+      result = result.filter((f) => Array.isArray(f.tags) && f.tags.includes(tagFilter));
+    }
+
     return result;
-  }, [files, searchQuery, typeFilter, dateFilter, peopleFilter]);
+  }, [files, searchQuery, typeFilter, dateFilter, peopleFilter, tagFilter]);
 
   // Bulk selection calculations
   const isAllSelected =
@@ -241,6 +294,14 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
     await actions.createFolder.mutateAsync(name);
   }
 
+  async function handleCreateFile(name: string) {
+    if (!davPath) return;
+    const mimeType = name.endsWith(".xlsx")
+      ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    await createFileMutation.mutateAsync({ name, mimeType });
+  }
+
   async function handleRename(newName: string) {
     if (!dialog.file || !username) return;
     const from = buildFilePath(username, `${currentPath}/${dialog.file.name}`);
@@ -313,8 +374,26 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
     toast.success(`Copied ${selectedFiles.length} items`);
   }
 
-  const detailsFilePath = detailsFile && username
-    ? buildFilePath(username, `${currentPath}/${detailsFile.name}`)
+  const activeDetailsFile = useMemo(() => {
+    if (!detailsFile) return null;
+    const found = files.find((f) => f.path === detailsFile.path);
+    if (found) return found;
+
+    let isFavorite = detailsFile.isFavorite;
+    if (typeof window !== "undefined") {
+      const savedFavs = localStorage.getItem("karsaaz-favorites");
+      if (savedFavs) {
+        try {
+          const savedFavsMap = JSON.parse(savedFavs);
+          isFavorite = !!savedFavsMap[normalizePath(detailsFile.path)];
+        } catch (e) {}
+      }
+    }
+    return { ...detailsFile, isFavorite };
+  }, [detailsFile, files]);
+
+  const detailsFilePath = activeDetailsFile && username
+    ? buildFilePath(username, `${currentPath}/${activeDetailsFile.name}`)
     : null;
 
   const folderName = currentPath === "/" ? "All files" : decodeURIComponent(currentPath.split("/").pop() || "");
@@ -347,9 +426,9 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 px-6 pt-4 pb-6 bg-background shrink-0">
           <div className="space-y-1.5 flex-1 pr-4">
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{folderName}</h1>
-            <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+            {/* <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
               Here you can add a description or any other info relevant to the folder. It will show as a &quot;Readme.md&quot; and in the web interface also embedded nicely up at the top.
-            </p>
+            </p> */}
           </div>
           
           <div className="flex items-center shrink-0 self-end md:self-start pt-1">
@@ -361,7 +440,7 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
                   <span>New</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 p-1">
+              <DropdownMenuContent align="end" className="w-52 p-1">
                 <DropdownMenuItem onClick={() => setDialog({ type: "upload" })} className="gap-2.5 cursor-pointer font-semibold">
                   <Upload className="h-4 w-4 text-muted-foreground" />
                   <span>Upload files</span>
@@ -369,6 +448,14 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
                 <DropdownMenuItem onClick={() => setDialog({ type: "newFolder" })} className="gap-2.5 cursor-pointer font-semibold">
                   <FolderPlus className="h-4 w-4 text-muted-foreground" />
                   <span>New folder</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDialog({ type: "newWord" })} className="gap-2.5 cursor-pointer font-semibold">
+                  <span className="text-base leading-none">📄</span>
+                  <span>New Word document</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDialog({ type: "newExcel" })} className="gap-2.5 cursor-pointer font-semibold">
+                  <span className="text-base leading-none">📊</span>
+                  <span>New Excel spreadsheet</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -384,7 +471,7 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
                 onClick={() => {
                   toast.info("Showing all files sorted by modification date");
                 }}
-                className="text-xs font-bold text-primary hover:underline outline-none cursor-pointer"
+                className="text-xs font-bold text-black hover:underline outline-none cursor-pointer"
               >
                 View All
               </button>
@@ -407,7 +494,7 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
                       <FileIcon file={file} size="sm" className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors max-w-[180px]" title={file.name}>
+                      <p className="text-sm font-semibold truncate text-foreground group-hover:text-[#A855F7] transition-colors max-w-[180px]" title={file.name}>
                         {file.name}
                       </p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">Recently edited</p>
@@ -434,6 +521,16 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
             setDateFilter={setDateFilter}
             peopleFilter={peopleFilter}
             setPeopleFilter={setPeopleFilter}
+            tagFilter={tagFilter}
+            setTagFilter={setTagFilter}
+            availableTags={availableTags}
+            onCreateTag={(name, colorClass) => {
+              const newTag = { name, colorClass };
+              const next = [...availableTags, newTag];
+              setAvailableTags(next);
+              localStorage.setItem("karsaaz-all-tags", JSON.stringify(next));
+              setTagsVersion((v) => v + 1);
+            }}
             fileViewMode={fileViewMode}
             setFileViewMode={setFileViewMode}
             isAllSelected={isAllSelected}
@@ -491,11 +588,12 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
 
       {/* Details panel – absolute overlay sliding in from the right */}
       <FileDetailsPanel
-        file={detailsFile}
+        file={activeDetailsFile}
         filePath={detailsFilePath}
         initialTab={detailsTab}
         onClose={() => setDetailsFile(null)}
         onAction={handleAction}
+        onTagsChange={() => setTagsVersion((v) => v + 1)}
       />
 
       {/* Floating bulk action bar */}
@@ -513,6 +611,20 @@ export function FileBrowser({ initialPath = "/" }: FileBrowserProps) {
         open={dialog.type === "newFolder"}
         onOpenChange={(v) => !v && closeDialog()}
         onConfirm={handleCreateFolder}
+      />
+
+      <NewFileDialog
+        open={dialog.type === "newWord"}
+        onOpenChange={(v) => !v && closeDialog()}
+        fileType="word"
+        onConfirm={handleCreateFile}
+      />
+
+      <NewFileDialog
+        open={dialog.type === "newExcel"}
+        onOpenChange={(v) => !v && closeDialog()}
+        fileType="excel"
+        onConfirm={handleCreateFile}
       />
 
       {dialog.file && (

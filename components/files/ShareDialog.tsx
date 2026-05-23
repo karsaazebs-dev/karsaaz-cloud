@@ -134,6 +134,7 @@ export function ShareDialog({ open, onOpenChange, file, filePath }: ShareDialogP
                       onClick={handleCreatePublicLink}
                       disabled={createShare.isPending}
                       size="sm"
+                      className="bg-gradient-to-r from-[#A855F7] to-[#7C3AED] hover:from-[#9333EA] hover:to-[#6D28D9] text-white border-none shadow-sm transition-all duration-200 cursor-pointer"
                     >
                       {createShare.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       Create public link
@@ -197,7 +198,7 @@ export function ShareDialog({ open, onOpenChange, file, filePath }: ShareDialogP
                             {sharee.value.shareType === SHARE_TYPE_GROUP ? (
                               <Users className="h-3.5 w-3.5 text-muted-foreground" />
                             ) : (
-                              <div className="h-3.5 w-3.5 rounded-full bg-primary/20 flex-shrink-0" />
+                              <div className="h-3.5 w-3.5 rounded-full bg-[#A855F7]/20 flex-shrink-0" />
                             )}
                             <span>{sharee.label}</span>
                             {sharee.value.shareType === SHARE_TYPE_GROUP && (
@@ -250,9 +251,9 @@ function TabButton({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
+        "flex items-center px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors cursor-pointer outline-none",
         active
-          ? "border-primary text-primary"
+          ? "border-[#A855F7] text-[#A855F7]"
           : "border-transparent text-muted-foreground hover:text-foreground"
       )}
     >
@@ -337,11 +338,11 @@ function UserShareRow({
 
   return (
     <div className="flex items-center gap-2">
-      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+      <div className="h-8 w-8 rounded-full bg-[#A855F7]/10 flex items-center justify-center shrink-0">
         {isGroup ? (
-          <Users className="h-4 w-4 text-primary" />
+          <Users className="h-4 w-4 text-[#A855F7]" />
         ) : (
-          <span className="text-xs font-semibold text-primary uppercase">
+          <span className="text-xs font-semibold text-[#A855F7] uppercase">
             {(share.share_with_displayname ?? share.share_with ?? "?").charAt(0)}
           </span>
         )}

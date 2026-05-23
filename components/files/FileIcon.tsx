@@ -1,6 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import {
-  Folder,
-  Image,
+  Image as LucideImage,
   Video,
   Music,
   FileText,
@@ -14,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getFileIcon, getMimeColor } from "@/lib/utils/files";
 import type { KarsaazFile } from "@/lib/types/file.types";
+import { GroupFolderIcon } from "@/components/icons/CustomIcons";
 
 interface FileIconProps {
   file: KarsaazFile;
@@ -22,8 +25,8 @@ interface FileIconProps {
 }
 
 const iconMap: Record<string, React.ElementType> = {
-  folder: Folder,
-  image: Image,
+  folder: GroupFolderIcon,
+  image: LucideImage,
   video: Video,
   audio: Music,
   document: FileText,
@@ -46,7 +49,27 @@ export function FileIcon({ file, className, size = "md" }: FileIconProps) {
   const colorClass = getMimeColor(file);
   const Icon = iconMap[iconType] ?? File;
 
+  const isImage = iconType === "image";
+  const [imgError, setImgError] = useState(false);
+
+  if (isImage && file.path && !imgError) {
+    const imageUrl = `/api/proxy/remote.php/dav${file.path}`;
+    return (
+      <img
+        src={imageUrl}
+        alt={file.name}
+        className={cn(
+          sizeMap[size],
+          "object-cover rounded-sm border border-black/10 shrink-0",
+          className
+        )}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
   return (
     <Icon className={cn(sizeMap[size], colorClass, className)} aria-hidden="true" />
   );
 }
+

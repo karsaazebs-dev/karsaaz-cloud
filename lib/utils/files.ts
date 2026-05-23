@@ -78,3 +78,72 @@ export function getFolderSegments(path: string): Array<{ name: string; path: str
   }
   return segments;
 }
+
+export function normalizePath(path: string): string {
+  return path.replace(/^\/remote\.php\/dav/, "");
+}
+
+export function getRelativePath(username: string, fullPath: string): string {
+  let path = fullPath;
+  const davPrefix = `/remote.php/dav/files/${username}`;
+  const filesPrefix = `/files/${username}`;
+  
+  if (path.startsWith(davPrefix)) {
+    path = path.slice(davPrefix.length);
+  } else if (path.startsWith(filesPrefix)) {
+    path = path.slice(filesPrefix.length);
+  }
+  
+  return path.startsWith("/") ? path : "/" + path;
+}
+
+export interface FavTreeNode {
+  name: string;
+  path: string;
+  type: "directory" | "file";
+  file?: KarsaazFile;
+  children: FavTreeNode[];
+}
+
+export function buildFavTree(favorites: KarsaazFile[], username: string): FavTreeNode[] {
+  const root: FavTreeNode = { name: "", path: "", type: "directory", children: [] };
+
+  for (const file of favorites) {
+    const relPath = getRelativePath(username, file.path);
+    const segments = relPath.split("/").filter(Boolean);
+    
+    let current = root;
+    let accumulatedPath = "";
+
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+      accumulatedPath += "/" + segment;
+      const isLast = i === segments.length - 1;
+
+      let child = current.children.find((c) => c.name === segment);
+      if (!child) {
+        child = {
+          name: segment,
+          path: isLast ? file.path : `/files/${username}${accumulatedPath}`,
+          type: isLast ? file.type : "directory",
+          children: [],
+        };
+        if (isLast) {
+          child.file = file;
+        }
+        current.children.push(child);
+      } else {
+        if (isLast) {
+          child.file = file;
+          child.type = file.type;
+          child.path = file.path;
+        }
+      }
+      current = child;
+    }
+  }
+
+  return root.children;
+}
+
+

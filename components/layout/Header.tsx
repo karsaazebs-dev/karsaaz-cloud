@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings, LogOut, User, Menu, Search, Smile } from "lucide-react";
+import { Settings, LogOut, User, Menu, Search, Smile, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useUIStore } from "@/lib/stores/ui.store";
 import Link from "next/link";
 import { useState } from "react";
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 export function Header() {
   const { data: session } = useSession();
-  const { toggleSidebar } = useUIStore();
+  const { toggleSidebar, sidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useUIStore();
   const { open: searchOpen, setOpen: setSearchOpen, onClose: closeSearch } = useSearchModal();
   const [statusOpen, setStatusOpen] = useState(false);
   const { data: userStatus } = useUserStatus();
@@ -42,6 +42,9 @@ export function Header() {
     ? `/api/proxy/index.php/avatar/${encodeURIComponent(username)}/32`
     : undefined;
 
+  const isAdmin = (session as Record<string, unknown> | null)?.isAdmin as boolean | undefined;
+  const roleText = isAdmin ? "super admin" : "user";
+
   const statusDot = userStatus
     ? STATUS_META[userStatus.status]?.dotClass
     : undefined;
@@ -50,58 +53,89 @@ export function Header() {
     <>
       <SearchModal open={searchOpen} onClose={closeSearch} />
       <UserStatusDialog open={statusOpen} onOpenChange={setStatusOpen} />
-      <header className="flex items-center h-16 px-4 border-b bg-background gap-4 shrink-0">
-        {/* Mobile sidebar toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={toggleSidebar}
-          aria-label="Toggle sidebar"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-
-        {/* Search trigger */}
-        <div className="flex-1 max-w-xl">
+      <header className="relative flex items-center justify-between h-16 px-4 border-b border-slate-100 bg-white shrink-0 gap-4">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Desktop collapse toggle */}
           <button
-            onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 pl-3 pr-4 h-9 rounded-md border border-input bg-muted/30 text-sm text-muted-foreground hover:bg-muted/60 transition-colors text-left"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="hidden md:flex items-center justify-center w-6 h-10 bg-[#A855F7] text-white rounded-l-lg hover:bg-[#9333EA] transition-all -ml-4 shadow-sm"
+            aria-label="Collapse sidebar"
           >
-            <Search className="h-4 w-4 shrink-0" />
-            <span className="flex-1">Search files, folders…</span>
-            <kbd className="hidden sm:inline-flex h-5 items-center rounded border px-1.5 text-[10px] font-mono">
-              Ctrl+K
-            </kbd>
+            {sidebarCollapsed ? (
+              <ChevronRight className="h-4 w-4" />
+            ) : (
+              <ChevronLeft className="h-4 w-4" />
+            )}
           </button>
+
+          {/* Mobile menu toggle */}
+          <button
+            onClick={toggleSidebar}
+            className="flex md:hidden items-center justify-center w-8 h-8 bg-[#A855F7] text-white rounded-lg hover:bg-[#9333EA] transition-all mr-2 shadow-sm"
+            aria-label="Toggle sidebar"
+          >
+            <Menu className="h-4.5 w-4.5" />
+          </button>
+
+          {/* Search trigger */}
+          <div className="flex-1 max-w-[320px] min-w-[100px]">
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                <Search className="h-4 w-4 text-[#A855F7]" />
+              </span>
+              <input
+                type="text"
+                onClick={() => setSearchOpen(true)}
+                readOnly
+                placeholder="Search"
+                className="w-full pl-9 pr-4 h-10 rounded-full border border-slate-200/60 bg-[#F8FAFC] text-sm text-slate-500 placeholder-slate-400 focus:outline-none cursor-pointer hover:bg-slate-100/50 transition-colors"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-3 ml-auto">
           {/* Notifications */}
           <NotificationBell />
+
+          {/* Base Currency Pill */}
+          <button className="hidden sm:flex h-10 px-4 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm items-center justify-center">
+            Base currency
+          </button>
 
           {/* User menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="relative flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex items-center gap-3 rounded-xl p-1 hover:bg-slate-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A855F7]"
                 aria-label="User menu"
               >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={avatarUrl} alt={displayName} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                {statusDot && (
-                  <span
-                    className={cn(
-                      "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background",
-                      statusDot
-                    )}
-                    aria-hidden
-                  />
-                )}
+                <div className="relative shrink-0">
+                  <Avatar className="h-10 w-10 rounded-[10px]">
+                    <AvatarImage src={avatarUrl} alt={displayName} className="rounded-[10px]" />
+                    <AvatarFallback className="bg-gradient-to-tr from-[#4E78FF] to-[#9844FF] text-white text-sm font-bold rounded-[10px]">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  {statusDot && (
+                    <span
+                      className={cn(
+                        "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-white",
+                        statusDot
+                      )}
+                      aria-hidden
+                    />
+                  )}
+                </div>
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-sm font-bold text-slate-800 leading-tight">
+                    {displayName}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                    {roleText}
+                  </span>
+                </div>
+                <ChevronDown className="h-4 w-4 text-slate-400 ml-0.5 shrink-0" />
               </button>
             </DropdownMenuTrigger>
 

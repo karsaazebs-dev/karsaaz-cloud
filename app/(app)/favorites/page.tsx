@@ -7,7 +7,7 @@ import { FileGrid } from "@/components/files/FileGrid";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from "@/lib/stores/ui.store";
 import { useSession } from "next-auth/react";
-import { buildFilePath } from "@/lib/utils/files";
+import { buildFilePath, getRelativePath } from "@/lib/utils/files";
 import { Star, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import type { KarsaazFile } from "@/lib/types/file.types";
@@ -24,18 +24,22 @@ export default function FavoritesPage() {
   const actions = useFileActions(username ? buildFilePath(username, "/") : "");
 
   function handleNavigate(file: KarsaazFile) {
+    if (!username) return;
+    const relPath = getRelativePath(username, file.path);
     if (file.type === "directory") {
-      window.location.href = `/files?path=${encodeURIComponent(file.path)}`;
+      window.location.href = `/files?path=${encodeURIComponent(relPath)}`;
     } else {
-      window.open(`/api/proxy/remote.php/dav${file.path}`, "_blank");
+      window.open(`/api/proxy${buildFilePath(username, relPath)}`, "_blank");
     }
   }
 
   function handleAction(action: string, file: KarsaazFile) {
+    if (!username) return;
+    const relPath = getRelativePath(username, file.path);
     if (action === "favorite") {
-      actions.toggleFavorite.mutate({ filePath: file.path, favorite: false });
-    } else if (action === "download" && username) {
-      window.open(`/api/proxy/remote.php/dav${file.path}`, "_blank");
+      actions.toggleFavorite.mutate({ filePath: buildFilePath(username, relPath), favorite: false });
+    } else if (action === "download") {
+      window.open(`/api/proxy${buildFilePath(username, relPath)}`, "_blank");
     } else {
       toast.info(`Navigate to the file's folder to manage it`);
     }

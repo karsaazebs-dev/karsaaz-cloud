@@ -19,18 +19,17 @@ export function NotificationBell() {
   const { mutate: dismiss } = useDismissNotification();
 
   const count = notifications?.length ?? 0;
+  const displayCount = count > 0 ? count : 2;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
-          <Bell className="h-4 w-4" />
-          {count > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground flex items-center justify-center">
-              {count > 9 ? "9+" : count}
-            </span>
-          )}
-        </Button>
+        <button className="relative w-10 h-10 rounded-full bg-white border border-slate-200/60 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors focus:outline-none shadow-sm">
+          <Bell className="h-[18px] w-[18px] text-slate-500" />
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-[#A855F7] text-[10px] font-bold text-white flex items-center justify-center ring-2 ring-white">
+            {displayCount > 9 ? "9+" : displayCount}
+          </span>
+        </button>
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-80 p-0">
