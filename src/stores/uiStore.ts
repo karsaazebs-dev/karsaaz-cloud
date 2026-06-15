@@ -38,6 +38,8 @@ interface UiState {
   showCreateTag: boolean;
   showAccountSwitcher: boolean;
   showUploadMenu: boolean;
+  showNotEnoughStorage: boolean;
+  showMoveToFolder: boolean;
   browseMode: boolean;
   browsePath: string;
   setDrawerOpen: (open: boolean) => void;
@@ -53,6 +55,8 @@ interface UiState {
   setShowCreateTag: (show: boolean) => void;
   setShowAccountSwitcher: (show: boolean) => void;
   setShowUploadMenu: (show: boolean) => void;
+  setShowNotEnoughStorage: (show: boolean) => void;
+  setShowMoveToFolder: (show: boolean) => void;
   setBrowseMode: (mode: boolean) => void;
   setBrowsePath: (path: string) => void;
 }
@@ -71,6 +75,8 @@ export const useUiStore = create<UiState>((set) => ({
   showCreateTag: false,
   showAccountSwitcher: false,
   showUploadMenu: false,
+  showNotEnoughStorage: false,
+  showMoveToFolder: false,
   browseMode: false,
   browsePath: "/",
   setDrawerOpen: (open) => set({ drawerOpen: open }),
@@ -86,6 +92,8 @@ export const useUiStore = create<UiState>((set) => ({
   setShowCreateTag: (show) => set({ showCreateTag: show }),
   setShowAccountSwitcher: (show) => set({ showAccountSwitcher: show }),
   setShowUploadMenu: (show) => set({ showUploadMenu: show }),
+  setShowNotEnoughStorage: (show) => set({ showNotEnoughStorage: show }),
+  setShowMoveToFolder: (show) => set({ showMoveToFolder: show }),
   setBrowseMode: (mode) => set({ browseMode: mode }),
   setBrowsePath: (path) => set({ browsePath: path }),
 }));

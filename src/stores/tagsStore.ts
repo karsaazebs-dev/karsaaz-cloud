@@ -15,6 +15,7 @@ interface TagsState {
   hydrate: () => Promise<void>;
   addTag: (name: string) => Promise<void>;
   assignTag: (filePath: string, tag: string) => Promise<void>;
+  unassignTag: (filePath: string, tag: string) => Promise<void>;
   getTagsForFile: (filePath: string) => string[];
 }
 
@@ -45,6 +46,14 @@ export const useTagsStore = create<TagsState>((set, get) => ({
     const current = get().fileTags[filePath] ?? [];
     if (current.includes(tag)) return;
     const fileTags = { ...get().fileTags, [filePath]: [...current, tag] };
+    await SecureStore.setItemAsync(KEY, JSON.stringify({ tags: get().tags, fileTags }));
+    set({ fileTags });
+  },
+
+  unassignTag: async (filePath, tag) => {
+    const current = get().fileTags[filePath] ?? [];
+    if (!current.includes(tag)) return;
+    const fileTags = { ...get().fileTags, [filePath]: current.filter((t) => t !== tag) };
     await SecureStore.setItemAsync(KEY, JSON.stringify({ tags: get().tags, fileTags }));
     set({ fileTags });
   },

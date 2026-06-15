@@ -73,7 +73,17 @@ export function useFiles(currentPath: string) {
       const dest = `${parent}/${params.newName}`;
       await moveFile(client, username, relPath, dest);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files", username, currentPath] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files", username] }),
+  });
+
+  const moveMutation = useMutation({
+    mutationFn: async (params: { file: KarsaazFile; targetFolderPath: string }) => {
+      const client = createWebDAVClient(username, password);
+      const relPath = toRelPath(params.file, username);
+      const dest = `${params.targetFolderPath === "/" ? "" : params.targetFolderPath}/${params.file.name}`;
+      await moveFile(client, username, relPath, dest);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files", username] }),
   });
 
   const downloadMutation = useMutation({
@@ -125,6 +135,7 @@ export function useFiles(currentPath: string) {
     ...query,
     deleteMutation,
     renameMutation,
+    moveMutation,
     downloadMutation,
     mkdirMutation,
     uploadMutation,

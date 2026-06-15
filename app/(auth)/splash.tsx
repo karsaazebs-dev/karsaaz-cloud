@@ -5,8 +5,8 @@
  * Figma node 283:807
  */
 
-import { useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { useEffect, useRef } from "react";
+import { View, Text, StyleSheet, Animated } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { figmaAssets } from "@/src/constants/assets";
@@ -18,25 +18,60 @@ export default function SplashScreen() {
   const router = useRouter();
   const isComplete = useOnboardingStore((s) => s.isComplete);
 
+  const logoFade = useRef(new Animated.Value(0)).current;
+  const logoScale = useRef(new Animated.Value(0.85)).current;
+  const textFade = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(logoFade, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.spring(logoScale, {
+          toValue: 1,
+          friction: 6,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.timing(textFade, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     const timer = setTimeout(() => {
       if (isComplete) {
         router.replace("/(auth)/login");
       } else {
         router.replace("/(auth)/onboarding");
       }
-    }, 1800);
+    }, 2200);
     return () => clearTimeout(timer);
   }, [isComplete, router]);
 
   return (
     <View style={styles.screen}>
-      <View style={styles.logoShadow}>
+      <Animated.View
+        style={[
+          styles.logoShadow,
+          {
+            opacity: logoFade,
+            transform: [{ scale: logoScale }],
+          },
+        ]}
+      >
         <View style={styles.logoCard}>
           <Image source={figmaAssets.logo} style={styles.logo} contentFit="contain" />
         </View>
-      </View>
-      <Text style={styles.title}>{brand.appName}</Text>
+      </Animated.View>
+      <Animated.Text style={[styles.title, { opacity: textFade }]}>
+        {brand.appName}
+      </Animated.Text>
     </View>
   );
 }
@@ -50,12 +85,8 @@ const styles = StyleSheet.create({
   },
   logoShadow: {
     borderRadius: theme.radius.xl,
-    marginBottom: 20,
-    shadowColor: "#146ae3",
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.35,
-    shadowRadius: 22,
-    elevation: 12,
+    marginBottom: 24,
+    ...theme.shadow.logo,
   },
   logoCard: {
     width: 112,
@@ -68,11 +99,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     overflow: "hidden",
   },
-  logo: { width: 113, height: 113 },
+  logo: { width: 112, height: 112 },
   title: {
-    fontSize: 26,
+    fontSize: theme.typography.title.fontSize,
     color: theme.colors.text,
-    fontWeight: "400",
-    letterSpacing: 0,
+    fontWeight: "600",
+    letterSpacing: -0.5,
   },
 });
