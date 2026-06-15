@@ -1,4 +1,6 @@
-# Android client layout (Karsaaz Sync)
+# Android client layout (Karsaaz Sync) — legacy native
+
+> **Status:** Legacy Kotlin client. Active development moved to React Native at [`karsaaz-cloud-mobile/`](../../karsaaz-cloud-mobile/). Keep this tree as fallback until RN rollout is verified.
 
 Fork of Nextcloud Android. Build with Gradle from this directory.
 

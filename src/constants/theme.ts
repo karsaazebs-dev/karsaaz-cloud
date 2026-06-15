@@ -1,0 +1,81 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Karsaaz
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+export const theme = {
+  colors: {
+    background: "#fafafa",
+    surface: "#ffffff",
+    surfaceMuted: "#f7f7f7",
+    text: "#09090b",
+    textDark: "#0a0a0a",
+    textSecondary: "#555555",
+    textMuted: "#737373",
+    textSubtle: "#71717b",
+    border: "#e4e4e7",
+    borderLight: "#e5e5e5",
+    inputBg: "#f1f6fc",
+    infoBg: "#e1f0ff",
+    accent: "#1d84f5",
+    accentBright: "#2b7fff",
+    link: "#005fc6",
+    success: "#107c41",
+    successBright: "#009966",
+    gradientStart: "#5d7cf6",
+    gradientEnd: "#4e3cf4",
+    tabBar: "#1a1a1a",
+    tabBarActive: "#ffffff",
+    tabBarInactive: "rgba(255,255,255,0.55)",
+    storageImages: "#28bc5e",
+    storageDocs: "#1d84f5",
+    storageVideos: "#fdc436",
+    storageOther: "#ce74e3",
+    storageEmpty: "#e5e5e5",
+    folderOrangeStart: "#fdc436",
+    folderOrangeEnd: "#ff7900",
+  },
+  radius: {
+    sm: 6,
+    md: 12,
+    lg: 16,
+    xl: 24,
+    pill: 999,
+  },
+  spacing: {
+    screen: 24,
+    card: 16,
+    gap: 8,
+  },
+  typography: {
+    hero: { fontSize: 30, lineHeight: 36, letterSpacing: -0.75 },
+    title: { fontSize: 26, lineHeight: 40, letterSpacing: -0.85 },
+    body: { fontSize: 16, lineHeight: 22.75 },
+    bodySm: { fontSize: 14, lineHeight: 20 },
+    caption: { fontSize: 12, lineHeight: 16 },
+    button: { fontSize: 14, lineHeight: 20, letterSpacing: -0.14 },
+  },
+  shadow: {
+    card: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    button: {
+      shadowColor: "#1d84f5",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    logo: {
+      shadowColor: "#146ae3",
+      shadowOffset: { width: 0, height: 20 },
+      shadowOpacity: 0.35,
+      shadowRadius: 22,
+      elevation: 8,
+    },
+  },
+} as const;
