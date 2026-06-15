@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useUiStore } from "@/src/stores/uiStore";
 import { useFiles } from "@/src/hooks/useFiles";
 import { theme } from "@/src/constants/theme";
+import type { KarsaazFile } from "@karsaaz/cloud-api";
 
 export function MoveToFolderModal() {
   const visible = useUiStore((s) => s.showMoveToFolder);
@@ -31,7 +32,7 @@ export function MoveToFolderModal() {
 
   // Filter directories to browse, excluding the folder itself if we are moving a folder
   const directories = (files ?? []).filter(
-    (f) => f.type === "directory" && f.path !== fileToMove?.path
+    (f: KarsaazFile) => f.type === "directory" && f.path !== fileToMove?.path
   );
 
   const handleBack = () => {
@@ -51,7 +52,7 @@ export function MoveToFolderModal() {
       { text: "Cancel", style: "cancel" },
       {
         text: "Create",
-        onPress: (name) => {
+        onPress: (name?: string) => {
           if (name?.trim()) {
             mkdirMutation.mutate(name.trim());
           }
@@ -104,7 +105,7 @@ export function MoveToFolderModal() {
               Move to...
             </Text>
             <Pressable onPress={handleCreateFolder} style={styles.iconBtn}>
-              <Ionicons name="folder-add-outline" size={22} color={theme.colors.text} />
+              <Ionicons name="folder-outline" size={22} color={theme.colors.text} />
             </Pressable>
           </View>
 

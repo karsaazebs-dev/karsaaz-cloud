@@ -55,6 +55,7 @@ export function FileBrowserScreen({
   const setShowCreateTag = useUiStore((s) => s.setShowCreateTag);
   const setShowUploadMenu = useUiStore((s) => s.setShowUploadMenu);
   const setShowAccountSwitcher = useUiStore((s) => s.setShowAccountSwitcher);
+  const setShowMoveToFolder = useUiStore((s) => s.setShowMoveToFolder);
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
 
   const activeFilter = filter ?? browseFilter;
@@ -145,6 +146,10 @@ export function FileBrowserScreen({
       case "wallpaper":
         Alert.alert("Use picture as", "Set as wallpaper is not supported on this platform yet.");
         break;
+      case "move":
+        setActionFile(file);
+        setShowMoveToFolder(true);
+        break;
       case "delete":
         Alert.alert("Delete", `Delete "${file.name}"?`, [
           { text: "Cancel", style: "cancel" },
@@ -179,6 +184,10 @@ export function FileBrowserScreen({
         break;
       case "pin":
         Alert.alert("Pin", "Pin to device is not available yet.");
+        break;
+      case "move":
+        setActionFolder(folder);
+        setShowMoveToFolder(true);
         break;
       case "delete":
         Alert.alert("Delete", `Delete folder "${folder.name}"?`, [

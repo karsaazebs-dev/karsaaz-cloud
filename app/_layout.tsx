@@ -5,7 +5,7 @@
 
 import { Buffer } from "buffer";
 
-globalThis.Buffer = Buffer;
+(globalThis as any).Buffer = Buffer;
 
 import { useEffect } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";

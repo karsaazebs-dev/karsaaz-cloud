@@ -22,6 +22,7 @@ const ACTIONS: Action[] = [
   { id: "tag", label: "Tag", icon: "pricetag-outline" },
   { id: "rename", label: "Rename", icon: "create-outline" },
   { id: "edit", label: "Edit", icon: "pencil-outline" },
+  { id: "move", label: "Move to Folder", icon: "folder-open-outline" },
   { id: "export", label: "Export", icon: "share-outline" },
   { id: "share", label: "Share", icon: "person-add-outline" },
   { id: "sync", label: "Sync", icon: "sync-outline" },

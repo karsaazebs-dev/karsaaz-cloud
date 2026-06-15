@@ -25,13 +25,13 @@ export default function ShareScreen() {
   const { sharesQuery, createMutation, deleteMutation } = useSharing(path);
   const [createdUrl, setCreatedUrl] = useState<string | null>(null);
 
-  const existingLink = sharesQuery.data?.find((s) => s.share_type === 3);
+  const existingLink = sharesQuery.data?.find((s: any) => s.share_type === 3);
 
   const createPublicLink = () => {
     createMutation.mutate(
       { path: path ?? "/", shareType: 3, permissions: 1 },
       {
-        onSuccess: (share) => {
+        onSuccess: (share: any) => {
           const url = share.url ?? null;
           setCreatedUrl(url);
           if (url) Alert.alert("Link created", "You can copy or share the link below.");

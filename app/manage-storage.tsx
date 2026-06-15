@@ -22,6 +22,7 @@ import { useStorageRequestStore } from "@/src/stores/storageRequestStore";
 import { theme } from "@/src/constants/theme";
 import { formatFileSize, formatRelativeDate } from "@/src/utils/fileFilters";
 import { BackButton } from "@/src/components/ui/BackButton";
+import type { KarsaazFile } from "@karsaaz/cloud-api";
 
 export default function ManageStorageScreen() {
   const router = useRouter();
@@ -45,8 +46,8 @@ export default function ManageStorageScreen() {
 
   // Large files (files over 1MB sorted by size desc)
   const largeFiles = (files ?? [])
-    .filter((f) => f.type === "file")
-    .sort((a, b) => b.size - a.size)
+    .filter((f: KarsaazFile) => f.type === "file")
+    .sort((a: KarsaazFile, b: KarsaazFile) => b.size - a.size)
     .slice(0, 5);
 
   const toggleSelect = (path: string) => {
@@ -67,7 +68,7 @@ export default function ManageStorageScreen() {
           style: "destructive",
           onPress: async () => {
             for (const path of selectedFiles) {
-              const fileObj = files?.find((f) => f.path === path);
+              const fileObj = files?.find((f: KarsaazFile) => f.path === path);
               if (fileObj) {
                 await deleteMutation.mutateAsync(fileObj);
               }
@@ -126,7 +127,7 @@ export default function ManageStorageScreen() {
           </View>
           <Pressable
             style={styles.requestBtn}
-            onPress={() => router.push("/request-storage")}
+            onPress={() => router.push("/request-storage" as any)}
           >
             <Text style={styles.requestBtnText}>Request Storage Upgrade</Text>
             <Ionicons name="arrow-forward" size={16} color="#fff" />
@@ -146,7 +147,7 @@ export default function ManageStorageScreen() {
             <Text style={styles.emptyText}>No large files found to clean up.</Text>
           ) : (
             <View style={styles.fileList}>
-              {largeFiles.map((file) => {
+              {largeFiles.map((file: KarsaazFile) => {
                 const selected = selectedFiles.includes(file.path);
                 return (
                   <Pressable
@@ -356,4 +357,4 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 12, fontWeight: "600", color: "rgb(202, 138, 4)" },
   statusTextApproved: { color: theme.colors.success },
   statusTextRejected: { color: "#dc2626" },
-}));
+});

@@ -22,6 +22,7 @@ import { useFiles } from "@/src/hooks/useFiles";
 import { useAuthStore } from "@/src/stores/authStore";
 import { useUiStore, type BrowseFilter } from "@/src/stores/uiStore";
 import { useFavoritesStore } from "@/src/stores/favoritesStore";
+import { useUserQuota } from "@/src/hooks/useUserQuota";
 import { formatFileSize, formatFileDate } from "@/src/utils/fileFilters";
 import { theme } from "@/src/constants/theme";
 import { debugLog } from "@/src/utils/debugLog";
@@ -44,7 +45,21 @@ export default function FilesScreen() {
   const setShowUploadMenu = useUiStore((s) => s.setShowUploadMenu);
   const setShowAccountSwitcher = useUiStore((s) => s.setShowAccountSwitcher);
   const setDrawerOpen = useUiStore((s) => s.setDrawerOpen);
+  const setShowMoveToFolder = useUiStore((s) => s.setShowMoveToFolder);
+  const setShowNotEnoughStorage = useUiStore((s) => s.setShowNotEnoughStorage);
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
+
+  const { data: userQuota } = useUserQuota();
+
+  useEffect(() => {
+    if (userQuota?.quota) {
+      const used = userQuota.quota.used ?? 0;
+      const total = userQuota.quota.total ?? 0;
+      if (total > 0 && used / total >= 0.98) {
+        setShowNotEnoughStorage(true);
+      }
+    }
+  }, [userQuota, setShowNotEnoughStorage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -196,6 +211,10 @@ export default function FilesScreen() {
       case "wallpaper":
         Alert.alert("Use picture as", "Set as wallpaper is not supported on this platform yet.");
         break;
+      case "move":
+        setActionFile(file);
+        setShowMoveToFolder(true);
+        break;
       case "delete":
         Alert.alert("Delete", `Delete "${file.name}"?`, [
           { text: "Cancel", style: "cancel" },
@@ -230,6 +249,10 @@ export default function FilesScreen() {
         break;
       case "pin":
         Alert.alert("Pin", "Pin to device is not available yet.");
+        break;
+      case "move":
+        setActionFolder(folder);
+        setShowMoveToFolder(true);
         break;
       case "delete":
         Alert.alert("Delete", `Delete folder "${folder.name}"?`, [
@@ -272,6 +295,8 @@ export default function FilesScreen() {
         onAvatarPress={() => setShowAccountSwitcher(true)}
         onFileMenu={handleMenu}
         onFolderMenu={handleMenu}
+        onManageStorage={() => router.push("/manage-storage" as any)}
+        onRequestStorage={() => router.push("/request-storage" as any)}
       />
       <HomeFab onPress={() => setShowUploadMenu(true)} />
       <UploadMenuSheet

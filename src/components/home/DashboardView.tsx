@@ -49,6 +49,8 @@ interface DashboardViewProps {
   onAvatarPress?: () => void;
   onFileMenu?: (file: KarsaazFile) => void;
   onFolderMenu?: (file: KarsaazFile) => void;
+  onManageStorage?: () => void;
+  onRequestStorage?: () => void;
 }
 
 function fileIconName(file: KarsaazFile): keyof typeof Ionicons.glyphMap {
@@ -98,6 +100,8 @@ export function DashboardView({
   onAvatarPress,
   onFileMenu,
   onFolderMenu,
+  onManageStorage,
+  onRequestStorage,
 }: DashboardViewProps) {
   const username = useAuthStore((s) => s.username);
   const { sharesQuery } = useSharing();
@@ -109,7 +113,7 @@ export function DashboardView({
     .slice(0, 5);
   const sharedWithMe = (sharesQuery.data ?? []).slice(0, 3);
   const sharedPaths = new Set(
-    (sharesQuery.data ?? []).map((s) => sharePathToDavPath(s.path, username))
+    (sharesQuery.data ?? []).map((s: any) => sharePathToDavPath(s.path, username))
   );
   const usedBytes = userQuota?.quota?.used ?? files.reduce((sum, f) => sum + (f.size ?? 0), 0);
   const totalBytes = userQuota?.quota?.total ?? 500 * 1024 * 1024 * 1024;
@@ -198,11 +202,11 @@ export function DashboardView({
           ))}
         </View>
         <View style={styles.storageActions}>
-          <Pressable style={styles.manageBtn}>
+          <Pressable style={styles.manageBtn} onPress={onManageStorage}>
             <Ionicons name="options-outline" size={16} color="#fff" />
             <Text style={styles.manageText}>Manage</Text>
           </Pressable>
-          <Pressable style={styles.requestBtn}>
+          <Pressable style={styles.requestBtn} onPress={onRequestStorage}>
             <LinearGradient
               colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
               start={{ x: 0, y: 0 }}
@@ -323,7 +327,7 @@ export function DashboardView({
         ) : sharedWithMe.length === 0 ? (
           <Text style={styles.emptyHint}>No shared items yet</Text>
         ) : (
-          sharedWithMe.map((share) => {
+          sharedWithMe.map((share: any) => {
             const fileName = share.path?.split("/").pop() ?? "Shared file";
             const owner = share.displayname_owner || "Someone";
             return (

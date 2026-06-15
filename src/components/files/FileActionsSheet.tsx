@@ -22,6 +22,7 @@ const ACTIONS: Action[] = [
   { id: "download", label: "Download", icon: "download-outline" },
   { id: "export", label: "Export", icon: "share-outline" },
   { id: "share", label: "Share", icon: "person-add-outline" },
+  { id: "move", label: "Move to Folder", icon: "folder-open-outline" },
   { id: "wallpaper", label: "Use picture as", icon: "image-outline" },
   { id: "delete", label: "Delete", icon: "trash-outline", destructive: true },
 ];

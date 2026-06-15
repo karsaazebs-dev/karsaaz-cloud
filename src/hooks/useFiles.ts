@@ -4,6 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Buffer } from "buffer";
 import {
   createWebDAVClient,
   listDirectory,
@@ -49,7 +50,7 @@ export function useFiles(currentPath: string) {
           lastModified: f.lastModified.toISOString(),
         });
       }
-      return files.sort((a, b) => {
+      return files.sort((a: KarsaazFile, b: KarsaazFile) => {
         if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
         return a.name.localeCompare(b.name);
       });

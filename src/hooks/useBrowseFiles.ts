@@ -49,8 +49,8 @@ async function loadRecentFiles(
   const client = createWebDAVClient(username, password);
   const root = await listDirectory(client, username, "/");
   return root
-    .filter((f) => f.type === "file")
-    .sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime())
+    .filter((f: KarsaazFile) => f.type === "file")
+    .sort((a: KarsaazFile, b: KarsaazFile) => b.lastModified.getTime() - a.lastModified.getTime())
     .slice(0, 50);
 }
 

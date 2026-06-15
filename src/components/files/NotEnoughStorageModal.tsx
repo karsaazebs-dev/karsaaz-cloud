@@ -16,12 +16,12 @@ export function NotEnoughStorageModal() {
 
   const handleCleanUp = () => {
     setVisible(false);
-    router.push("/manage-storage");
+    router.push("/manage-storage" as any);
   };
 
   const handleRequest = () => {
     setVisible(false);
-    router.push("/request-storage");
+    router.push("/request-storage" as any);
   };
 
   return (

@@ -5,6 +5,7 @@
 
 import * as FileSystem from "expo-file-system/legacy";
 import * as Notifications from "expo-notifications";
+import { Buffer } from "buffer";
 import {
   createWebDAVClient,
   listDirectory,
