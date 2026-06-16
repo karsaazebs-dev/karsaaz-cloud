@@ -2,14 +2,15 @@
  * SPDX-FileCopyrightText: 2026 Karsaaz
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Figma node 1:995 — bottom tab bar (Home / Search / Favorites / Photos / Menu)
+ * Figma node 18:136 — bottom tab bar (dark bg, white active pill)
  */
 
+import { useEffect } from "react";
 import { View, Pressable, StyleSheet, Image, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { figmaAssets } from "@/src/constants/assets";
 import { useUiStore } from "@/src/stores/uiStore";
-import { theme } from "@/src/constants/theme";
+import { phase1DebugLog } from "@/src/utils/phase1DebugLog";
 
 interface TabRoute {
   key: string;
@@ -21,57 +22,112 @@ interface FigmaTabBarProps {
   navigation: { navigate: (name: string) => void };
 }
 
-const TAB_CONFIG: Record<string, { image: number; label: string }> = {
-  index: { image: figmaAssets.home.homeTab, label: "Home" },
-  files: { image: figmaAssets.home.searchTab, label: "Files" },
-  photos: { image: figmaAssets.home.galleryTab, label: "Photos" },
-  share: { image: figmaAssets.home.favoritesTab, label: "Share" },
-};
+type FigmaSlotId = "home" | "search" | "favorites" | "gallery" | "menu";
+
+const FIGMA_SLOTS: {
+  id: FigmaSlotId;
+  image: number;
+  label: string;
+  route?: string;
+}[] = [
+  { id: "home", image: figmaAssets.home.homeTab, label: "Home", route: "index" },
+  { id: "search", image: figmaAssets.home.searchTab, label: "Search", route: "files" },
+  { id: "favorites", image: figmaAssets.home.favoritesTab, label: "Favorites", route: "files" },
+  { id: "gallery", image: figmaAssets.home.galleryTab, label: "Photos", route: "photos" },
+  { id: "menu", image: figmaAssets.home.menuTab, label: "Menu" },
+];
 
 export function FigmaTabBar({ state, navigation }: FigmaTabBarProps) {
   const insets = useSafeAreaInsets();
   const setDrawerOpen = useUiStore((s) => s.setDrawerOpen);
   const setBrowseMode = useUiStore((s) => s.setBrowseMode);
+  const setBrowseFilter = useUiStore((s) => s.setBrowseFilter);
+  const setBrowsePath = useUiStore((s) => s.setBrowsePath);
+  const browseFilter = useUiStore((s) => s.browseFilter);
 
-  const handlePress = (routeName: string) => {
-    if (routeName === "__menu__") {
+  const activeRoute = state.routes[state.index]?.name ?? "index";
+
+  const isSlotFocused = (slot: FigmaSlotId): boolean => {
+    if (slot === "home") return activeRoute === "index";
+    if (slot === "gallery") return activeRoute === "photos";
+    if (slot === "search") return activeRoute === "files" && browseFilter !== "favorites";
+    if (slot === "favorites") return activeRoute === "files" && browseFilter === "favorites";
+    return false;
+  };
+
+  // #region agent log
+  useEffect(() => {
+    phase1DebugLog("FigmaTabBar.tsx:mount", "tab bar render state", {
+      activeRoute,
+      browseFilter,
+      slotCount: FIGMA_SLOTS.length,
+      focusedSlots: FIGMA_SLOTS.filter((s) => isSlotFocused(s.id)).map((s) => s.id),
+    }, "A");
+  }, [activeRoute, browseFilter]);
+  // #endregion
+
+  const handlePress = (slot: (typeof FIGMA_SLOTS)[number]) => {
+    if (slot.id === "menu") {
       setDrawerOpen(true);
       return;
     }
-    if (routeName === "index") {
+    if (slot.id === "home") {
       setBrowseMode(false);
-      useUiStore.getState().setBrowsePath("/");
+      setBrowsePath("/");
+      navigation.navigate("index");
+      return;
     }
-    navigation.navigate(routeName);
+    if (slot.id === "search") {
+      setBrowseFilter("all");
+      setBrowsePath("/");
+      setBrowseMode(true);
+      navigation.navigate("files");
+      return;
+    }
+    if (slot.id === "favorites") {
+      setBrowseFilter("favorites");
+      setBrowsePath("/");
+      setBrowseMode(true);
+      navigation.navigate("files");
+      return;
+    }
+    if (slot.route) {
+      navigation.navigate(slot.route);
+    }
   };
-
-  const MENU_ITEM = { key: "__menu__", name: "__menu__" };
 
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       <View style={styles.bar}>
-        <Image source={figmaAssets.home.tabBarBg} style={styles.tabBarBg} />
-        <View style={styles.tabsContainer}>
-          {[...state.routes, MENU_ITEM].map((route) => {
-            const tab = TAB_CONFIG[route.name] ?? { image: figmaAssets.home.menuTab, label: "Menu" };
-            const routeIndex = state.routes.findIndex((r) => r.key === route.key);
-            const focused = route.name !== "__menu__" && state.index === routeIndex;
+        {FIGMA_SLOTS.map((slot) => {
+          const focused = isSlotFocused(slot.id);
 
-            return (
-              <Pressable
-                key={route.key}
-                onPress={() => handlePress(route.name)}
-                style={[styles.item, focused && styles.itemActive]}
-              >
-                <Image
-                  source={tab.image}
-                  style={[styles.tabImage, focused && styles.tabImageActive]}
-                />
-                {focused && <Text style={styles.labelText}>{tab.label}</Text>}
-              </Pressable>
-            );
-          })}
-        </View>
+          return (
+            <Pressable
+              key={slot.id}
+              onPress={() => handlePress(slot)}
+              style={[styles.item, focused ? styles.itemActive : styles.itemInactive]}
+              accessibilityRole="button"
+              accessibilityLabel={slot.label}
+            >
+              <Image
+                source={slot.image}
+                style={[styles.tabImage, focused && styles.tabImageActive]}
+                onLoad={() => {
+                  // #region agent log
+                  phase1DebugLog(
+                    "FigmaTabBar.tsx:iconLoad",
+                    "tab icon loaded",
+                    { slotId: slot.id, focused },
+                    "F"
+                  );
+                  // #endregion
+                }}
+              />
+              {focused && <Text style={styles.labelText}>{slot.label}</Text>}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -79,60 +135,43 @@ export function FigmaTabBar({ state, navigation }: FigmaTabBarProps) {
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingHorizontal: 0,
-    paddingTop: 0,
-    backgroundColor: "transparent",
+    backgroundColor: "#1d1f2b",
   },
   bar: {
     flexDirection: "row",
-    minHeight: 70,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabBarBg: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: "100%",
-    height: "100%",
-    resizeMode: "stretch",
-  },
-  tabsContainer: {
-    flexDirection: "row",
-    width: "100%",
-    justifyContent: "space-between",
+    height: 68,
+    paddingHorizontal: 8,
     alignItems: "center",
   },
   item: {
-    minWidth: 44,
     height: 44,
-    borderRadius: theme.radius.pill,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
-    paddingHorizontal: 10,
     gap: 6,
   },
+  itemInactive: {
+    flex: 1,
+    paddingHorizontal: 4,
+  },
   itemActive: {
-    backgroundColor: theme.colors.tabBarActive,
+    flexGrow: 0,
+    flexShrink: 0,
+    backgroundColor: "#ffffff",
     paddingHorizontal: 14,
   },
   labelText: {
     fontSize: 10,
-    fontWeight: "500",
-    color: theme.colors.text,
+    fontWeight: "400",
+    color: "#09090b",
   },
   tabImage: {
     width: 24,
     height: 24,
     resizeMode: "contain",
-    tintColor: "#ffffff",
   },
   tabImageActive: {
-    tintColor: theme.colors.text,
+    tintColor: "#09090b",
   },
 });

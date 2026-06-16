@@ -13,9 +13,9 @@
       }
     },
     "recommended": true,
-    "summary": "Context reset recommended (auto): 20 recent edit count exceed threshold 8",
+    "summary": "Context reset recommended (auto): 19 recent edit count exceed threshold 8",
     "reasons": [
-      "20 recent edit count exceed threshold 8"
+      "19 recent edit count exceed threshold 8"
     ],
     "candidates": [
       {
@@ -35,7 +35,7 @@
       {
         "key": "recent_edits",
         "label": "recent edit count",
-        "actual": 20,
+        "actual": 19,
         "threshold": 8,
         "triggered": true
       },
@@ -57,7 +57,7 @@
     "counters": {
       "wipTasks": 0,
       "blockedTasks": 0,
-      "recentEdits": 20,
+      "recentEdits": 19,
       "failedChecks": 0,
       "sessionAgeMinutes": null
     }
@@ -71,29 +71,28 @@
   "legacy_version": "1.0.0",
   "metrics": null,
   "recentEdits": [
-    "app/(auth)/login.tsx",
-    "app/(auth)/splash.tsx",
-    "app/(tabs)/_layout.tsx",
-    "app/(tabs)/activity.tsx",
-    "app/(tabs)/favorites.tsx",
-    "app/(tabs)/files.tsx",
-    "app/(tabs)/photos.tsx",
-    "app/(tabs)/settings.tsx",
-    "app/(tabs)/shared.tsx",
-    "app/(tabs)/trash.tsx",
-    "app/_layout.tsx",
-    "app/share.tsx",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.47 PM (1).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.47 PM (2).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.47 PM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.48 PM (1).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.48 PM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.49 PM (1).jpeg",
+    ".claude/sessions/.last_inbox_check",
+    ".claude/state/changed-files.jsonl",
+    ".claude/state/instructions-loaded.jsonl",
     "mobile condition/WhatsApp Image 2026-06-15 at 4.09.49 PM.jpeg",
-    "src/components/account/AccountSwitcherModal.tsx"
+    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.03 PM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.04 PM (1).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.04 PM (2).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.04 PM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.05 PM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM (1).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM (2).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM (3).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.50 AM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.51 AM.jpeg",
+    "src/components/files/FilesBrowser.tsx",
+    "src/components/home/DashboardView.tsx",
+    "src/components/ui/FigmaTabBar.tsx",
+    "app/share.tsx"
   ],
   "sessionId": "",
-  "timestamp": "2026-06-16T08:23:25Z",
+  "timestamp": "2026-06-16T08:50:12Z",
   "version": "1.0.0",
   "wipTasks": null
 }

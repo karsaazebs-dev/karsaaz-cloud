@@ -45,15 +45,18 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "sharp": "^0.35.1",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
+    "start:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/start-expo.ps1",
     "android": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/run-android.ps1",
     "android:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/setup-android-env.ps1",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "figma:assets": "node scripts/download-figma-assets.mjs && node scripts/download-tab-bar-assets.mjs && node scripts/convert-figma-svg-to-png.mjs"
   },
   "private": true
 }

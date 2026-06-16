@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Alert, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
@@ -54,12 +54,21 @@ export function FileBrowserScreen({
   const setShowCreateFolder = useUiStore((s) => s.setShowCreateFolder);
   const setShowCreateTag = useUiStore((s) => s.setShowCreateTag);
   const setShowUploadMenu = useUiStore((s) => s.setShowUploadMenu);
+  const pendingUploadMenu = useUiStore((s) => s.pendingUploadMenu);
+  const setPendingUploadMenu = useUiStore((s) => s.setPendingUploadMenu);
   const setShowAccountSwitcher = useUiStore((s) => s.setShowAccountSwitcher);
   const setShowMoveToFolder = useUiStore((s) => s.setShowMoveToFolder);
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
 
   const activeFilter = filter ?? browseFilter;
   const screenTitle = title ?? FILTER_TITLES[activeFilter];
+
+  useEffect(() => {
+    if (pendingUploadMenu) {
+      setPendingUploadMenu(false);
+      setShowUploadMenu(true);
+    }
+  }, [pendingUploadMenu, setPendingUploadMenu, setShowUploadMenu]);
 
   const {
     data,
@@ -210,7 +219,6 @@ export function FileBrowserScreen({
         onOpen={handleOpen}
         onShare={handleShare}
         onMenu={handleMenu}
-        onFabPress={() => setShowUploadMenu(true)}
         onAvatarPress={() => setShowAccountSwitcher(true)}
         onBackToDashboard={showBackToDashboard ? onBackToDashboard : undefined}
       />

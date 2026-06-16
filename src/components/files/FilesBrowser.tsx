@@ -16,11 +16,11 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Image as ExpoImage } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { figmaAssets } from "@/src/constants/assets";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
-import { ConnectionStatus } from "@/src/components/ui/ConnectionStatus";
 import { useUiStore } from "@/src/stores/uiStore";
 import { useFavoritesStore } from "@/src/stores/favoritesStore";
 import { useAuthStore } from "@/src/stores/authStore";
@@ -43,7 +43,6 @@ interface FilesBrowserProps {
   onOpen: (file: KarsaazFile) => void;
   onShare: (file: KarsaazFile) => void;
   onMenu: (file: KarsaazFile) => void;
-  onFabPress: () => void;
   onAvatarPress: () => void;
   onBackToDashboard?: () => void;
 }
@@ -58,7 +57,6 @@ export function FilesBrowser({
   onOpen,
   onShare,
   onMenu,
-  onFabPress,
   onAvatarPress,
   onBackToDashboard,
 }: FilesBrowserProps) {
@@ -156,33 +154,28 @@ export function FilesBrowser({
 
   return (
     <View style={styles.screen}>
-      <View style={styles.topBar}>
-        <View style={styles.topLeft}>
+      <SafeAreaView edges={["top"]} style={styles.safeTop}>
+        <View style={styles.searchRow}>
           {onBackToDashboard ? (
             <Pressable onPress={onBackToDashboard} style={styles.backBtn} hitSlop={8}>
               <Ionicons name="chevron-back" size={22} color="#09090b" />
             </Pressable>
           ) : null}
-          <ConnectionStatus />
-        </View>
-        <View style={styles.topActions}>
-          <Image source={figmaAssets.home.bell} style={styles.bellIcon} />
-          <Pressable onPress={onAvatarPress} style={styles.avatar}>
+          <View style={styles.searchWrap}>
+            <Ionicons name="search" size={18} color="#71717b" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search files..."
+              placeholderTextColor="#71717b"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+          <Pressable onPress={onAvatarPress}>
             <Image source={figmaAssets.home.avatar} style={styles.avatarImage} />
           </Pressable>
         </View>
-      </View>
-
-      <View style={styles.searchWrap}>
-        <Ionicons name="search" size={18} color="#71717b" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search files..."
-          placeholderTextColor="#71717b"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
+      </SafeAreaView>
 
       <View style={styles.toolbar}>
         <Pressable style={styles.sortBtn} onPress={cycleSort}>
@@ -217,44 +210,31 @@ export function FilesBrowser({
         />
       )}
 
-      <Pressable style={styles.fab} onPress={onFabPress}>
-        <Ionicons name="add" size={28} color="#ffffff" />
-      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#f7f7f7" },
-  topBar: {
+  safeTop: { backgroundColor: "#f7f7f7" },
+  searchRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 24,
-    paddingTop: 52,
+    paddingTop: 12,
     paddingBottom: 12,
+    gap: 10,
   },
-  topLeft: { flexDirection: "row", alignItems: "center", gap: 4 },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
-  bellIcon: { width: 22, height: 22 },
-  topActions: { flexDirection: "row", alignItems: "center", gap: 12 },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#f4f4f5",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarImage: { width: 40, height: 40, borderRadius: 20 },
+  backBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  avatarImage: { width: 42, height: 42, borderRadius: 21 },
   searchWrap: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 24,
     backgroundColor: "#ffffff",
-    borderRadius: 12,
+    borderRadius: 999,
     paddingHorizontal: 16,
-    height: 44,
+    height: 46,
     borderWidth: 0.5,
     borderColor: "#dfe1e4",
     shadowColor: "#e4efff",
@@ -351,20 +331,4 @@ const styles = StyleSheet.create({
   gridName: { fontSize: 12, color: "#09090b", marginTop: 8, textAlign: "center" },
   loader: { marginTop: 40 },
   empty: { textAlign: "center", color: "#71717b", marginTop: 40 },
-  fab: {
-    position: "absolute",
-    right: 24,
-    bottom: 96,
-    width: 65,
-    height: 65,
-    borderRadius: 33,
-    backgroundColor: "#2b7fff",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#2b7fff",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 4,
-  },
 });

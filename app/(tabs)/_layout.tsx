@@ -4,14 +4,24 @@
  */
 
 import { Alert } from "react-native";
+import { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 // share tab added in Phase 6 after app/share.tsx is built
 import { FigmaTabBar } from "@/src/components/ui/FigmaTabBar";
 import { AppOverlays } from "@/src/components/navigation/AppOverlays";
+import { MainTabFab } from "@/src/components/navigation/MainTabFab";
 import { useUiStore, type BrowseFilter, type DrawerItemId } from "@/src/stores/uiStore";
+import { phase1DebugLog } from "@/src/utils/phase1DebugLog";
 
 export default function TabLayout() {
   const router = useRouter();
+
+  // #region agent log
+  useEffect(() => {
+    phase1DebugLog("app/(tabs)/_layout.tsx:mount", "tab shell mounted", { phase: "phase1-verify" }, "BOOT");
+  }, []);
+  // #endregion
+
   const setBrowseFilter = useUiStore((s) => s.setBrowseFilter);
   const setBrowseMode = useUiStore((s) => s.setBrowseMode);
   const setBrowsePath = useUiStore((s) => s.setBrowsePath);
@@ -50,8 +60,9 @@ export default function TabLayout() {
         <Tabs.Screen name="index" options={{ title: "Home" }} />
         <Tabs.Screen name="files" options={{ title: "Files" }} />
         <Tabs.Screen name="photos" options={{ title: "Photos" }} />
-        <Tabs.Screen name="share" options={{ title: "Share" }} />
+        <Tabs.Screen name="share" options={{ title: "Share", href: null }} />
       </Tabs>
+      <MainTabFab />
       <AppOverlays onDrawerBrowse={handleDrawerBrowse} />
     </>
   );

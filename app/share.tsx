@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Karsaaz
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Figma nodes 1:4145 (Internal Share), 1:4531 (External Share), 1:4916 (Activity)
+ * Figma nodes 1:4145 (Internal), 1:4531 (External), 1:4916 (Activity)
  */
 
 import { useState } from "react";
@@ -27,88 +27,76 @@ import { theme } from "@/src/constants/theme";
 type Tab = "internal" | "external" | "activity";
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: "internal", label: "Internal" },
-  { id: "external", label: "External" },
-  { id: "activity", label: "Activity" },
-];
-
-const PERMISSIONS = [
-  { label: "View", value: 1 },
-  { label: "Edit", value: 31 },
+  { id: "internal",  label: "Internal Share" },
+  { id: "external",  label: "External Share" },
+  { id: "activity",  label: "Activity" },
 ];
 
 // ─── Internal Share Tab ───────────────────────────────────────────────────────
 
-function InternalShareTab({ path }: { path?: string }) {
-  const [username, setUsername] = useState("");
-  const [permission, setPermission] = useState(1);
+function InternalShareTab({ path, name }: { path?: string; name?: string }) {
+  const [email, setEmail] = useState("");
+  const [permission, setPermission] = useState<"View" | "Edit">("View");
   const { createMutation } = useSharing(path);
 
   const handleShare = () => {
-    if (!path || !username.trim()) return;
+    if (!path || !email.trim()) return;
     createMutation.mutate(
-      { path, shareType: 0, permissions: permission },
+      { path, shareType: 0, permissions: permission === "Edit" ? 31 : 1 },
       {
         onSuccess: () => {
-          Alert.alert("Shared", `"${path.split("/").pop()}" shared with ${username}`);
-          setUsername("");
+          Alert.alert("Shared", `Shared with ${email}`);
+          setEmail("");
         },
         onError: (e) => Alert.alert("Error", String(e)),
       }
     );
   };
 
-  if (!path) {
-    return (
-      <View style={styles.placeholder}>
-        <Ionicons name="person-add-outline" size={40} color="#d4d4d8" />
-        <Text style={styles.placeholderText}>Open a file to share it internally</Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView contentContainerStyle={styles.tabContent}>
-      <Text style={styles.label}>Share with user</Text>
-      <View style={styles.inputWrap}>
-        <Ionicons name="search-outline" size={18} color="#71717b" style={styles.inputIcon} />
+    <ScrollView contentContainerStyle={styles.tabContent} keyboardShouldPersistTaps="handled">
+      <View style={styles.permRow}>
+        <Text style={styles.permLabel}>What person can do</Text>
+        <Pressable
+          style={styles.permDropdown}
+          onPress={() => setPermission((p) => (p === "View" ? "Edit" : "View"))}
+        >
+          <Text style={styles.permDropdownText}>{permission}</Text>
+          <Ionicons name="chevron-down" size={14} color={theme.colors.accentBright} />
+        </Pressable>
+      </View>
+
+      <Text style={styles.fieldLabel}>Email</Text>
+      <View style={styles.inputRow}>
+        <Ionicons name="person-outline" size={18} color={theme.colors.accentBright} />
         <TextInput
           style={styles.input}
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Search by username or email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="yourname@company.io"
           placeholderTextColor="#71717b"
           autoCapitalize="none"
+          keyboardType="email-address"
         />
       </View>
 
-      <Text style={styles.label}>Permission</Text>
-      <View style={styles.permRow}>
-        {PERMISSIONS.map((p) => (
-          <Pressable
-            key={p.value}
-            style={[styles.permBtn, permission === p.value && styles.permBtnActive]}
-            onPress={() => setPermission(p.value)}
-          >
-            <Text style={[styles.permText, permission === p.value && styles.permTextActive]}>
-              {p.label}
-            </Text>
-          </Pressable>
-        ))}
+      <View style={styles.linkSection}>
+        <Text style={styles.linkSectionTitle}>Internal Link</Text>
+        <Pressable onPress={() => path && RNShare.share({ message: path })}>
+          <Text style={styles.copyLinkBtn}>Copy Link</Text>
+        </Pressable>
       </View>
+      <Text style={styles.linkHint}>Only works for people with access to this file</Text>
 
       <Pressable
-        style={[styles.primaryBtn, (!username.trim() || createMutation.isPending) && styles.disabled]}
+        style={[styles.shareBtn, (!email.trim() || createMutation.isPending) && styles.disabled]}
         onPress={handleShare}
-        disabled={!username.trim() || createMutation.isPending}
+        disabled={!email.trim() || createMutation.isPending}
       >
         {createMutation.isPending ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <>
-            <Ionicons name="person-add-outline" size={18} color="#fff" />
-            <Text style={styles.primaryBtnText}>Share</Text>
-          </>
+          <Text style={styles.shareBtnText}>Share</Text>
         )}
       </Pressable>
     </ScrollView>
@@ -118,86 +106,62 @@ function InternalShareTab({ path }: { path?: string }) {
 // ─── External Share Tab ───────────────────────────────────────────────────────
 
 function ExternalShareTab({ path }: { path?: string }) {
-  const [createdUrl, setCreatedUrl] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
   const { sharesQuery, createMutation, deleteMutation } = useSharing(path);
-
   const existingLink = (sharesQuery.data as any[])?.find((s: any) => s.share_type === 3);
-  const linkUrl = createdUrl ?? existingLink?.url ?? null;
+  const linkUrl = existingLink?.url ?? null;
 
   const handleCreate = () => {
     if (!path) return;
     createMutation.mutate(
       { path, shareType: 3, permissions: 1 },
-      {
-        onSuccess: (share: any) => setCreatedUrl(share.url ?? null),
-        onError: (e) => Alert.alert("Error", String(e)),
-      }
+      { onError: (e) => Alert.alert("Error", String(e)) }
     );
   };
-
-  const handleCopy = async () => {
-    if (!linkUrl) return;
-    await RNShare.share({ message: linkUrl });
-  };
-
-  const handleNativeShare = async () => {
-    if (!linkUrl) return;
-    await RNShare.share({ message: linkUrl, url: linkUrl });
-  };
-
-  if (!path) {
-    return (
-      <View style={styles.placeholder}>
-        <Ionicons name="link-outline" size={40} color="#d4d4d8" />
-        <Text style={styles.placeholderText}>Open a file to generate a public link</Text>
-      </View>
-    );
-  }
 
   return (
-    <ScrollView contentContainerStyle={styles.tabContent}>
-      <Text style={styles.label}>Public link</Text>
-      <View style={styles.linkCard}>
-        {linkUrl ? (
-          <Text style={styles.linkText} numberOfLines={3}>{linkUrl}</Text>
-        ) : (
-          <Text style={styles.linkPlaceholder}>No public link yet</Text>
-        )}
+    <ScrollView contentContainerStyle={styles.tabContent} keyboardShouldPersistTaps="handled">
+      <View style={styles.permRow}>
+        <Text style={styles.permLabel}>What person can do</Text>
+        <Pressable style={styles.permDropdown}>
+          <Text style={styles.permDropdownText}>View</Text>
+          <Ionicons name="chevron-down" size={14} color={theme.colors.accentBright} />
+        </Pressable>
       </View>
 
-      {linkUrl && (
-        <View style={styles.linkActions}>
-          <Pressable style={styles.iconActionBtn} onPress={handleCopy}>
-            <Ionicons name="copy-outline" size={20} color={theme.colors.accent} />
-            <Text style={styles.iconActionText}>Copy</Text>
-          </Pressable>
-          <Pressable style={styles.iconActionBtn} onPress={handleNativeShare}>
-            <Ionicons name="share-social-outline" size={20} color={theme.colors.accent} />
-            <Text style={styles.iconActionText}>Share</Text>
-          </Pressable>
-        </View>
-      )}
+      <Text style={styles.fieldLabel}>Email</Text>
+      <View style={styles.inputRow}>
+        <Ionicons name="person-outline" size={18} color={theme.colors.accentBright} />
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="yourname@company.io"
+          placeholderTextColor="#71717b"
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+      </View>
 
-      <Pressable
-        style={[styles.primaryBtn, createMutation.isPending && styles.disabled]}
-        onPress={handleCreate}
-        disabled={createMutation.isPending}
-      >
-        {createMutation.isPending ? (
-          <ActivityIndicator color="#fff" />
+      <View style={styles.linkSection}>
+        <Text style={styles.linkSectionTitle}>External Link</Text>
+        {linkUrl ? (
+          <Pressable onPress={() => RNShare.share({ message: linkUrl, url: linkUrl })}>
+            <Text style={styles.copyLinkBtn}>Copy Link</Text>
+          </Pressable>
         ) : (
-          <>
-            <Ionicons name="link-outline" size={18} color="#fff" />
-            <Text style={styles.primaryBtnText}>
-              {linkUrl ? "Regenerate link" : "Create public link"}
+          <Pressable onPress={handleCreate} disabled={createMutation.isPending}>
+            <Text style={styles.copyLinkBtn}>
+              {createMutation.isPending ? "Creating..." : "Create Link"}
             </Text>
-          </>
+          </Pressable>
         )}
-      </Pressable>
+      </View>
+      <Text style={styles.linkHint}>Only works for people with access to this file</Text>
 
       {existingLink && (
         <Pressable
-          style={styles.destructiveBtn}
+          style={styles.removeLinkBtn}
           onPress={() =>
             Alert.alert("Remove link", "Remove this public share?", [
               { text: "Cancel", style: "cancel" },
@@ -205,54 +169,75 @@ function ExternalShareTab({ path }: { path?: string }) {
             ])
           }
         >
-          <Text style={styles.destructiveText}>Remove public link</Text>
+          <Text style={styles.removeLinkText}>Remove public link</Text>
         </Pressable>
       )}
+
+      <Pressable style={[styles.shareBtn, !email.trim() && styles.disabled]} disabled={!email.trim()}>
+        <Text style={styles.shareBtnText}>Share</Text>
+      </Pressable>
     </ScrollView>
   );
 }
 
 // ─── Activity Tab ─────────────────────────────────────────────────────────────
 
-function ActivityTab() {
+function ActivityTab({ name }: { name?: string }) {
   const { data, isLoading } = useActivity();
   const events = (data as any[]) ?? [];
+  const [comment, setComment] = useState("");
 
   if (isLoading) {
     return (
-      <View style={styles.placeholder}>
+      <View style={styles.center}>
         <ActivityIndicator color={theme.colors.accent} />
       </View>
     );
   }
 
-  if (events.length === 0) {
-    return (
-      <View style={styles.placeholder}>
-        <Ionicons name="time-outline" size={40} color="#d4d4d8" />
-        <Text style={styles.placeholderText}>No activity yet</Text>
-      </View>
-    );
-  }
-
   return (
-    <ScrollView contentContainerStyle={styles.activityList}>
-      {events.map((event: any, i: number) => (
-        <View key={event.activity_id ?? i} style={styles.eventRow}>
-          <View style={styles.eventDot} />
-          <View style={styles.eventBody}>
-            <Text style={styles.eventSubject} numberOfLines={1}>
-              {event.subject ?? event.type ?? "Event"}
-            </Text>
-            <Text style={styles.eventTime}>
-              {event.datetime
-                ? new Date(event.datetime).toLocaleString()
-                : ""}
-            </Text>
+    <View style={styles.activityWrap}>
+      <ScrollView contentContainerStyle={styles.activityList}>
+        {events.length === 0 ? (
+          <View style={styles.center}>
+            <Ionicons name="time-outline" size={40} color="#d4d4d8" />
+            <Text style={styles.emptyText}>No activity yet</Text>
           </View>
+        ) : (
+          events.map((event: any, i: number) => (
+            <View key={event.activity_id ?? i} style={styles.activityItem}>
+              <View style={styles.activityThumb}>
+                <Ionicons name="document-text-outline" size={20} color="#ca8a04" />
+              </View>
+              <View style={styles.activityBody}>
+                <Text style={styles.activityTitle} numberOfLines={1}>
+                  {event.subject ?? event.type ?? "Activity"}
+                </Text>
+                <Text style={styles.activityMeta}>
+                  {event.datetime ? new Date(event.datetime).toLocaleDateString() : ""}
+                </Text>
+              </View>
+              <Ionicons name="ellipsis-horizontal" size={16} color="#71717b" />
+            </View>
+          ))
+        )}
+      </ScrollView>
+      <View style={styles.commentBar}>
+        <View style={styles.commentAvatar}>
+          <Text style={styles.commentAvatarText}>A</Text>
         </View>
-      ))}
-    </ScrollView>
+        <TextInput
+          style={styles.commentInput}
+          value={comment}
+          onChangeText={setComment}
+          placeholder="New comment"
+          placeholderTextColor="#71717b"
+        />
+        <Pressable hitSlop={8}>
+          <Ionicons name="send" size={20} color={theme.colors.accent} />
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -262,183 +247,234 @@ export default function ShareScreen() {
   const router = useRouter();
   const { path, name } = useLocalSearchParams<{ path?: string; name?: string }>();
   const [activeTab, setActiveTab] = useState<Tab>(path ? "internal" : "activity");
+  const fileName = name ?? path?.split("/").pop() ?? "File";
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#09090b" />
-        </Pressable>
-        <View style={styles.headerCenter}>
+      {/* Header area */}
+      <View style={styles.headerArea}>
+        <View style={styles.headerTop}>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {name ? name : "Share & Activity"}
+            {fileName}
           </Text>
+          <Pressable style={styles.closeBtn} onPress={() => router.back()}>
+            <Ionicons name="close" size={20} color="#09090b" />
+          </Pressable>
         </View>
-        <View style={{ width: 40 }} />
+        {path && (
+          <View style={styles.fileInfoRow}>
+            <View style={styles.fileThumb}>
+              <Ionicons name="document-outline" size={20} color="#71717b" />
+            </View>
+            <View style={styles.fileInfoText}>
+              <Text style={styles.fileInfoName} numberOfLines={1}>{fileName}</Text>
+              <Text style={styles.fileInfoMeta}>Owner</Text>
+            </View>
+            <Ionicons name="ellipsis-horizontal" size={18} color="#71717b" />
+            <Ionicons name="close-outline" size={18} color="#71717b" />
+          </View>
+        )}
       </View>
 
+      {/* Underline tab bar */}
       <View style={styles.tabBar}>
         {TABS.map((tab) => (
           <Pressable
             key={tab.id}
-            style={[styles.tabItem, activeTab === tab.id && styles.tabItemActive]}
+            style={styles.tabItem}
             onPress={() => setActiveTab(tab.id)}
           >
             <Text style={[styles.tabLabel, activeTab === tab.id && styles.tabLabelActive]}>
               {tab.label}
             </Text>
+            {activeTab === tab.id && <View style={styles.tabUnderline} />}
           </Pressable>
         ))}
       </View>
 
-      {activeTab === "internal" && <InternalShareTab path={path} />}
-      {activeTab === "external" && <ExternalShareTab path={path} />}
-      {activeTab === "activity" && <ActivityTab />}
+      {activeTab === "internal"  && <InternalShareTab path={path} name={name} />}
+      {activeTab === "external"  && <ExternalShareTab path={path} />}
+      {activeTab === "activity"  && <ActivityTab name={name} />}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#f7f7f7" },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 24,
+  screen: { flex: 1, backgroundColor: "#ffffff" },
+
+  headerArea: {
+    paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: "#f7f7f7",
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  headerCenter: { flex: 1, alignItems: "center" },
-  headerTitle: { fontSize: 18, fontWeight: "500", color: "#09090b" },
-  tabBar: {
-    flexDirection: "row",
-    marginHorizontal: 24,
-    marginBottom: 16,
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 4,
-    borderWidth: 0.5,
-    borderColor: "#dfe1e4",
-  },
-  tabItem: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  tabItemActive: { backgroundColor: "#4e3cf4" },
-  tabLabel: { fontSize: 14, fontWeight: "500", color: "#71717b" },
-  tabLabelActive: { color: "#ffffff" },
-  tabContent: { padding: 24, gap: 16 },
-  label: { fontSize: 13, fontWeight: "600", color: "#71717b", marginBottom: -8 },
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 48,
-    borderWidth: 0.5,
-    borderColor: "#dfe1e4",
-  },
-  inputIcon: { marginRight: 10 },
-  input: { flex: 1, fontSize: 15, color: "#09090b" },
-  permRow: { flexDirection: "row", gap: 12 },
-  permBtn: {
-    flex: 1,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#dfe1e4",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#ffffff",
-  },
-  permBtnActive: { backgroundColor: "#4e3cf4", borderColor: "#4e3cf4" },
-  permText: { fontSize: 15, fontWeight: "500", color: "#71717b" },
-  permTextActive: { color: "#ffffff" },
-  primaryBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#4e3cf4",
-    borderRadius: 12,
-    height: 52,
-    marginTop: 8,
-  },
-  primaryBtnText: { color: "#ffffff", fontWeight: "600", fontSize: 16 },
-  disabled: { opacity: 0.5 },
-  linkCard: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    minHeight: 52,
-    borderWidth: 0.5,
-    borderColor: "#dfe1e4",
-  },
-  linkText: { fontSize: 13, color: "#2b7fff" },
-  linkPlaceholder: { fontSize: 13, color: "#71717b" },
-  linkActions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: -4,
-  },
-  iconActionBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#dfe1e4",
-    backgroundColor: "#ffffff",
-  },
-  iconActionText: { fontSize: 14, fontWeight: "500", color: "#4e3cf4" },
-  destructiveBtn: { alignItems: "center", paddingVertical: 12 },
-  destructiveText: { color: "#dc2626", fontSize: 14, fontWeight: "500" },
-  placeholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    padding: 32,
-  },
-  placeholderText: { fontSize: 15, color: "#71717b", textAlign: "center" },
-  activityList: { padding: 24, gap: 0 },
-  eventRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 14,
-    paddingVertical: 14,
+    paddingBottom: 8,
     borderBottomWidth: 0.5,
     borderBottomColor: "#dfe1e4",
   },
-  eventDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#4e3cf4",
-    marginTop: 5,
-    flexShrink: 0,
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
   },
-  eventBody: { flex: 1 },
-  eventSubject: { fontSize: 15, fontWeight: "500", color: "#09090b" },
-  eventTime: { fontSize: 12, color: "#71717b", marginTop: 3 },
+  headerTitle: { fontSize: 17, fontWeight: "600", color: "#09090b", flex: 1, marginRight: 12 },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#f4f4f5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fileInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#f7f7f7",
+    borderRadius: 10,
+    padding: 10,
+  },
+  fileThumb: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    backgroundColor: "#e2e8f0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fileInfoText: { flex: 1 },
+  fileInfoName: { fontSize: 13, fontWeight: "600", color: "#09090b" },
+  fileInfoMeta: { fontSize: 11, color: "#71717b", marginTop: 2 },
+
+  // Underline tab bar
+  tabBar: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#dfe1e4",
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 14,
+    position: "relative",
+  },
+  tabLabel: { fontSize: 13, fontWeight: "500", color: "#71717b" },
+  tabLabelActive: { color: theme.colors.accentBright, fontWeight: "600" },
+  tabUnderline: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: theme.colors.accentBright,
+    borderRadius: 1,
+  },
+
+  // Shared tab content
+  tabContent: { padding: 20, gap: 16, paddingBottom: 32 },
+
+  permRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  permLabel: { fontSize: 14, color: "#09090b", fontWeight: "500" },
+  permDropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  permDropdownText: { fontSize: 14, color: theme.colors.accentBright, fontWeight: "500" },
+
+  fieldLabel: { fontSize: 13, fontWeight: "600", color: "#09090b", marginBottom: -8 },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: "#f7f8ff",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 48,
+    borderWidth: 1,
+    borderColor: "#dfe1e4",
+  },
+  input: { flex: 1, fontSize: 14, color: "#09090b" },
+
+  linkSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  linkSectionTitle: { fontSize: 15, fontWeight: "600", color: "#09090b" },
+  copyLinkBtn: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.accentBright,
+    borderWidth: 1,
+    borderColor: theme.colors.accentBright,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  linkHint: { fontSize: 12, color: "#71717b", marginTop: -8 },
+
+  removeLinkBtn: { alignItems: "center", paddingVertical: 8 },
+  removeLinkText: { color: "#dc2626", fontSize: 13, fontWeight: "500" },
+
+  shareBtn: {
+    backgroundColor: theme.colors.accent,
+    borderRadius: 12,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  shareBtnText: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
+  disabled: { opacity: 0.4 },
+
+  // Activity
+  activityWrap: { flex: 1 },
+  activityList: { padding: 20, gap: 0, paddingBottom: 80 },
+  activityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#f0f0f0",
+  },
+  activityThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: "#fef9c3",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activityBody: { flex: 1 },
+  activityTitle: { fontSize: 13, fontWeight: "500", color: "#09090b" },
+  activityMeta: { fontSize: 11, color: "#71717b", marginTop: 2 },
+
+  commentBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 0.5,
+    borderTopColor: "#dfe1e4",
+    backgroundColor: "#ffffff",
+  },
+  commentAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#e8e5fd",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  commentAvatarText: { fontSize: 14, fontWeight: "600", color: "#4e3cf4" },
+  commentInput: { flex: 1, fontSize: 14, color: "#09090b" },
+
+  center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, padding: 32 },
+  emptyText: { fontSize: 14, color: "#71717b" },
 });

@@ -43,6 +43,7 @@ interface UiState {
   showSwitchServer: boolean;
   browseMode: boolean;
   browsePath: string;
+  pendingUploadMenu: boolean;
   setDrawerOpen: (open: boolean) => void;
   setActiveDrawerItem: (id: DrawerItemId) => void;
   setBrowseFilter: (filter: BrowseFilter) => void;
@@ -61,6 +62,7 @@ interface UiState {
   setShowSwitchServer: (show: boolean) => void;
   setBrowseMode: (mode: boolean) => void;
   setBrowsePath: (path: string) => void;
+  setPendingUploadMenu: (pending: boolean) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -82,6 +84,7 @@ export const useUiStore = create<UiState>((set) => ({
   showSwitchServer: false,
   browseMode: false,
   browsePath: "/",
+  pendingUploadMenu: false,
   setDrawerOpen: (open) => set({ drawerOpen: open }),
   setActiveDrawerItem: (id) => set({ activeDrawerItem: id }),
   setBrowseFilter: (filter) => set({ browseFilter: filter }),
@@ -100,4 +103,5 @@ export const useUiStore = create<UiState>((set) => ({
   setShowSwitchServer: (show) => set({ showSwitchServer: show }),
   setBrowseMode: (mode) => set({ browseMode: mode }),
   setBrowsePath: (path) => set({ browsePath: path }),
+  setPendingUploadMenu: (pending) => set({ pendingUploadMenu: pending }),
 }));

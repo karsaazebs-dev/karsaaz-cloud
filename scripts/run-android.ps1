@@ -1,4 +1,5 @@
 # Build + install Karsaaz Sync on a connected Android device.
+# IMPORTANT: builds from C:\m (junction) — do NOT run `npx expo run:android` from the long path.
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$ExpoArgs

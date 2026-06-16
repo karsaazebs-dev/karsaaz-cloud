@@ -26,6 +26,7 @@ import {
   configureClient,
   buildUserAgent,
   encodeBasicAuth,
+  loginWithPassword,
 } from "@karsaaz/cloud-api";
 import { Platform } from "react-native";
 import { brand } from "@/src/constants/brand";
@@ -65,7 +66,7 @@ function connectionErrorMessage(error: unknown): string {
 }
 
 function getRecentServers(): string[] {
-  return [brand.defaultServerUrl];
+  return [getDefaultServerUrl()];
 }
 
 export default function LoginScreen() {
@@ -176,21 +177,69 @@ export default function LoginScreen() {
     setStep("credentials");
   };
 
+  const openWebLoginFlow = async (baseServer: string) => {
+    const flow = await initLoginFlow(baseServer);
+    setLoginUrl(flow.login);
+    setPollToken(flow.poll.token);
+    setPollEndpoint(flow.poll.endpoint);
+    setStep("webview");
+    startPolling(flow.poll.endpoint, flow.poll.token, baseServer);
+  };
+
+  const completeSession = async (
+    baseServer: string,
+    loginName: string,
+    displayName: string,
+    appPassword: string
+  ) => {
+    const basicAuth = encodeBasicAuth(loginName, appPassword);
+    configureClient({
+      baseUrl: baseServer.replace(/\/$/, ""),
+      userAgent: buildUserAgent(
+        Platform.OS === "ios" ? "iOS" : "Android",
+        String(Platform.Version)
+      ),
+      getBasicAuth: () => basicAuth,
+    });
+    await setSession({
+      serverUrl: baseServer,
+      username: loginName,
+      displayName,
+      appPassword,
+    });
+  };
+
   const handleSignIn = async () => {
+    if (!username.trim() || !password) {
+      Alert.alert("Missing credentials", "Enter your user ID and password.");
+      return;
+    }
+
     setLoading(true);
+    const baseServer = normalizeServerUrl(serverUrl);
     try {
       configureForServer();
-      const flow = await initLoginFlow(normalizeServerUrl(serverUrl));
-      setLoginUrl(flow.login);
-      setPollToken(flow.poll.token);
-      setPollEndpoint(flow.poll.endpoint);
-      setStep("webview");
-      startPolling(flow.poll.endpoint, flow.poll.token, serverUrl);
-    } catch (error) {
-      Alert.alert(
-        "Sign in failed",
-        error instanceof Error ? error.message : "Could not start login"
+      const result = await loginWithPassword(username, password);
+      await completeSession(
+        result.server || baseServer,
+        result.loginName,
+        result.displayName,
+        result.appPassword
       );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Sign in failed";
+      if (/two-factor|forbidden/i.test(message)) {
+        try {
+          await openWebLoginFlow(baseServer);
+        } catch (flowError) {
+          Alert.alert(
+            "Sign in failed",
+            flowError instanceof Error ? flowError.message : message
+          );
+        }
+      } else {
+        Alert.alert("Sign in failed", message);
+      }
     } finally {
       setLoading(false);
     }
@@ -206,6 +255,12 @@ export default function LoginScreen() {
         <WebView
           source={{ uri: loginUrl }}
           style={styles.flex}
+          userAgent={buildUserAgent(
+            Platform.OS === "ios" ? "iOS" : "Android",
+            String(Platform.Version)
+          )}
+          sharedCookiesEnabled
+          thirdPartyCookiesEnabled
           onNavigationStateChange={() => {
             if (pollToken && pollEndpoint) {
               startPolling(pollEndpoint, pollToken, serverUrl);

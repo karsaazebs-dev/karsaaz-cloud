@@ -59,4 +59,11 @@ declare module "@karsaaz/cloud-api" {
   export function fetchStatus(serverUrl?: string): Promise<any>;
   export function initLoginFlow(serverUrl: string, options?: any): Promise<any>;
   export function pollLoginFlow(serverUrl: string, token: string): Promise<any>;
+  export interface DirectLoginResult {
+    loginName: string;
+    displayName: string;
+    appPassword: string;
+    server: string;
+  }
+  export function loginWithPassword(username: string, password: string): Promise<DirectLoginResult>;
 }

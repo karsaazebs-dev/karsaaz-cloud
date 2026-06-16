@@ -12,47 +12,75 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 interface NotEnoughStorageScreenProps {
   onDismiss?: () => void;
+  usedGb?: number;
+  totalGb?: number;
+  fileSizeGb?: number;
 }
 
-export function NotEnoughStorageScreen({ onDismiss }: NotEnoughStorageScreenProps) {
+export function NotEnoughStorageScreen({
+  onDismiss,
+  usedGb = 498,
+  totalGb = 500,
+  fileSizeGb = 5,
+}: NotEnoughStorageScreenProps) {
   const router = useRouter();
 
-  const handleRequestMore = () => {
+  const usedPct = Math.min((usedGb / totalGb) * 100, 100);
+  const remainingGb = totalGb - usedGb;
+
+  const handleRequestStorage = () => {
     onDismiss?.();
     router.push("/request-storage" as any);
-  };
-
-  const handleCleanUp = () => {
-    onDismiss?.();
-    router.push("/manage-storage" as any);
   };
 
   return (
     <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <View style={styles.illustration}>
-          <View style={styles.cloudWrap}>
-            <Ionicons name="cloud-outline" size={80} color="#dfe1e4" />
-            <View style={styles.exclamationBadge}>
-              <Ionicons name="alert" size={20} color="#ffffff" />
-            </View>
-          </View>
+        {/* Orange warning badge */}
+        <View style={styles.iconBadge}>
+          <Ionicons name="warning" size={36} color="#ffffff" />
         </View>
 
         <Text style={styles.title}>Not Enough Storage</Text>
-        <Text style={styles.description}>
-          Your storage is full. You won't be able to upload or sync new files until you free up space or request an upgrade.
+        <Text style={styles.subtitle}>
+          You don't have enough available storage to upload this file.
         </Text>
+
+        {/* Current Usage card */}
+        <View style={styles.usageCard}>
+          <Text style={styles.usageCardLabel}>Current Usage</Text>
+          <View style={styles.usageRow}>
+            <Text style={styles.usageValue}>{usedGb} GB</Text>
+            <Text style={styles.usageTotal}>of {totalGb} GB</Text>
+          </View>
+          <View style={styles.usageBar}>
+            <View style={[styles.usageBarFill, { width: `${usedPct}%` as any }]} />
+          </View>
+          <Text style={styles.almostFull}>
+            Almost full — only {remainingGb} GB remaining
+          </Text>
+        </View>
+
+        {/* Selected file card */}
+        <View style={styles.fileCard}>
+          <View style={styles.fileIcon}>
+            <Ionicons name="document-text" size={22} color="#ffffff" />
+          </View>
+          <View style={styles.fileInfo}>
+            <Text style={styles.fileLabel}>Selected file</Text>
+            <Text style={styles.fileSize}>{fileSizeGb} GB</Text>
+            <Text style={styles.fileError}>Cannot upload — exceeds available space</Text>
+          </View>
+        </View>
       </View>
 
+      {/* Actions */}
       <View style={styles.actions}>
-        <Pressable style={styles.primaryBtn} onPress={handleRequestMore}>
-          <Ionicons name="cloud-upload-outline" size={20} color="#ffffff" />
-          <Text style={styles.primaryBtnText}>Request More</Text>
+        <Pressable style={styles.requestBtn} onPress={handleRequestStorage}>
+          <Text style={styles.requestBtnText}>Request Storage</Text>
         </Pressable>
-        <Pressable style={styles.secondaryBtn} onPress={handleCleanUp}>
-          <Ionicons name="trash-outline" size={20} color="#4e3cf4" />
-          <Text style={styles.secondaryBtnText}>Clean Up</Text>
+        <Pressable onPress={onDismiss}>
+          <Text style={styles.cancelLink}>Cancel Upload</Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -68,32 +96,18 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 40,
-    gap: 16,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    gap: 20,
   },
-  illustration: {
+  iconBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#f97316",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
-  },
-  cloudWrap: {
-    position: "relative",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exclamationBadge: {
-    position: "absolute",
-    bottom: 0,
-    right: -4,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#dc2626",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 3,
-    borderColor: "#f7f7f7",
+    marginBottom: 4,
   },
   title: {
     fontSize: 24,
@@ -101,42 +115,83 @@ const styles = StyleSheet.create({
     color: "#09090b",
     textAlign: "center",
   },
-  description: {
-    fontSize: 15,
+  subtitle: {
+    fontSize: 14,
     color: "#71717b",
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
   },
+
+  // Current Usage card
+  usageCard: {
+    width: "100%",
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 16,
+    gap: 8,
+    borderWidth: 0.5,
+    borderColor: "#dfe1e4",
+    shadowColor: "#e4efff",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 11,
+    elevation: 2,
+  },
+  usageCardLabel: { fontSize: 12, color: "#71717b" },
+  usageRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
+  usageValue: { fontSize: 28, fontWeight: "700", color: "#09090b" },
+  usageTotal: { fontSize: 13, color: "#71717b" },
+  usageBar: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#f4f4f5",
+    overflow: "hidden",
+  },
+  usageBarFill: {
+    height: "100%",
+    backgroundColor: "#ef4444",
+    borderRadius: 4,
+  },
+  almostFull: { fontSize: 12, color: "#ef4444", fontWeight: "500" },
+
+  // Selected file card
+  fileCard: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#fff7ed",
+    borderRadius: 16,
+    padding: 16,
+  },
+  fileIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: "#f97316",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fileInfo: { flex: 1, gap: 2 },
+  fileLabel: { fontSize: 12, color: "#71717b" },
+  fileSize: { fontSize: 15, fontWeight: "700", color: "#09090b" },
+  fileError: { fontSize: 12, color: "#71717b" },
+
+  // Actions
   actions: {
     paddingHorizontal: 24,
     paddingBottom: 32,
-    gap: 12,
-  },
-  primaryBtn: {
-    flexDirection: "row",
+    gap: 14,
     alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+  },
+  requestBtn: {
+    width: "100%",
     backgroundColor: "#4e3cf4",
     borderRadius: 14,
     height: 56,
-    shadowColor: "#4e3cf4",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  primaryBtnText: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
-  secondaryBtn: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
-    backgroundColor: "#ffffff",
-    borderRadius: 14,
-    height: 56,
-    borderWidth: 1,
-    borderColor: "#dfe1e4",
   },
-  secondaryBtnText: { color: "#4e3cf4", fontSize: 16, fontWeight: "600" },
+  requestBtnText: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
+  cancelLink: { fontSize: 15, color: "#09090b" },
 });
