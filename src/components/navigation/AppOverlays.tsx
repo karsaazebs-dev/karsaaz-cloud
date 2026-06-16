@@ -5,6 +5,7 @@
 
 import { DrawerMenu } from "@/src/components/navigation/DrawerMenu";
 import { AccountSwitcherModal } from "@/src/components/account/AccountSwitcherModal";
+import { SwitchServerSheet } from "@/src/components/account/SwitchServerSheet";
 import { CreateTagModal } from "@/src/components/files/CreateTagModal";
 import { MoveToFolderModal } from "@/src/components/files/MoveToFolderModal";
 import { NotEnoughStorageModal } from "@/src/components/files/NotEnoughStorageModal";
@@ -19,6 +20,7 @@ export function AppOverlays({ onDrawerBrowse }: AppOverlaysProps) {
     <>
       <DrawerMenu onBrowse={onDrawerBrowse} />
       <AccountSwitcherModal />
+      <SwitchServerSheet />
       <CreateTagModal />
       <MoveToFolderModal />
       <NotEnoughStorageModal />

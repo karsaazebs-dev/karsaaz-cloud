@@ -5,10 +5,10 @@
 
 import { Alert } from "react-native";
 import { Tabs, useRouter } from "expo-router";
+// share tab added in Phase 6 after app/share.tsx is built
 import { FigmaTabBar } from "@/src/components/ui/FigmaTabBar";
 import { AppOverlays } from "@/src/components/navigation/AppOverlays";
 import { useUiStore, type BrowseFilter, type DrawerItemId } from "@/src/stores/uiStore";
-import { debugLog } from "@/src/utils/debugLog";
 
 export default function TabLayout() {
   const router = useRouter();
@@ -21,44 +21,12 @@ export default function TabLayout() {
       all_files: "all",
       recent_files: "recent",
       personal_files: "personal",
-      favorites: "favorites",
     };
     const filter = filterMap[item];
     if (filter) {
       setBrowseFilter(filter);
       setBrowsePath("/");
-      if (filter === "favorites") {
-        setBrowseMode(false);
-        debugLog(
-          "tabs/_layout.tsx:drawer",
-          "drawer browse → favorites tab",
-          { item, filter },
-          "A",
-          "post-fix"
-        );
-        router.push("/(tabs)/favorites");
-        return;
-      }
-      if (filter === "all" || filter === "recent") {
-        setBrowseMode(false);
-        debugLog(
-          "tabs/_layout.tsx:drawer",
-          "drawer browse → search tab",
-          { item, filter },
-          "A",
-          "post-fix"
-        );
-        router.push("/(tabs)/shared");
-        return;
-      }
-      setBrowseMode(true);
-      debugLog(
-        "tabs/_layout.tsx:drawer",
-        "drawer browse → home file browser",
-        { item, filter },
-        "A",
-        "post-fix"
-      );
+      setBrowseMode(filter !== "all" && filter !== "recent");
       router.push("/(tabs)/files");
       return;
     }
@@ -79,13 +47,10 @@ export default function TabLayout() {
           tabBarStyle: { position: "relative", backgroundColor: "transparent", borderTopWidth: 0, elevation: 0 },
         }}
       >
-        <Tabs.Screen name="files" options={{ title: "Home" }} />
-        <Tabs.Screen name="shared" options={{ title: "Search" }} />
-        <Tabs.Screen name="favorites" options={{ title: "Favorites" }} />
+        <Tabs.Screen name="index" options={{ title: "Home" }} />
+        <Tabs.Screen name="files" options={{ title: "Files" }} />
         <Tabs.Screen name="photos" options={{ title: "Photos" }} />
-        <Tabs.Screen name="settings" options={{ title: "Menu" }} />
-        <Tabs.Screen name="activity" options={{ href: null }} />
-        <Tabs.Screen name="trash" options={{ href: null }} />
+        <Tabs.Screen name="share" options={{ title: "Share" }} />
       </Tabs>
       <AppOverlays onDrawerBrowse={handleDrawerBrowse} />
     </>

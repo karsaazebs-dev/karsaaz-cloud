@@ -41,6 +41,6 @@ export function ConnectionStatus() {
 const styles = StyleSheet.create({
   wrap: { flexDirection: "row", alignItems: "center", gap: 8 },
   dotIcon: { width: 10, height: 10, resizeMode: "contain" },
-  syncIcon: { width: 18, height: 18, resizeMode: "contain" },
+  syncIcon: { width: 24, height: 24, resizeMode: "contain" },
   label: { fontSize: 12, color: theme.colors.text },
 });

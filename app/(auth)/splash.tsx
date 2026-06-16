@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Karsaaz
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Figma node 283:807
+ * Figma node 1:15
  */
 
 import { useEffect, useRef } from "react";
@@ -10,7 +10,6 @@ import { View, Text, StyleSheet, Animated } from "react-native";
 import { useRouter } from "expo-router";
 import { Image } from "expo-image";
 import { figmaAssets } from "@/src/constants/assets";
-import { brand } from "@/src/constants/brand";
 import { theme } from "@/src/constants/theme";
 import { useOnboardingStore } from "@/src/stores/onboardingStore";
 
@@ -66,11 +65,11 @@ export default function SplashScreen() {
         ]}
       >
         <View style={styles.logoCard}>
-          <Image source={figmaAssets.logo} style={styles.logo} contentFit="contain" />
+          <Image source={figmaAssets.splashLogo} style={styles.logo} contentFit="contain" />
         </View>
       </Animated.View>
       <Animated.Text style={[styles.title, { opacity: textFade }]}>
-        {brand.appName}
+        Storage.io
       </Animated.Text>
     </View>
   );
@@ -84,26 +83,29 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   logoShadow: {
-    borderRadius: theme.radius.xl,
+    borderRadius: 24,
     marginBottom: 24,
-    ...theme.shadow.logo,
+    shadowColor: "rgba(20, 106, 227, 0.35)",
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 1,
+    shadowRadius: 45,
+    elevation: 8,
   },
   logoCard: {
     width: 112,
     height: 112,
-    borderRadius: theme.radius.xl,
-    backgroundColor: theme.colors.surface,
+    borderRadius: 24,
+    backgroundColor: "rgba(255, 255, 255, 0)",
     borderWidth: 4,
     borderColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
-  logo: { width: 112, height: 112 },
+  logo: { width: 113, height: 113 },
   title: {
-    fontSize: theme.typography.title.fontSize,
-    color: theme.colors.text,
-    fontWeight: "600",
-    letterSpacing: -0.5,
+    ...theme.typography.title,
+    color: theme.colors.textDark,
+    fontWeight: "400",
   },
 });

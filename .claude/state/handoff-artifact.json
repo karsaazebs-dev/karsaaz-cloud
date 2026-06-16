@@ -1,0 +1,136 @@
+{
+  "version": "2.0.0",
+  "legacy_version": "1.0.0",
+  "artifactType": "structured-handoff",
+  "timestamp": "2026-06-16T08:23:25Z",
+  "sessionId": "",
+  "previous_state": {
+    "summary": "Before compaction: 20 recent edit(s)",
+    "plan_counts": {
+      "total": 0,
+      "wip": 0,
+      "blocked": 0,
+      "recent_edits": 20
+    }
+  },
+  "next_action": {
+    "summary": "Re-read Plans.md and determine the next task",
+    "source": "fallback",
+    "priority": "normal"
+  },
+  "open_risks": [
+    {
+      "severity": "medium",
+      "kind": "verification",
+      "summary": "20 recent edit(s) should be re-validated after resume",
+      "detail": "app/(auth)/login.tsx, app/(auth)/splash.tsx, app/(tabs)/_layout.tsx, app/(tabs)/activity.tsx, app/(tabs)/favorites.tsx"
+    }
+  ],
+  "failed_checks": null,
+  "decision_log": [
+    {
+      "timestamp": "2026-06-16T08:23:25Z",
+      "actor": "pre-compact-save",
+      "decision": "canonical_handoff_artifact_written",
+      "rationale": "Persist a stable JSON artifact in .claude/state for long-running session handoff."
+    },
+    {
+      "timestamp": "2026-06-16T08:23:25Z",
+      "actor": "pre-compact-save",
+      "decision": "legacy_snapshot_mirrored",
+      "rationale": "Keep precompact-snapshot.json for backward compatibility with older hooks."
+    }
+  ],
+  "context_reset": {
+    "policy": {
+      "mode": "auto",
+      "dryRun": false,
+      "thresholds": {
+        "wipTasks": 4,
+        "blockedTasks": 1,
+        "recentEdits": 8,
+        "failedChecks": 1,
+        "sessionAgeMinutes": 120
+      }
+    },
+    "recommended": true,
+    "summary": "Context reset recommended (auto): 20 recent edit count exceed threshold 8",
+    "reasons": [
+      "20 recent edit count exceed threshold 8"
+    ],
+    "candidates": [
+      {
+        "key": "wip_tasks",
+        "label": "WIP task count",
+        "actual": 0,
+        "threshold": 4,
+        "triggered": false
+      },
+      {
+        "key": "blocked_tasks",
+        "label": "blocked task count",
+        "actual": 0,
+        "threshold": 1,
+        "triggered": false
+      },
+      {
+        "key": "recent_edits",
+        "label": "recent edit count",
+        "actual": 20,
+        "threshold": 8,
+        "triggered": true
+      },
+      {
+        "key": "failed_checks",
+        "label": "failed check count",
+        "actual": 0,
+        "threshold": 1,
+        "triggered": false
+      },
+      {
+        "key": "session_age_minutes",
+        "label": "session age (minutes)",
+        "actual": 0,
+        "threshold": 120,
+        "triggered": false
+      }
+    ],
+    "counters": {
+      "wipTasks": 0,
+      "blockedTasks": 0,
+      "recentEdits": 20,
+      "failedChecks": 0,
+      "sessionAgeMinutes": null
+    }
+  },
+  "continuity": {
+    "plugin_first_workflow": true,
+    "resume_aware_effort_continuity": true,
+    "effort_hint": "medium",
+    "summary": "plugin-first workflow: enabled; resume-aware effort continuity: medium"
+  },
+  "planItems": null,
+  "wipTasks": null,
+  "recentEdits": [
+    "app/(auth)/login.tsx",
+    "app/(auth)/splash.tsx",
+    "app/(tabs)/_layout.tsx",
+    "app/(tabs)/activity.tsx",
+    "app/(tabs)/favorites.tsx",
+    "app/(tabs)/files.tsx",
+    "app/(tabs)/photos.tsx",
+    "app/(tabs)/settings.tsx",
+    "app/(tabs)/shared.tsx",
+    "app/(tabs)/trash.tsx",
+    "app/_layout.tsx",
+    "app/share.tsx",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.47 PM (1).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.47 PM (2).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.47 PM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.48 PM (1).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.48 PM.jpeg",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.49 PM (1).jpeg",
+    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.49 PM.jpeg",
+    "src/components/account/AccountSwitcherModal.tsx"
+  ]
+}

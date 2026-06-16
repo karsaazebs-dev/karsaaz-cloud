@@ -5,7 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentUser } from "@karsaaz/cloud-api";
-import { useAuthStore } from "@/src/stores/authStore";
+import { useAuthStore } from "../stores/authStore";
 
 export function useUserQuota() {
   const { basicAuth } = useAuthStore();

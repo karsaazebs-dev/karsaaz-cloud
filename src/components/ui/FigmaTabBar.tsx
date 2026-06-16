@@ -22,11 +22,10 @@ interface FigmaTabBarProps {
 }
 
 const TAB_CONFIG: Record<string, { image: number; label: string }> = {
-  files: { image: figmaAssets.home.homeTab, label: "Home" },
-  shared: { image: figmaAssets.home.searchTab, label: "Search" },
-  favorites: { image: figmaAssets.home.favoritesTab, label: "Favorites" },
+  index: { image: figmaAssets.home.homeTab, label: "Home" },
+  files: { image: figmaAssets.home.searchTab, label: "Files" },
   photos: { image: figmaAssets.home.galleryTab, label: "Photos" },
-  settings: { image: figmaAssets.home.menuTab, label: "Menu" },
+  share: { image: figmaAssets.home.favoritesTab, label: "Share" },
 };
 
 export function FigmaTabBar({ state, navigation }: FigmaTabBarProps) {
@@ -35,45 +34,44 @@ export function FigmaTabBar({ state, navigation }: FigmaTabBarProps) {
   const setBrowseMode = useUiStore((s) => s.setBrowseMode);
 
   const handlePress = (routeName: string) => {
-    if (routeName === "settings") {
+    if (routeName === "__menu__") {
       setDrawerOpen(true);
       return;
     }
-    if (routeName === "files") {
+    if (routeName === "index") {
       setBrowseMode(false);
       useUiStore.getState().setBrowsePath("/");
     }
     navigation.navigate(routeName);
   };
 
-  const visibleRoutes = state.routes.filter(
-    (route) => !["trash", "activity"].includes(route.name)
-  );
+  const MENU_ITEM = { key: "__menu__", name: "__menu__" };
 
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       <View style={styles.bar}>
-        {visibleRoutes.map((route) => {
-          const tab = TAB_CONFIG[route.name] ?? TAB_CONFIG.files;
-          const routeIndex = state.routes.findIndex((r) => r.key === route.key);
-          const focused = state.index === routeIndex;
-          const isMenu = route.name === "settings";
-          const active = focused && !isMenu;
+        <Image source={figmaAssets.home.tabBarBg} style={styles.tabBarBg} />
+        <View style={styles.tabsContainer}>
+          {[...state.routes, MENU_ITEM].map((route) => {
+            const tab = TAB_CONFIG[route.name] ?? { image: figmaAssets.home.menuTab, label: "Menu" };
+            const routeIndex = state.routes.findIndex((r) => r.key === route.key);
+            const focused = route.name !== "__menu__" && state.index === routeIndex;
 
-          return (
-            <Pressable
-              key={route.key}
-              onPress={() => handlePress(route.name)}
-              style={[styles.item, active && styles.itemActive]}
-            >
-              <Image
-                source={tab.image}
-                style={[styles.tabImage, active && styles.tabImageActive]}
-              />
-              {active && <Text style={styles.labelText}>{tab.label}</Text>}
-            </Pressable>
-          );
-        })}
+            return (
+              <Pressable
+                key={route.key}
+                onPress={() => handlePress(route.name)}
+                style={[styles.item, focused && styles.itemActive]}
+              >
+                <Image
+                  source={tab.image}
+                  style={[styles.tabImage, focused && styles.tabImageActive]}
+                />
+                {focused && <Text style={styles.labelText}>{tab.label}</Text>}
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -91,8 +89,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  tabBarBg: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: "100%",
+    height: "100%",
+    resizeMode: "stretch",
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    width: "100%",
     justifyContent: "space-between",
-    backgroundColor: theme.colors.tabBar,
+    alignItems: "center",
   },
   item: {
     minWidth: 44,

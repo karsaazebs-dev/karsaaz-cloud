@@ -69,6 +69,8 @@ export function DrawerMenu({ onBrowse }: DrawerMenuProps) {
   const active = useUiStore((s) => s.activeDrawerItem);
   const setOpen = useUiStore((s) => s.setDrawerOpen);
   const setActive = useUiStore((s) => s.setActiveDrawerItem);
+  const setBrowseFilter = useUiStore((s) => s.setBrowseFilter);
+  const setBrowsePath = useUiStore((s) => s.setBrowsePath);
   const setAccountSwitcher = useUiStore((s) => s.setShowAccountSwitcher);
   const displayName = useAuthStore((s) => s.displayName);
   const username = useAuthStore((s) => s.username);
@@ -82,27 +84,27 @@ export function DrawerMenu({ onBrowse }: DrawerMenuProps) {
     setOpen(false);
 
     if (item === "shared") {
-      router.push("/(tabs)/shared");
+      setBrowseFilter("all");
+      setBrowsePath("/");
+      router.push("/(tabs)/files");
       return;
     }
     if (item === "favorites") {
-      router.push("/(tabs)/favorites");
+      setBrowseFilter("favorites");
+      setBrowsePath("/");
+      router.push("/(tabs)/files");
       return;
     }
     if (item === "activities") {
-      router.push("/(tabs)/activity");
+      router.push("/share" as any);
       return;
     }
     if (item === "media") {
       router.push("/(tabs)/photos");
       return;
     }
-    if (item === "settings") {
-      router.push("/(tabs)/settings");
-      return;
-    }
-    if (item === "trashbin") {
-      router.push("/(tabs)/trash");
+    // settings and trashbin are not in current Figma scope — close drawer only
+    if (item === "settings" || item === "trashbin") {
       return;
     }
     onBrowse(item);
@@ -278,7 +280,7 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     color: theme.colors.textMuted,
   },
   menuLabelActive: {

@@ -8,9 +8,12 @@
 
 export const figmaAssets = {
   logo: require("../../assets/figma/brand/logo.png"),
+  splashLogo: require("../../assets/figma/brand/splash-logo.png"),
   onboarding: {
     heroOrbit: require("../../assets/figma/onboarding/hero-orbit.png"),
     heroLogo: require("../../assets/figma/onboarding/hero-logo.png"),
+    hero1: require("../../assets/figma/onboarding/onboarding-hero-1.png"),
+    hero2: require("../../assets/figma/onboarding/onboarding-hero-2.png"),
     chipPdf: require("../../assets/figma/onboarding/chip-pdf.png"),
     chipExcel: require("../../assets/figma/onboarding/chip-excel.png"),
     chipDoc: require("../../assets/figma/onboarding/chip-doc.png"),
@@ -56,6 +59,7 @@ export const figmaAssets = {
     menuTab: require("../../assets/figma/home/v2/menu-tab.png"),
     favoritesTab: require("../../assets/figma/home/v2/favorites-tab.png"),
     tabBarBg: require("../../assets/figma/home/v2/tab-bar-bg.png"),
+    newDashboardBg: require("../../assets/figma/home/new-dashboard-bg.png"),
   },
   drawer: {
     avatar: require("../../assets/figma/drawer/avatar.png"),

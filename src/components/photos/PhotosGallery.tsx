@@ -16,14 +16,13 @@ import {
   Dimensions,
 } from "react-native";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
-import { theme } from "@/src/constants/theme";
 
 const SCREEN_W = Dimensions.get("window").width;
 const PAD = 24;
-const GAP = 7;
+const GAP = 8;
 const COL_W = (SCREEN_W - PAD * 2 - GAP) / 2;
-const SHORT_H = 145;
-const TALL_H = 298;
+const SHORT_H = 140;
+const TALL_H = 296;
 
 interface PhotosGalleryProps {
   photos: KarsaazFile[];
@@ -228,37 +227,34 @@ const styles = StyleSheet.create({
   section: { marginBottom: 28 },
   monthTitle: {
     fontSize: 24,
-    color: theme.colors.text,
+    color: "#09090b",
     marginBottom: 4,
-    letterSpacing: -0.08,
+    fontWeight: "600",
   },
   dateTitle: {
-    fontSize: 12,
-    color: theme.colors.text,
+    fontSize: 14,
+    color: "#71717b",
     marginBottom: 12,
-    letterSpacing: -0.08,
   },
   masonry: { gap: GAP },
   row: { flexDirection: "row", gap: GAP },
   rightCol: { width: COL_W, gap: GAP },
   tile: {
     width: COL_W,
-    borderRadius: 24,
+    borderRadius: 16,
     overflow: "hidden",
-    borderWidth: 0.3,
-    borderColor: "rgba(46,184,134,0.15)",
-    backgroundColor: theme.colors.borderLight,
-    shadowColor: "#aab5d2",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
+    backgroundColor: "#f4f4f5",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     elevation: 3,
   },
   tileImage: { width: "100%", height: "100%", resizeMode: "cover" },
   empty: {
     textAlign: "center",
-    color: theme.colors.textMuted,
-    marginTop: 48,
+    color: "#71717b",
+    marginTop: 40,
     fontSize: 14,
   },
 });

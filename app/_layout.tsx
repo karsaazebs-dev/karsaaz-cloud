@@ -79,7 +79,7 @@ export default function RootLayout() {
 
     if (isAuthenticated && inAuth) {
       debugLog("app/_layout.tsx:auth", "redirect authenticated to home", { authScreen }, "E");
-      router.replace("/(tabs)/files");
+      router.replace("/(tabs)" as any);
     }
   }, [isHydrated, isAuthenticated, onboardingComplete, segments, router]);
 

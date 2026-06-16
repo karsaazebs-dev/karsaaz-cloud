@@ -40,6 +40,7 @@ interface UiState {
   showUploadMenu: boolean;
   showNotEnoughStorage: boolean;
   showMoveToFolder: boolean;
+  showSwitchServer: boolean;
   browseMode: boolean;
   browsePath: string;
   setDrawerOpen: (open: boolean) => void;
@@ -57,6 +58,7 @@ interface UiState {
   setShowUploadMenu: (show: boolean) => void;
   setShowNotEnoughStorage: (show: boolean) => void;
   setShowMoveToFolder: (show: boolean) => void;
+  setShowSwitchServer: (show: boolean) => void;
   setBrowseMode: (mode: boolean) => void;
   setBrowsePath: (path: string) => void;
 }
@@ -77,6 +79,7 @@ export const useUiStore = create<UiState>((set) => ({
   showUploadMenu: false,
   showNotEnoughStorage: false,
   showMoveToFolder: false,
+  showSwitchServer: false,
   browseMode: false,
   browsePath: "/",
   setDrawerOpen: (open) => set({ drawerOpen: open }),
@@ -94,6 +97,7 @@ export const useUiStore = create<UiState>((set) => ({
   setShowUploadMenu: (show) => set({ showUploadMenu: show }),
   setShowNotEnoughStorage: (show) => set({ showNotEnoughStorage: show }),
   setShowMoveToFolder: (show) => set({ showMoveToFolder: show }),
+  setShowSwitchServer: (show) => set({ showSwitchServer: show }),
   setBrowseMode: (mode) => set({ browseMode: mode }),
   setBrowsePath: (path) => set({ browsePath: path }),
 }));

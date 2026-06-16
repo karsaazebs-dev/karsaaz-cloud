@@ -26,12 +26,11 @@ import { useFavoritesStore } from "@/src/stores/favoritesStore";
 import { useAuthStore } from "@/src/stores/authStore";
 import type { BrowseFilter } from "@/src/stores/uiStore";
 import { filterFiles, sortFiles, formatFileDate, formatFileSize } from "@/src/utils/fileFilters";
-import { theme } from "@/src/constants/theme";
 
 const GRID_COLS = 3;
 const GRID_GAP = 8;
 const GRID_SIZE =
-  (Dimensions.get("window").width - theme.spacing.screen * 2 - GRID_GAP * (GRID_COLS - 1)) /
+  (Dimensions.get("window").width - 24 * 2 - GRID_GAP * (GRID_COLS - 1)) /
   GRID_COLS;
 
 interface FilesBrowserProps {
@@ -99,7 +98,7 @@ export function FilesBrowser({
           <Ionicons
             name={item.type === "directory" ? "folder" : "image-outline"}
             size={28}
-            color={item.type === "directory" ? "#ff7900" : theme.colors.accent}
+            color={item.type === "directory" ? "#4e3cf4" : "#4e3cf4"}
           />
         </View>
         <View style={styles.fileMeta}>
@@ -110,7 +109,7 @@ export function FilesBrowser({
           </Text>
         </View>
         <Pressable onPress={() => onShare(item)} hitSlop={8}>
-          <Ionicons name="person-add-outline" size={20} color={theme.colors.textMuted} />
+          <Ionicons name="person-add-outline" size={20} color="#71717b" />
         </Pressable>
         <Pressable
           onPress={() => {
@@ -119,13 +118,13 @@ export function FilesBrowser({
           }}
           hitSlop={8}
         >
-          <Ionicons name="ellipsis-vertical" size={16} color={theme.colors.textMuted} />
+          <Ionicons name="ellipsis-vertical" size={16} color="#71717b" />
         </Pressable>
       </Pressable>
       {menuFileId === item.path && (
         <View style={styles.popupMenu}>
           <Pressable style={styles.popupItem} onPress={() => { setMenuFileId(null); onMenu(item); }}>
-            <Ionicons name="create-outline" size={18} color={theme.colors.text} />
+            <Ionicons name="create-outline" size={18} color="#09090b" />
             <Text style={styles.popupText}>Edit</Text>
           </Pressable>
           <Pressable
@@ -136,7 +135,7 @@ export function FilesBrowser({
             <Text style={[styles.popupText, styles.destructive]}>Delete</Text>
           </Pressable>
           <Pressable style={styles.popupItem} onPress={() => { setMenuFileId(null); onShare(item); }}>
-            <Ionicons name="share-social-outline" size={18} color={theme.colors.text} />
+            <Ionicons name="share-social-outline" size={18} color="#09090b" />
             <Text style={styles.popupText}>Share</Text>
           </Pressable>
         </View>
@@ -149,7 +148,7 @@ export function FilesBrowser({
       <Ionicons
         name={item.type === "directory" ? "folder" : "document-outline"}
         size={32}
-        color={item.type === "directory" ? "#ff7900" : theme.colors.accent}
+        color={item.type === "directory" ? "#4e3cf4" : "#4e3cf4"}
       />
       <Text style={styles.gridName} numberOfLines={2}>{item.name}</Text>
     </Pressable>
@@ -161,7 +160,7 @@ export function FilesBrowser({
         <View style={styles.topLeft}>
           {onBackToDashboard ? (
             <Pressable onPress={onBackToDashboard} style={styles.backBtn} hitSlop={8}>
-              <Ionicons name="chevron-back" size={22} color={theme.colors.text} />
+              <Ionicons name="chevron-back" size={22} color="#09090b" />
             </Pressable>
           ) : null}
           <ConnectionStatus />
@@ -175,11 +174,11 @@ export function FilesBrowser({
       </View>
 
       <View style={styles.searchWrap}>
-        <Ionicons name="search" size={18} color="#7b7985" style={styles.searchIcon} />
+        <Ionicons name="search" size={18} color="#71717b" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search files..."
-          placeholderTextColor="#7b7985"
+          placeholderTextColor="#71717b"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -188,13 +187,13 @@ export function FilesBrowser({
       <View style={styles.toolbar}>
         <Pressable style={styles.sortBtn} onPress={cycleSort}>
           <Text style={styles.sortLabel}>{sortLabel}</Text>
-          <Ionicons name="chevron-down" size={14} color={theme.colors.text} />
+          <Ionicons name="chevron-down" size={14} color="#09090b" />
         </Pressable>
         <Pressable onPress={() => setViewMode(viewMode === "list" ? "grid" : "list")}>
           <Ionicons
             name={viewMode === "list" ? "grid-outline" : "list-outline"}
             size={20}
-            color={theme.colors.text}
+            color="#09090b"
           />
         </Pressable>
       </View>
@@ -202,7 +201,7 @@ export function FilesBrowser({
       <Text style={styles.sectionTitle}>{title}</Text>
 
       {isLoading ? (
-        <ActivityIndicator style={styles.loader} color={theme.colors.accent} />
+        <ActivityIndicator style={styles.loader} color="#4e3cf4" />
       ) : (
         <FlatList
           data={visibleFiles}
@@ -226,74 +225,80 @@ export function FilesBrowser({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.colors.surface },
+  screen: { flex: 1, backgroundColor: "#f7f7f7" },
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.screen,
+    paddingHorizontal: 24,
     paddingTop: 52,
     paddingBottom: 12,
   },
   topLeft: { flexDirection: "row", alignItems: "center", gap: 4 },
-  backBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   bellIcon: { width: 22, height: 22 },
   topActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: theme.colors.infoBg,
+    backgroundColor: "#f4f4f5",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "rgba(43,127,255,0.2)",
   },
   avatarImage: { width: 40, height: 40, borderRadius: 20 },
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: theme.spacing.screen,
-    backgroundColor: theme.colors.surface,
+    marginHorizontal: 24,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
-    paddingHorizontal: 14,
-    height: 40,
-    borderWidth: 0.4,
+    paddingHorizontal: 16,
+    height: 44,
+    borderWidth: 0.5,
     borderColor: "#dfe1e4",
-    ...theme.shadow.card,
+    shadowColor: "#e4efff",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 11,
+    elevation: 2,
   },
-  searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, fontSize: 16, color: theme.colors.text },
+  searchIcon: { marginRight: 12 },
+  searchInput: { flex: 1, fontSize: 16, color: "#09090b" },
   toolbar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.screen,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
   sortBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
-  sortLabel: { fontSize: 16, fontWeight: "500", color: theme.colors.text },
+  sortLabel: { fontSize: 16, fontWeight: "500", color: "#09090b" },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: theme.colors.text,
-    paddingHorizontal: theme.spacing.screen,
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#09090b",
+    paddingHorizontal: 24,
+    marginBottom: 12,
   },
-  list: { paddingHorizontal: theme.spacing.screen, paddingBottom: 120, gap: 8 },
+  list: { paddingHorizontal: 24, paddingBottom: 120, gap: 8 },
   fileCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: "#ffffff",
     borderRadius: 16,
-    borderWidth: 0.4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 0.5,
     borderColor: "#dfe1e4",
-    padding: 12,
-    marginBottom: 8,
-    ...theme.shadow.card,
+    shadowColor: "#e4efff",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 11,
+    elevation: 2,
   },
-  fileCardActive: { backgroundColor: theme.colors.infoBg },
+  fileCardActive: { backgroundColor: "#f4f4f5" },
   thumb: {
     width: 56,
     height: 54,
@@ -304,51 +309,62 @@ const styles = StyleSheet.create({
   },
   fileMeta: { flex: 1 },
   fileName: { fontSize: 16, fontWeight: "500", color: "#5c5c5c" },
-  fileSub: { fontSize: 12, color: theme.colors.textSubtle, marginTop: 2 },
+  fileSub: { fontSize: 13, color: "#71717b", marginTop: 2 },
   popupMenu: {
     position: "absolute",
     right: 24,
     top: 52,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    paddingVertical: 4,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    paddingVertical: 8,
     zIndex: 10,
-    ...theme.shadow.card,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
   popupItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
-  popupText: { fontSize: 14, color: theme.colors.text },
+  popupText: { fontSize: 15, color: "#09090b" },
   destructive: { color: "#dc2626" },
   gridCard: {
     width: GRID_SIZE,
     height: GRID_SIZE,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: GRID_GAP,
     marginRight: GRID_GAP,
-    ...theme.shadow.card,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  gridName: { fontSize: 11, color: theme.colors.text, marginTop: 6, textAlign: "center" },
+  gridName: { fontSize: 12, color: "#09090b", marginTop: 8, textAlign: "center" },
   loader: { marginTop: 40 },
-  empty: { textAlign: "center", color: theme.colors.textMuted, marginTop: 40 },
+  empty: { textAlign: "center", color: "#71717b", marginTop: 40 },
   fab: {
     position: "absolute",
     right: 24,
-    bottom: 100,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: theme.colors.accentBright,
+    bottom: 96,
+    width: 65,
+    height: 65,
+    borderRadius: 33,
+    backgroundColor: "#2b7fff",
     alignItems: "center",
     justifyContent: "center",
-    ...theme.shadow.button,
+    shadowColor: "#2b7fff",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  fabIcon: { width: 28, height: 28 },
 });

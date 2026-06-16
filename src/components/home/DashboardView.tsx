@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 import type { BrowseFilter } from "@/src/stores/uiStore";
 import { SectionHeader } from "@/src/components/ui/SectionHeader";
@@ -161,19 +160,27 @@ export function DashboardView({
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SafeAreaView edges={["top"]} style={styles.topSafe}>
       <View style={styles.header}>
-        <ConnectionStatus />
+        <View style={styles.headerLeft}>
+          <Image source={figmaAssets.splashLogo} style={styles.logo} />
+          <Text style={styles.logoText}>Storage.io</Text>
+        </View>
         <View style={styles.headerActions}>
-          <View style={styles.bellWrap}>
+          <Pressable style={styles.searchBtn}>
+            <Ionicons name="search" size={20} color="#4e3cf4" />
+          </Pressable>
+          <Pressable style={styles.bellWrap}>
             <Image source={figmaAssets.home.bell} style={styles.headerIcon} />
-          </View>
-          <Pressable onPress={onAvatarPress} style={styles.avatarWrap}>
-            <Image source={figmaAssets.home.avatar} style={styles.avatarImage} />
           </Pressable>
         </View>
       </View>
 
       <View style={styles.storageCard}>
-        <Text style={styles.storageLabel}>Alloted Storage</Text>
+        <View style={styles.storageRow}>
+          <Text style={styles.storageLabel}>Storage</Text>
+          <Pressable onPress={onManageStorage}>
+            <Ionicons name="settings-outline" size={20} color="#4e3cf4" />
+          </Pressable>
+        </View>
         <Text style={styles.storageUsed}>
           <Text style={styles.storageBold}>
             {isUnlimited
@@ -212,39 +219,25 @@ export function DashboardView({
             </View>
           ))}
         </View>
-        <View style={styles.storageActions}>
-          <Pressable style={styles.manageBtn} onPress={onManageStorage}>
-            <Ionicons name="options-outline" size={16} color="#fff" />
-            <Text style={styles.manageText}>Manage</Text>
-          </Pressable>
-          <Pressable style={styles.requestBtn} onPress={onRequestStorage}>
-            <LinearGradient
-              colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.requestGradient}
-            >
-              <Text style={styles.requestText}>Request Storage</Text>
-            </LinearGradient>
-          </Pressable>
-        </View>
       </View>
       </SafeAreaView>
 
       <View style={styles.lowerSection}>
       <SectionHeader title="Quick Access" />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickRow}>
+      <View style={styles.quickGrid}>
         {QUICK_ACCESS_ITEMS.map((item) => (
           <Pressable
             key={item.id}
             style={styles.quickCard}
             onPress={() => onQuickAccess(item.id)}
           >
-            <Image source={item.icon} style={styles.quickIcon} />
+            <View style={styles.quickIconWrap}>
+              <Image source={item.icon} style={styles.quickIcon} />
+            </View>
             <Text style={styles.quickLabel}>{item.label}</Text>
           </Pressable>
         ))}
-      </ScrollView>
+      </View>
 
       <SectionHeader
         title="My Folders"
@@ -255,38 +248,17 @@ export function DashboardView({
         {folders.length === 0 ? (
           <Text style={styles.emptyHint}>No folders yet</Text>
         ) : (
-          folders.map((folder, i) => (
+          folders.map((folder) => (
             <Pressable key={folder.path} style={styles.folderCard} onPress={() => onOpenFolder(folder)}>
               <Pressable
                 style={styles.folderMenu}
                 onPress={() => onFolderMenu?.(folder)}
                 hitSlop={8}
               >
-                <Image source={figmaAssets.home.folderMenu} style={styles.menuIcon} />
+                <Ionicons name="ellipsis-vertical" size={16} color="#71717b" />
               </Pressable>
-              <LinearGradient
-                colors={
-                  i % 2 === 0
-                    ? [theme.colors.folderOrangeStart, theme.colors.folderOrangeEnd]
-                    : ["#ffffff", "#f4f4f5"]
-                }
-                style={[
-                  styles.folderIconWrap,
-                  i % 2 === 0 ? styles.folderOrangeShadow : styles.folderGrayShadow
-                ]}
-              >
-                {i % 2 === 0 ? (
-                  <Image source={figmaAssets.home.folderIcon} style={styles.folderIcon} />
-                ) : (
-                  <View style={styles.dotsGrid}>
-                    <View style={[styles.colorDot, { backgroundColor: "#e64343" }]} />
-                    <View style={[styles.colorDot, { backgroundColor: "#ce74e3" }]} />
-                    <View style={[styles.colorDot, { backgroundColor: "#28bc5e" }]} />
-                    <View style={[styles.colorDot, { backgroundColor: "#1d84f5" }]} />
-                  </View>
-                )}
-              </LinearGradient>
-              <Text style={styles.folderName}>{folder.name}</Text>
+              <Image source={figmaAssets.home.folderIcon} style={styles.folderIcon} />
+              <Text style={styles.folderName} numberOfLines={1}>{folder.name}</Text>
               <Text style={styles.folderMeta}>{folderMetaLabel(folder)}</Text>
             </Pressable>
           ))
@@ -323,7 +295,7 @@ export function DashboardView({
                 </View>
               )}
               <Pressable onPress={() => onFileMenu?.(file)} hitSlop={8}>
-                <Image source={figmaAssets.home.fileMenu} style={styles.menuIcon} />
+                <Ionicons name="ellipsis-vertical" size={16} color="#71717b" />
               </Pressable>
             </Pressable>
           ))
@@ -369,11 +341,11 @@ export function DashboardView({
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.colors.surfaceMuted },
+  screen: { flex: 1, backgroundColor: "#fafafa" },
   content: { paddingBottom: 160 },
-  topSafe: { backgroundColor: theme.colors.surface },
+  topSafe: { backgroundColor: "#ffffff" },
   lowerSection: {
-    backgroundColor: theme.colors.surfaceMuted,
+    backgroundColor: "#fafafa",
     paddingTop: 8,
     paddingBottom: 24,
   },
@@ -381,196 +353,181 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.screen,
+    paddingHorizontal: 24,
     paddingTop: 8,
     paddingBottom: 16,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: "#ffffff",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  logo: { width: 32, height: 32 },
+  logoText: {
+    fontSize: 18,
+    color: "#09090b",
+    fontWeight: "500",
   },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
+  searchBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f4f4f5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   headerIcon: { width: 22, height: 22 },
   bellWrap: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: theme.colors.surface,
+    backgroundColor: "#f4f4f5",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadow.card,
   },
-  avatarWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#3b82f6",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#3b82f6",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  avatarImage: { width: 36, height: 36, borderRadius: 18 },
   storageCard: {
-    marginHorizontal: theme.spacing.screen,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.card,
-    marginBottom: 24,
-    ...theme.shadow.card,
-  },
-  storageLabel: { fontSize: 18, color: theme.colors.textDark, marginBottom: 4, lineHeight: 18.5 },
-  storageUsed: { fontSize: 18, marginBottom: 12 },
-  storageBold: { fontWeight: "600", fontSize: 24, color: theme.colors.textDark, lineHeight: 18.5 },
-  storageMuted: { fontWeight: "400", fontSize: 18, color: "#71717b", lineHeight: 18.5 },
-  storageBar: { flexDirection: "row", height: 4, borderRadius: 2, overflow: "hidden", gap: 2 },
-  barSeg: { borderRadius: 2 },
-  legend: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 12, marginBottom: 16 },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendText: { fontSize: 11, color: theme.colors.textMuted },
-  storageActions: { flexDirection: "row", gap: 10 },
-  manageBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    backgroundColor: "#242424",
-    borderRadius: theme.radius.md,
-    paddingVertical: 12,
-  },
-  manageText: { color: "#fff", fontWeight: "600", fontSize: 14 },
-  requestBtn: { flex: 1.4, borderRadius: theme.radius.md, overflow: "hidden" },
-  requestGradient: { paddingVertical: 12, alignItems: "center" },
-  requestText: { color: "#fff", fontWeight: "600", fontSize: 14 },
-  quickRow: { paddingHorizontal: theme.spacing.screen, marginBottom: 24 },
-  quickCard: {
-    width: 103,
-    height: 95,
-    backgroundColor: theme.colors.surface,
+    marginHorizontal: 24,
+    backgroundColor: "#ffffff",
     borderRadius: 16,
-    borderWidth: 0.4,
-    borderColor: "#dfe1e4",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-    shadowColor: "#e4efff",
-    shadowOffset: { width: 0, height: 5.4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10.8,
-    elevation: 3,
-  },
-  quickIcon: { width: 40, height: 40, resizeMode: "contain", marginBottom: 8 },
-  quickLabel: { fontSize: 12, color: "#414157", fontWeight: "500" },
-  menuIcon: { width: 15, height: 15, resizeMode: "contain" },
-  fileTypeIcon: { width: 44, height: 44, resizeMode: "contain" },
-  folderRow: { paddingHorizontal: theme.spacing.screen, marginBottom: 24 },
-  folderCard: {
-    width: 158,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 15,
     padding: 20,
-    marginRight: 12,
-    alignItems: "center",
-    position: "relative",
-    borderWidth: 0.5,
-    borderColor: "rgba(0,0,0,0.08)",
-    shadowColor: theme.colors.accent,
-    shadowOffset: { width: 0, height: 7.4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 22,
-    elevation: 4,
-  },
-  folderMenu: { position: "absolute", top: 12, right: 12, zIndex: 1 },
-  folderIconWrap: {
-    width: 74,
-    height: 74,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  folderIcon: { width: 42, height: 42 },
-  folderOrangeShadow: {
-    shadowColor: "#ea580c",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  folderGrayShadow: {
+    marginBottom: 24,
     shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
   },
-  dotsGrid: { flexDirection: "row", flexWrap: "wrap", width: 30, gap: 4 },
-  colorDot: { width: 11, height: 11, borderRadius: 6 },
-  folderName: { fontWeight: "600", fontSize: 13, color: "#09090b" },
-  folderMeta: { fontSize: 10, color: "#71717b", marginTop: 2 },
-  recentList: { paddingHorizontal: theme.spacing.screen, gap: 8, marginBottom: 24 },
+  storageRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  storageLabel: { fontSize: 16, color: "#09090b", fontWeight: "500" },
+  storageUsed: { fontSize: 16, marginBottom: 12 },
+  storageBold: { fontWeight: "600", fontSize: 24, color: "#09090b" },
+  storageMuted: { fontWeight: "400", fontSize: 18, color: "#71717b" },
+  storageBar: { flexDirection: "row", height: 6, borderRadius: 3, overflow: "hidden", gap: 2 },
+  barSeg: { borderRadius: 3 },
+  legend: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 16 },
+  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  legendDot: { width: 10, height: 10, borderRadius: 5 },
+  legendText: { fontSize: 12, color: "#71717b" },
+  quickGrid: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  quickCard: {
+    width: "30%",
+    alignItems: "center",
+    gap: 8,
+  },
+  quickIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: "#ffffff",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  quickIcon: { width: 28, height: 28, resizeMode: "contain" },
+  quickLabel: { fontSize: 12, color: "#71717b", fontWeight: "500" },
+  menuIcon: { width: 15, height: 15, resizeMode: "contain" },
+  fileTypeIcon: { width: 44, height: 44, resizeMode: "contain" },
+  folderRow: { paddingHorizontal: 24, marginBottom: 24 },
+  folderCard: {
+    width: 140,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 16,
+    marginRight: 12,
+    alignItems: "flex-start",
+    position: "relative",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  folderMenu: { position: "absolute", top: 12, right: 12, zIndex: 1 },
+  folderIcon: { width: 56, height: 56, marginBottom: 12 },
+  folderName: { fontWeight: "600", fontSize: 14, color: "#09090b" },
+  folderMeta: { fontSize: 12, color: "#71717b", marginTop: 4 },
+  recentList: { paddingHorizontal: 24, gap: 12, marginBottom: 24 },
   recentCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: 12,
-    ...theme.shadow.card,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   fileThumbWrap: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   fileMeta: { flex: 1 },
-  fileName: { fontSize: 14, fontWeight: "600", color: theme.colors.text },
-  fileSub: { fontSize: 12, color: theme.colors.textSubtle, marginTop: 2 },
+  fileName: { fontSize: 14, fontWeight: "600", color: "#09090b" },
+  fileSub: { fontSize: 12, color: "#71717b", marginTop: 4 },
   sharedTag: {
-    backgroundColor: "#ddf0ff",
+    backgroundColor: "#e0e7ff",
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: theme.radius.pill,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  sharedText: { fontSize: 10, color: "#2b7fff" },
-  sharedList: { paddingHorizontal: theme.spacing.screen, gap: 10, marginBottom: 24 },
+  sharedText: { fontSize: 12, color: "#4e3cf4", fontWeight: "500" },
+  sharedList: { paddingHorizontal: 24, gap: 12, marginBottom: 24 },
   sharedCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: 14,
-    ...theme.shadow.card,
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   sharedAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#e0e7ff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sharedAvatarText: { fontWeight: "600", color: "#4e3cf4", fontSize: 16 },
+  sharedMeta: { flex: 1 },
+  sharedOwner: { fontSize: 14, fontWeight: "600", color: "#09090b" },
+  sharedMessage: { fontSize: 12, color: "#71717b", marginTop: 4 },
+  downloadBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.infoBg,
+    backgroundColor: "#f4f4f5",
     alignItems: "center",
     justifyContent: "center",
   },
-  sharedAvatarText: { fontWeight: "600", color: theme.colors.accent },
-  sharedMeta: { flex: 1 },
-  sharedOwner: { fontSize: 14, fontWeight: "600", color: theme.colors.text },
-  sharedMessage: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2 },
-  downloadBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  downloadIcon: { width: 18, height: 18 },
-  emptyHint: { color: theme.colors.textMuted, paddingHorizontal: theme.spacing.screen },
+  downloadIcon: { width: 20, height: 20 },
+  emptyHint: { color: "#71717b", paddingHorizontal: 24 },
 });

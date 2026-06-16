@@ -24,7 +24,7 @@ import { useAuthStore } from "@/src/stores/authStore";
 import { PhotosGallery } from "@/src/components/photos/PhotosGallery";
 import { figmaAssets } from "@/src/constants/assets";
 import { getFileDownloadUrl } from "@karsaaz/cloud-api";
-import { theme } from "@/src/constants/theme";
+import { Ionicons } from "@expo/vector-icons";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 
 export default function PhotosScreen() {
@@ -65,26 +65,30 @@ export default function PhotosScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.push("/(tabs)/files")}>
-          <Image source={figmaAssets.login.back} style={styles.backIcon} />
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={24} color="#09090b" />
         </Pressable>
-        <Text style={styles.headerTitle}>Photos</Text>
-        <View style={styles.headerSpacer} />
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerTitle}>Photos</Text>
+        </View>
+        <Pressable hitSlop={8}>
+          <Ionicons name="search-outline" size={24} color="#09090b" />
+        </Pressable>
       </View>
 
       <View style={styles.filterBar}>
         <Pressable style={styles.filterBtn}>
           <Text style={styles.filterText}>Photos</Text>
-          <Image source={figmaAssets.photos.chevronDownWhite} style={styles.filterChevron} />
+          <Ionicons name="chevron-down" size={16} color="#ffffff" />
         </Pressable>
-        <Pressable onPress={() => router.push("/(tabs)/shared")}>
-          <Image source={figmaAssets.home.searchTab} style={styles.searchIcon} />
+        <Pressable style={styles.filterBtn}>
+          <Text style={styles.filterText}>Videos</Text>
         </Pressable>
       </View>
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={theme.colors.accent} />
+          <ActivityIndicator color="#4e3cf4" />
         </View>
       ) : (
         <PhotosGallery
@@ -99,74 +103,61 @@ export default function PhotosScreen() {
           }
         />
       )}
-
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push("/(tabs)/files")}
-      >
-        <Image source={figmaAssets.home.fabPlus} style={styles.fabIcon} />
-      </Pressable>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.colors.background },
+  screen: { flex: 1, backgroundColor: "#f7f7f7" },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.screen,
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: "center",
   },
   backBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  backIcon: { width: 20, height: 20, resizeMode: "contain" },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    color: theme.colors.text,
+    fontWeight: "500",
+    color: "#09090b",
   },
-  headerSpacer: { width: 44 },
   filterBar: {
     height: 56,
-    backgroundColor: theme.colors.tabBar,
+    backgroundColor: "#1d1f2b",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: theme.spacing.screen,
+    justifyContent: "center",
+    gap: 12,
+    paddingHorizontal: 24,
   },
   filterBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: 12,
+    borderColor: "rgba(255,255,255,0.2)",
+    borderRadius: 28,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    minWidth: 100,
   },
-  filterText: { color: "#ffffff", fontSize: 13 },
-  filterChevron: { width: 8, height: 5, resizeMode: "contain", tintColor: "#ffffff" },
-  searchIcon: { width: 24, height: 24, resizeMode: "contain", tintColor: "#ffffff" },
+  filterText: { color: "#ffffff", fontSize: 14, fontWeight: "500" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  fab: {
-    position: "absolute",
-    right: 24,
-    bottom: 100,
-    width: 65,
-    height: 65,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fabIcon: { width: 65, height: 65, resizeMode: "contain" },
 });

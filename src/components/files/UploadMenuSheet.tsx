@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingVertical: 14,
   },
-  rowIcon: { width: 22, height: 22, resizeMode: "contain" },
+  rowIcon: { width: 22, height: 22, resizeMode: "contain", tintColor: theme.colors.textDark },
   label: { fontSize: 16, color: theme.colors.textDark, fontWeight: "300" },
   divider: {
     height: StyleSheet.hairlineWidth,
