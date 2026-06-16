@@ -13,9 +13,9 @@
       }
     },
     "recommended": true,
-    "summary": "Context reset recommended (auto): 19 recent edit count exceed threshold 8",
+    "summary": "Context reset recommended (auto): 20 recent edit count exceed threshold 8",
     "reasons": [
-      "19 recent edit count exceed threshold 8"
+      "20 recent edit count exceed threshold 8"
     ],
     "candidates": [
       {
@@ -35,7 +35,7 @@
       {
         "key": "recent_edits",
         "label": "recent edit count",
-        "actual": 19,
+        "actual": 20,
         "threshold": 8,
         "triggered": true
       },
@@ -57,7 +57,7 @@
     "counters": {
       "wipTasks": 0,
       "blockedTasks": 0,
-      "recentEdits": 19,
+      "recentEdits": 20,
       "failedChecks": 0,
       "sessionAgeMinutes": null
     }
@@ -66,33 +66,47 @@
     "plugin_first_workflow": true,
     "resume_aware_effort_continuity": true,
     "effort_hint": "medium",
-    "summary": "plugin-first workflow: enabled; resume-aware effort continuity: medium"
+    "summary": "plugin-first workflow: enabled; resume-aware effort continuity: medium; next_task=1.1"
   },
   "legacy_version": "1.0.0",
   "metrics": null,
   "recentEdits": [
     ".claude/sessions/.last_inbox_check",
     ".claude/state/changed-files.jsonl",
+    ".claude/state/handoff-artifact.json",
     ".claude/state/instructions-loaded.jsonl",
-    "mobile condition/WhatsApp Image 2026-06-15 at 4.09.49 PM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.03 PM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.04 PM (1).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.04 PM (2).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.04 PM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 1.42.05 PM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM (1).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM (2).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM (3).jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.49 AM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.50 AM.jpeg",
-    "mobile condition/WhatsApp Image 2026-06-16 at 10.50.51 AM.jpeg",
-    "src/components/files/FilesBrowser.tsx",
-    "src/components/home/DashboardView.tsx",
-    "src/components/ui/FigmaTabBar.tsx",
-    "app/share.tsx"
+    ".claude/state/precompact-snapshot.json",
+    "app/manage-storage.tsx",
+    "app/request-storage-history.tsx",
+    "app/request-storage.tsx",
+    "src/components/files/CreateTagModal.tsx",
+    "src/components/files/FileBrowserScreen.tsx",
+    "src/components/files/FileDetailsSheet.tsx",
+    "src/components/files/FolderActionsSheet.tsx",
+    "src/hooks/useBrowseFiles.ts",
+    "src/hooks/useFiles.ts",
+    "src/stores/tagsStore.ts",
+    "src/types/cloud-api.d.ts",
+    ".claude/state/locks/plans.flock",
+    ".claude/state/plans-state.json",
+    ".claude/state/progress-last-regen.txt",
+    "1_048_576)"
   ],
   "sessionId": "",
-  "timestamp": "2026-06-16T08:50:12Z",
+  "timestamp": "2026-06-16T12:29:47Z",
   "version": "1.0.0",
-  "wipTasks": null
+  "wipTasks": [
+    "**Expand popup menu** — replace the current 3-item `popupMenu` in `src/components/files/FilesBrowser.tsx` with full action list: Rename, Move, Favorite/Unfavorite, Download, Tags, Delete, Share. Each item calls the appropriate handler prop (add new props to `FilesBrowserProps`). [tdd:skip:ui-component]",
+    "**Rename dialog** — `src/components/files/RenameDialog.tsx`. Modal bottom sheet with TextInput pre-filled with current name, calls `renameMutation` from `useFiles`. Show validation error if name is empty or unchanged. [tdd:skip:ui-modal]",
+    "**Move picker** — `src/components/files/MovePickerSheet.tsx`. Bottom sheet that shows a `FlatList` of folders (calls `listDirectory`) at `/`, user can navigate into sub-folders, taps \"Move Here\" to confirm. Calls `moveMutation`. [tdd:skip:ui-modal]",
+    "**Favorite toggle** — wire `favoriteMutation` from `useFiles` directly on tap in menu (no separate screen). Add star icon overlay on file thumbnail in both list and grid views when `file.isFavorite === true`. [tdd:skip:ui-inline]",
+    "**Download action** — wire `downloadMutation` from `useFiles` in menu. Show `ActivityIndicator` in menu item while pending. On success call `Sharing.shareAsync` (already done in the mutation). [tdd:skip:ui-inline]",
+    "**FAB action sheet** — `src/components/files/FabSheet.tsx`. When FAB is pressed, show a bottom sheet with two options: \"Upload File\" (existing picker flow) and \"New Folder\". [tdd:skip:ui-modal]",
+    "**New Folder dialog** — `src/components/files/NewFolderDialog.tsx`. Modal with TextInput for folder name (max 255 chars, no `/` or `\\`). Calls `mkdirMutation` from `useFiles`. Auto-dismiss on success. [tdd:skip:ui-modal]",
+    "**Wire FAB in all browse screens** — update `app/(tabs)/files.tsx` and `app/(tabs)/index.tsx` to pass `onFabPress` through to `FabSheet`. Remove the old direct `DocumentPicker` call from `onFabPress`. [tdd:skip:wiring]",
+    "**Tags bottom sheet** — `src/components/files/TagsSheet.tsx`. Bottom sheet opened from the \"Tags\" menu action. Shows: (a) list of all tags from `tagsStore.tags` as colored chips with checkboxes indicating if assigned to the current file; (b) \"Create new tag\" row with TextInput + color picker (6 preset colors). Tapping a chip calls `assignTag` or `unassignTag`. [tdd:skip:ui-modal]",
+    "**Tag chips on file cards** — in `FilesBrowser.tsx` list view, below the file name row, show up to 3 tag chips for files that have assigned tags (from `tagsStore.getTagsForFile`). Each chip shows tag name with colored dot. [tdd:skip:ui-component]",
+    "**Load file tags on browse** — in `FilesBrowser.tsx` (or the parent screen), after files list loads, call `tagsStore.loadFileTags(file.fileId, file.path)` for each file to populate tag assignments. Debounce / batch to avoid too many concurrent calls. [tdd:skip:side-effect]",
+    "**Tags filter in browse** — add a \"Tags\" filter chip in the `toolbar` row of `FilesBrowser.tsx`. Tapping it opens a picker of all tags; selecting a tag filters `visibleFiles` to only files with that tag assigned. [tdd:skip:ui-filter]"
+  ]
 }

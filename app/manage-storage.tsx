@@ -157,7 +157,7 @@ export default function ManageStorageScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.bottomBtnGradient}
           >
-            <Text style={styles.bottomBtnText}>Request Storage Upgrade</Text>
+            <Text style={styles.bottomBtnText}>Manage Storage</Text>
           </LinearGradient>
         </Pressable>
       </View>

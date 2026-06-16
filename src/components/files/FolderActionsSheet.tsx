@@ -18,13 +18,13 @@ interface Action {
 
 const ACTIONS: Action[] = [
   { id: "details", label: "Details", icon: "information-circle-outline" },
-  { id: "favorite", label: "Favorite", icon: "star-outline" },
+  { id: "favourite", label: "Add to favourite", icon: "star-outline" },
   { id: "tag", label: "Tag", icon: "pricetag-outline" },
   { id: "rename", label: "Rename", icon: "create-outline" },
   { id: "edit", label: "Edit", icon: "pencil-outline" },
-  { id: "move", label: "Move to Folder", icon: "folder-open-outline" },
-  { id: "export", label: "Export", icon: "share-outline" },
-  { id: "share", label: "Share", icon: "person-add-outline" },
+  { id: "move", label: "Move to folder", icon: "folder-open-outline" },
+  { id: "export", label: "Export", icon: "exit-outline" },
+  { id: "share", label: "Share / Activity", icon: "share-social-outline" },
   { id: "sync", label: "Sync", icon: "sync-outline" },
   { id: "pin", label: "Pin", icon: "pin-outline" },
   { id: "delete", label: "Delete", icon: "trash-outline", destructive: true },

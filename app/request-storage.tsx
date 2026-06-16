@@ -19,7 +19,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUserQuota } from "@/src/hooks/useUserQuota";
-import { useStorageRequestStore } from "@/src/stores/storageRequestStore";
+import { useCreateRequestMutation } from "@/src/hooks/useQuotaAllocation";
 import { theme } from "@/src/constants/theme";
 import { BackButton } from "@/src/components/ui/BackButton";
 import { StorageUsageBlock } from "@/src/components/storage/StorageUsageBlock";
@@ -29,7 +29,7 @@ type Step = "size" | "reason" | "success";
 export default function RequestStorageScreen() {
   const router = useRouter();
   const { data: userQuota, refetch: refetchQuota } = useUserQuota();
-  const addRequest = useStorageRequestStore((s) => s.addRequest);
+  const createRequestMutation = useCreateRequestMutation();
 
   const [step, setStep] = useState<Step>("size");
   const [deltaSelection, setDeltaSelection] = useState<
@@ -37,7 +37,7 @@ export default function RequestStorageScreen() {
   >("+100 GB");
   const [customAmount, setCustomAmount] = useState("150");
   const [reason, setReason] = useState("");
-  const [loading, setLoading] = useState(false);
+
 
   const totalBytes = userQuota?.quota?.total ?? 500 * 1024 * 1024 * 1024;
   const usedBytes = userQuota?.quota?.used ?? 0;
@@ -59,24 +59,20 @@ export default function RequestStorageScreen() {
     setStep("reason");
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!reason.trim()) {
       alert("Please provide an explanation for the request.");
       return;
     }
-    setLoading(true);
-    try {
-      await addRequest({
-        currentSize: `${currentGb} GB`,
-        requestedSize: `${newTotalGb} GB`,
-        reason: reason,
-      });
-      setStep("success");
-    } catch (e) {
-      alert("Failed to submit request.");
-    } finally {
-      setLoading(false);
-    }
+    const currentBytes   = currentGb * 1_073_741_824;
+    const requestedBytes = newTotalGb * 1_073_741_824;
+    createRequestMutation.mutate(
+      { currentBytes, requestedBytes, reason },
+      {
+        onSuccess: () => setStep("success"),
+        onError: () => alert("Failed to submit request. Please try again."),
+      }
+    );
   };
 
   if (step === "success") {
@@ -290,7 +286,7 @@ export default function RequestStorageScreen() {
 
               {/* Action Buttons */}
               <View style={styles.actionsContainer}>
-                <Pressable style={styles.gradientBtn} onPress={handleSubmit} disabled={loading}>
+                <Pressable style={styles.gradientBtn} onPress={handleSubmit} disabled={createRequestMutation.isPending}>
                   <LinearGradient
                     colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
                     start={{ x: 0, y: 0 }}
@@ -298,7 +294,7 @@ export default function RequestStorageScreen() {
                     style={styles.gradientBtnStyle}
                   >
                     <Text style={styles.gradientBtnText}>
-                      {loading ? "Submitting..." : "Review Request"}
+                      {createRequestMutation.isPending ? "Submitting..." : "Review Request"}
                     </Text>
                   </LinearGradient>
                 </Pressable>

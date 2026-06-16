@@ -13,8 +13,8 @@ const FAB_TABS = new Set(["index", "files", "photos"]);
 export function MainTabFab() {
   const segments = useSegments();
   const router = useRouter();
-  const setShowUploadMenu = useUiStore((s) => s.setShowUploadMenu);
-  const setPendingUploadMenu = useUiStore((s) => s.setPendingUploadMenu);
+  const setShowFabSheet = useUiStore((s) => s.setShowFabSheet);
+  const setPendingFabSheet = useUiStore((s) => s.setPendingFabSheet);
 
   const tabSegment = segments[0] === "(tabs)" ? segments[1] : undefined;
   if (!tabSegment || !FAB_TABS.has(tabSegment)) return null;
@@ -25,10 +25,10 @@ export function MainTabFab() {
     // #endregion
 
     if (tabSegment === "files") {
-      setShowUploadMenu(true);
+      setShowFabSheet(true);
       return;
     }
-    setPendingUploadMenu(true);
+    setPendingFabSheet(true);
     router.push("/(tabs)/files");
   };
 

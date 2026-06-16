@@ -10,16 +10,20 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { FilesBrowser } from "@/src/components/files/FilesBrowser";
-import { FileActionsSheet } from "@/src/components/files/FileActionsSheet";
 import { FolderActionsSheet } from "@/src/components/files/FolderActionsSheet";
 import { CreateFolderModal } from "@/src/components/files/CreateFolderModal";
 import { UploadMenuSheet } from "@/src/components/files/UploadMenuSheet";
 import { RenameModal } from "@/src/components/files/RenameModal";
+import { FabSheet } from "@/src/components/files/FabSheet";
+import { NewFolderDialog } from "@/src/components/files/NewFolderDialog";
+import { CreateTagModal } from "@/src/components/files/CreateTagModal";
+import { MoveToFolderModal } from "@/src/components/files/MoveToFolderModal";
 import { useBrowseFiles } from "@/src/hooks/useBrowseFiles";
 import { useAuthStore } from "@/src/stores/authStore";
 import { useUiStore, type BrowseFilter } from "@/src/stores/uiStore";
 import { useFavoritesStore } from "@/src/stores/favoritesStore";
 import { formatFileSize, formatFileDate } from "@/src/utils/fileFilters";
+import { phase1DebugLog } from "@/src/utils/phase1DebugLog";
 import { theme } from "@/src/constants/theme";
 
 const FILTER_TITLES: Record<BrowseFilter, string> = {
@@ -48,6 +52,9 @@ export function FileBrowserScreen({
   const username = useAuthStore((s) => s.username);
   const [path, setPath] = useState(initialPath);
   const [renameTarget, setRenameTarget] = useState<KarsaazFile | null>(null);
+  const [downloadingFilePath, setDownloadingFilePath] = useState<string | null>(null);
+  const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
+  const [newFolderError, setNewFolderError] = useState<string | null>(null);
   const browseFilter = useUiStore((s) => s.browseFilter);
   const setActionFile = useUiStore((s) => s.setActionFile);
   const setActionFolder = useUiStore((s) => s.setActionFolder);
@@ -56,6 +63,9 @@ export function FileBrowserScreen({
   const setShowUploadMenu = useUiStore((s) => s.setShowUploadMenu);
   const pendingUploadMenu = useUiStore((s) => s.pendingUploadMenu);
   const setPendingUploadMenu = useUiStore((s) => s.setPendingUploadMenu);
+  const pendingFabSheet = useUiStore((s) => s.pendingFabSheet);
+  const setPendingFabSheet = useUiStore((s) => s.setPendingFabSheet);
+  const setShowFabSheet = useUiStore((s) => s.setShowFabSheet);
   const setShowAccountSwitcher = useUiStore((s) => s.setShowAccountSwitcher);
   const setShowMoveToFolder = useUiStore((s) => s.setShowMoveToFolder);
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
@@ -70,6 +80,13 @@ export function FileBrowserScreen({
     }
   }, [pendingUploadMenu, setPendingUploadMenu, setShowUploadMenu]);
 
+  useEffect(() => {
+    if (pendingFabSheet) {
+      setPendingFabSheet(false);
+      setShowFabSheet(true);
+    }
+  }, [pendingFabSheet, setPendingFabSheet, setShowFabSheet]);
+
   const {
     data,
     isLoading,
@@ -79,6 +96,7 @@ export function FileBrowserScreen({
     renameMutation,
     downloadMutation,
     mkdirMutation,
+    favoriteMutation,
     uploadMutation,
   } = useBrowseFiles(path, activeFilter);
 
@@ -109,11 +127,77 @@ export function FileBrowserScreen({
   };
 
   const handleMenu = (file: KarsaazFile) => {
+    // #region agent log
+    phase1DebugLog(
+      "FileBrowserScreen.tsx:handleMenu",
+      "three-dot menu opened",
+      {
+        name: file.name,
+        type: file.type,
+        sheet: file.type === "directory" ? "FolderActionsSheet" : "FileDetailsSheet",
+      },
+      "H2"
+    );
+    // #endregion
     if (file.type === "directory") {
       setActionFolder(file);
     } else {
       setActionFile(file);
     }
+  };
+
+  const handleRename = (file: KarsaazFile) => {
+    setRenameTarget(file);
+  };
+
+  const handleMove = (file: KarsaazFile) => {
+    if (file.type === "directory") {
+      setActionFile(null);
+      setActionFolder(file);
+    } else {
+      setActionFolder(null);
+      setActionFile(file);
+    }
+    setShowMoveToFolder(true);
+  };
+
+  const handleFavorite = (file: KarsaazFile) => {
+    favoriteMutation.mutate(
+      { file, favorite: !(file.isFavorite || false) },
+      {
+        onSuccess: () => toggleFavorite(file.path),
+        onError: () => Alert.alert("Favorite", "Could not update favorite on server."),
+      }
+    );
+  };
+
+  const handleDownload = (file: KarsaazFile) => {
+    setDownloadingFilePath(file.path);
+    downloadMutation.mutate(file, {
+      onSuccess: () => setDownloadingFilePath(null),
+      onError: () => {
+        setDownloadingFilePath(null);
+        Alert.alert("Download", "Could not download file.");
+      },
+    });
+  };
+
+  const handleTags = (file: KarsaazFile) => {
+    setActionFolder(null);
+    setActionFile(file);
+    setShowCreateTag(true);
+  };
+
+  const handleDelete = (file: KarsaazFile) => {
+    const label = file.type === "directory" ? "folder" : "file";
+    Alert.alert("Delete", `Delete ${label} "${file.name}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: () => deleteMutation.mutate(file),
+      },
+    ]);
   };
 
   const pickDocument = async () => {
@@ -133,38 +217,13 @@ export function FileBrowserScreen({
     }
   };
 
-  const handleFileAction = (actionId: string, file: KarsaazFile) => {
-    switch (actionId) {
-      case "edit":
-      case "rename":
-        setRenameTarget(file);
-        break;
-      case "details":
-        Alert.alert(
-          file.name,
-          `Size: ${formatFileSize(file.size)}\nModified: ${formatFileDate(file.lastModified)}\nType: ${file.mimeType}`
-        );
-        break;
-      case "download":
-      case "export":
-        downloadMutation.mutate(file);
-        break;
-      case "share":
-        handleShare(file);
-        break;
-      case "wallpaper":
-        Alert.alert("Use picture as", "Set as wallpaper is not supported on this platform yet.");
-        break;
-      case "move":
-        setActionFile(file);
-        setShowMoveToFolder(true);
-        break;
-      case "delete":
-        Alert.alert("Delete", `Delete "${file.name}"?`, [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(file) },
-        ]);
-        break;
+  const handleCreateNewFolder = async (name: string) => {
+    setNewFolderError(null);
+    try {
+      await mkdirMutation.mutateAsync(name);
+      setShowNewFolderDialog(false);
+    } catch (e) {
+      setNewFolderError(String(e));
     }
   };
 
@@ -174,7 +233,8 @@ export function FileBrowserScreen({
         Alert.alert(folder.name, `Modified: ${formatFileDate(folder.lastModified)}`);
         break;
       case "favorite":
-        toggleFavorite(folder.path);
+      case "favourite":
+        handleFavorite(folder);
         break;
       case "tag":
         setActionFolder(folder);
@@ -221,18 +281,37 @@ export function FileBrowserScreen({
         onMenu={handleMenu}
         onAvatarPress={() => setShowAccountSwitcher(true)}
         onBackToDashboard={showBackToDashboard ? onBackToDashboard : undefined}
+        onRename={handleRename}
+        onMove={handleMove}
+        onFavorite={handleFavorite}
+        onDownload={handleDownload}
+        downloadingFilePath={downloadingFilePath}
+        onTags={handleTags}
+        onDelete={handleDelete}
       />
       <UploadMenuSheet
         onUpload={pickDocument}
         onCreateFolder={() => setShowCreateFolder(true)}
         onTakePhoto={takePhoto}
       />
+      <FabSheet
+        onUpload={pickDocument}
+        onNewFolder={() => setShowNewFolderDialog(true)}
+      />
+      <NewFolderDialog
+        visible={showNewFolderDialog}
+        onClose={() => { setShowNewFolderDialog(false); setNewFolderError(null); }}
+        onCreate={handleCreateNewFolder}
+        isPending={mkdirMutation.isPending}
+        error={newFolderError}
+      />
       <CreateFolderModal
         onCreate={(name) => mkdirMutation.mutate(name)}
         isPending={mkdirMutation.isPending}
       />
-      <FileActionsSheet onAction={handleFileAction} />
       <FolderActionsSheet onAction={handleFolderAction} />
+      <CreateTagModal />
+      <MoveToFolderModal />
       <RenameModal
         file={renameTarget}
         onClose={() => setRenameTarget(null)}

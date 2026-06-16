@@ -13,6 +13,7 @@ import {
   uploadFile,
   downloadFile,
   moveFile,
+  setFavorite,
   type KarsaazFile,
 } from "@karsaaz/cloud-api";
 import * as FileSystem from "expo-file-system/legacy";
@@ -113,6 +114,14 @@ export function useFiles(currentPath: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files", username, currentPath] }),
   });
 
+  const favoriteMutation = useMutation({
+    mutationFn: async (params: { file: KarsaazFile; favorite: boolean }) => {
+      const client = createWebDAVClient(username, password);
+      await setFavorite(client, username, toRelPath(params.file, username), params.favorite);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files", username] }),
+  });
+
   const uploadMutation = useMutation({
     mutationFn: async (params: { uri: string; name: string }) => {
       const client = createWebDAVClient(username, password);
@@ -139,6 +148,7 @@ export function useFiles(currentPath: string) {
     moveMutation,
     downloadMutation,
     mkdirMutation,
+    favoriteMutation,
     uploadMutation,
   };
 }

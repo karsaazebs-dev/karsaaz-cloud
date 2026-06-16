@@ -44,6 +44,8 @@ interface UiState {
   browseMode: boolean;
   browsePath: string;
   pendingUploadMenu: boolean;
+  showFabSheet: boolean;
+  pendingFabSheet: boolean;
   setDrawerOpen: (open: boolean) => void;
   setActiveDrawerItem: (id: DrawerItemId) => void;
   setBrowseFilter: (filter: BrowseFilter) => void;
@@ -63,6 +65,8 @@ interface UiState {
   setBrowseMode: (mode: boolean) => void;
   setBrowsePath: (path: string) => void;
   setPendingUploadMenu: (pending: boolean) => void;
+  setShowFabSheet: (show: boolean) => void;
+  setPendingFabSheet: (pending: boolean) => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -85,6 +89,8 @@ export const useUiStore = create<UiState>((set) => ({
   browseMode: false,
   browsePath: "/",
   pendingUploadMenu: false,
+  showFabSheet: false,
+  pendingFabSheet: false,
   setDrawerOpen: (open) => set({ drawerOpen: open }),
   setActiveDrawerItem: (id) => set({ activeDrawerItem: id }),
   setBrowseFilter: (filter) => set({ browseFilter: filter }),
@@ -104,4 +110,6 @@ export const useUiStore = create<UiState>((set) => ({
   setBrowseMode: (mode) => set({ browseMode: mode }),
   setBrowsePath: (path) => set({ browsePath: path }),
   setPendingUploadMenu: (pending) => set({ pendingUploadMenu: pending }),
+  setShowFabSheet: (show) => set({ showFabSheet: show }),
+  setPendingFabSheet: (pending) => set({ pendingFabSheet: pending }),
 }));

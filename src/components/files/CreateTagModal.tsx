@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useUiStore } from "@/src/stores/uiStore";
-import { useTagsStore } from "@/src/stores/tagsStore";
+import { useTagsStore, parseTagDisplay } from "@/src/stores/tagsStore";
 import { theme } from "@/src/constants/theme";
 
 const COLORS = [
@@ -26,6 +26,7 @@ const COLORS = [
   { name: "Green", value: "#10b981" },
   { name: "Orange", value: "#f97316" },
   { name: "Purple", value: "#8b5cf6" },
+  { name: "Pink", value: "#ec4899" },
 ];
 
 export function CreateTagModal() {
@@ -39,47 +40,60 @@ export function CreateTagModal() {
   const addTag = useTagsStore((s) => s.addTag);
   const assignTag = useTagsStore((s) => s.assignTag);
   const unassignTag = useTagsStore((s) => s.unassignTag);
+  const loadFileTags = useTagsStore((s) => s.loadFileTags);
 
   const [newTagName, setNewTagName] = useState("");
-  const [selectedColor, setSelectedColor] = useState(COLORS[1]); // Default Blue
+  const [selectedColor, setSelectedColor] = useState(COLORS[1]);
+  const [error, setError] = useState("");
 
   const target = actionFolder ?? actionFile;
   const currentPath = target?.path ?? "";
   const assignedToCurrent = fileTags[currentPath] ?? [];
+
+  useEffect(() => {
+    if (visible && target?.fileId) {
+      loadFileTags(target.fileId, target.path);
+    }
+  }, [visible, target?.fileId, target?.path, loadFileTags]);
 
   const close = () => {
     setNewTagName("");
     setVisible(false);
   };
 
-  const handleToggleTag = async (tagName: string) => {
+  const handleToggleTag = async (tagStr: string) => {
     if (!currentPath) return;
-    if (assignedToCurrent.includes(tagName)) {
-      await unassignTag(currentPath, tagName);
-    } else {
-      await assignTag(currentPath, tagName);
+    setError("");
+    try {
+      if (assignedToCurrent.includes(tagStr)) {
+        await unassignTag(currentPath, tagStr, target?.fileId);
+      } else {
+        await assignTag(currentPath, tagStr, target?.fileId);
+      }
+    } catch {
+      setError("Could not update tag on server. Check your connection.");
     }
   };
 
   const handleCreateTag = async () => {
     const name = newTagName.trim();
     if (!name) return;
-    // Embed the color in the tag string: "Name::#Color"
-    const tagString = `${name}::${selectedColor.value}`;
-    await addTag(tagString);
-    if (currentPath) {
-      await assignTag(currentPath, tagString);
+    setError("");
+    try {
+      const created = await addTag(name, selectedColor.value);
+      if (created && currentPath) {
+        await assignTag(currentPath, `${created.id}::${created.name}::${created.color}`, target?.fileId);
+      }
+      setNewTagName("");
+    } catch {
+      setError("Could not create tag on server.");
     }
-    setNewTagName("");
   };
 
   // Helper to parse tag display name and color
   const parseTag = (tagStr: string) => {
-    const parts = tagStr.split("::");
-    return {
-      name: parts[0],
-      color: parts[1] || theme.colors.accent,
-    };
+    const { name, color } = parseTagDisplay(tagStr);
+    return { name, color };
   };
 
   return (
@@ -98,6 +112,7 @@ export function CreateTagModal() {
                 Manage tags for "{target.name}"
               </Text>
             )}
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
             {/* Existing tags list */}
             <ScrollView style={styles.tagList} contentContainerStyle={styles.listContent}>
@@ -209,6 +224,12 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
     paddingHorizontal: 24,
     marginBottom: 16,
+  },
+  errorText: {
+    fontSize: 13,
+    color: "#b71d21",
+    paddingHorizontal: 24,
+    marginBottom: 8,
   },
   tagList: { maxHeight: 200, paddingHorizontal: 24 },
   listContent: { paddingBottom: 12 },

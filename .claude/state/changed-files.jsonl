@@ -7,3 +7,20 @@
 {"file":"src/components/home/DashboardView.tsx","action":"Write","timestamp":"2026-06-16T08:29:15Z","important":false}
 {"file":"src/components/files/FilesBrowser.tsx","action":"Edit","timestamp":"2026-06-16T08:35:57Z","important":false}
 {"file":"src/components/storage/NotEnoughStorageScreen.tsx","action":"Write","timestamp":"2026-06-16T08:53:32Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/appinfo/info.xml","action":"Write","timestamp":"2026-06-16T12:00:07Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/appinfo/routes.php","action":"Write","timestamp":"2026-06-16T12:00:13Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/lib/AppInfo/Application.php","action":"Write","timestamp":"2026-06-16T12:00:24Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/lib/Migration/Version001Date20260616000000.php","action":"Write","timestamp":"2026-06-16T12:00:36Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/lib/Service/AllocationService.php","action":"Write","timestamp":"2026-06-16T12:01:30Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/lib/Listener/UserCreatedListener.php","action":"Write","timestamp":"2026-06-16T12:01:35Z","important":false}
+{"file":"D:/Dev/Karsaaz Cloud/karsaaz-cloud-nextcloud-server/karsaaz-cloud-nextcloud-server/apps/karsaaz_quota/lib/Controller/QuotaController.php","action":"Write","timestamp":"2026-06-16T12:02:00Z","important":false}
+{"file":"src/api/quotaAllocation.ts","action":"Write","timestamp":"2026-06-16T12:02:18Z","important":false}
+{"file":"src/hooks/useQuotaAllocation.ts","action":"Write","timestamp":"2026-06-16T12:02:28Z","important":false}
+{"file":"app/admin-quota.tsx","action":"Write","timestamp":"2026-06-16T12:03:40Z","important":false}
+{"file":"app/request-storage-history.tsx","action":"Write","timestamp":"2026-06-16T12:04:16Z","important":false}
+{"file":"app/manage-storage.tsx","action":"Edit","timestamp":"2026-06-16T12:04:23Z","important":false}
+{"file":"app/request-storage.tsx","action":"Edit","timestamp":"2026-06-16T12:04:37Z","important":false}
+{"file":"C:/Users/PC/.claude/projects/D--Dev-Karsaaz-Cloud/memory/project_storage_allocation.md","action":"Write","timestamp":"2026-06-16T12:06:04Z","important":false}
+{"file":"C:/Users/PC/.claude/projects/D--Dev-Karsaaz-Cloud/memory/MEMORY.md","action":"Write","timestamp":"2026-06-16T12:06:14Z","important":false}
+{"file":"Plans.md","action":"Write","timestamp":"2026-06-16T12:27:53Z","important":true}
+{"file":"src/components/files/FileBrowserScreen.tsx","action":"Edit","timestamp":"2026-06-16T12:44:48Z","important":false}

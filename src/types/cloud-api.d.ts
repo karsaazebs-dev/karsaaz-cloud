@@ -66,4 +66,30 @@ declare module "@karsaaz/cloud-api" {
     server: string;
   }
   export function loginWithPassword(username: string, password: string): Promise<DirectLoginResult>;
+  export function setFavorite(
+    client: unknown,
+    username: string,
+    path: string,
+    favorite: boolean
+  ): Promise<void>;
+  export interface SystemTag {
+    id: number;
+    name: string;
+    userVisible: boolean;
+    userAssignable: boolean;
+    canAssign: boolean;
+  }
+  export function listSystemTags(opts: { basicAuth: string }): Promise<SystemTag[]>;
+  export function createSystemTag(opts: { basicAuth: string }, name: string): Promise<SystemTag>;
+  export function getFileSystemTags(opts: { basicAuth: string }, fileId: number): Promise<SystemTag[]>;
+  export function assignSystemTag(
+    opts: { basicAuth: string },
+    fileId: number,
+    tagId: number
+  ): Promise<void>;
+  export function unassignSystemTag(
+    opts: { basicAuth: string },
+    fileId: number,
+    tagId: number
+  ): Promise<void>;
 }

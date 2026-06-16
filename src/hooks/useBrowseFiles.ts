@@ -117,6 +117,7 @@ export function useBrowseFiles(currentPath: string, browseFilter: BrowseFilter) 
       renameMutation: dirQuery.renameMutation,
       downloadMutation: dirQuery.downloadMutation,
       mkdirMutation: dirQuery.mkdirMutation,
+      favoriteMutation: dirQuery.favoriteMutation,
       uploadMutation: dirQuery.uploadMutation,
     };
   }

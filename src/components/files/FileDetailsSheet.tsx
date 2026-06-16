@@ -11,6 +11,7 @@ import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { useUiStore } from "@/src/stores/uiStore";
 import { theme } from "@/src/constants/theme";
 import { formatFileSize } from "@/src/utils/fileFilters";
+import { phase1DebugLog } from "@/src/utils/phase1DebugLog";
 
 interface Action {
   id: string;
@@ -42,6 +43,15 @@ export function FileDetailsSheet({ onAction }: FileDetailsSheetProps) {
   const setActionFile = useUiStore((s) => s.setActionFile);
 
   if (!file) return null;
+
+  // #region agent log
+  phase1DebugLog(
+    "FileDetailsSheet.tsx:render",
+    "file menu rendered",
+    { actionCount: ACTIONS.length, actionIds: ACTIONS.map((a) => a.id), fileName: file.name },
+    "H1"
+  );
+  // #endregion
 
   const isImage = file.fileType === "image" || file.mimeType?.startsWith("image/");
 
