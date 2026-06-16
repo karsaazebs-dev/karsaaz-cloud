@@ -81,8 +81,8 @@ export default function TabLayout() {
       >
         <Tabs.Screen name="files" options={{ title: "Home" }} />
         <Tabs.Screen name="shared" options={{ title: "Search" }} />
-        <Tabs.Screen name="photos" options={{ title: "Photos" }} />
         <Tabs.Screen name="favorites" options={{ title: "Favorites" }} />
+        <Tabs.Screen name="photos" options={{ title: "Photos" }} />
         <Tabs.Screen name="settings" options={{ title: "Menu" }} />
         <Tabs.Screen name="activity" options={{ href: null }} />
         <Tabs.Screen name="trash" options={{ href: null }} />

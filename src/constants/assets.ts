@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Karsaaz
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * Figma file: wM1KS9mOaTys1CweXZfcsD (Cloud App)
+ * Figma file: VxgtYLDYxQDVPzdNOjethl (Cloud App)
  * Re-download: node scripts/download-figma-assets.mjs
  */
 
@@ -26,6 +26,13 @@ export const figmaAssets = {
     ukFlag: require("../../assets/figma/onboarding/uk-flag.png"),
     photoAccess: require("../../assets/figma/onboarding/photo-access.png"),
     shareIcon: require("../../assets/figma/onboarding/share-icon.png"),
+    maya: require("../../assets/figma/onboarding/maya.png"),
+    tom: require("../../assets/figma/onboarding/tom.png"),
+    userOrbit1: require("../../assets/figma/onboarding/user-orbit1.png"),
+    userOrbit2: require("../../assets/figma/onboarding/user-orbit2.png"),
+    userOrbit3: require("../../assets/figma/onboarding/user-orbit3.png"),
+    userOrbit4: require("../../assets/figma/onboarding/user-orbit4.png"),
+    userCenter: require("../../assets/figma/onboarding/user-center.png"),
   },
   home: {
     bell: require("../../assets/figma/home/v2/bell.png"),
@@ -47,6 +54,36 @@ export const figmaAssets = {
     homeTab: require("../../assets/figma/home/v2/home-tab.png"),
     galleryTab: require("../../assets/figma/home/v2/gallery-tab.png"),
     menuTab: require("../../assets/figma/home/v2/menu-tab.png"),
+    favoritesTab: require("../../assets/figma/home/v2/favorites-tab.png"),
+    tabBarBg: require("../../assets/figma/home/v2/tab-bar-bg.png"),
+  },
+  drawer: {
+    avatar: require("../../assets/figma/drawer/avatar.png"),
+    files: require("../../assets/figma/drawer/files.png"),
+    recent: require("../../assets/figma/drawer/recent.png"),
+    allFiles: require("../../assets/figma/drawer/all-files.png"),
+    personal: require("../../assets/figma/drawer/personal.png"),
+    favorites: require("../../assets/figma/drawer/favorites.png"),
+    shared: require("../../assets/figma/drawer/shared.png"),
+    activities: require("../../assets/figma/drawer/activities.png"),
+    media: require("../../assets/figma/drawer/media.png"),
+    uploads: require("../../assets/figma/drawer/uploads.png"),
+    onDevice: require("../../assets/figma/drawer/on-device.png"),
+    deleted: require("../../assets/figma/drawer/deleted.png"),
+    settings: require("../../assets/figma/drawer/settings.png"),
+    chevronDown: require("../../assets/figma/drawer/chevron-down.png"),
+    activeBar: require("../../assets/figma/drawer/active-bar.png"),
+  },
+  storage: {
+    fileMenu: require("../../assets/figma/storage/file-menu.png"),
+  },
+  status: {
+    connectedDot: require("../../assets/figma/status/connected-dot.png"),
+    offlineDot: require("../../assets/figma/status/offline-dot.png"),
+    syncIcon: require("../../assets/figma/status/sync-icon.png"),
+  },
+  photos: {
+    chevronDownWhite: require("../../assets/figma/photos/chevron-down-white.png"),
   },
   createNew: {
     upload: require("../../assets/figma/create-new/upload.png"),

@@ -48,6 +48,22 @@ function normalizeServerUrl(input: string): string {
   return `http://${trimmed.replace(/\/$/, "")}`;
 }
 
+function connectionErrorMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  if (
+    /NoRouteToHost|ECONNREFUSED|ENETUNREACH|Network request failed|Failed to connect|Host unreachable/i.test(
+      raw
+    )
+  ) {
+    return (
+      `Cannot reach the server at ${brand.defaultServerUrl.replace(/^https?:\/\//, "")}. ` +
+      "Check that Karsaaz Cloud is running, your phone is on the same Wi‑Fi/LAN, " +
+      "and the server address on the login screen is correct."
+    );
+  }
+  return raw || "Could not reach server";
+}
+
 function getRecentServers(): string[] {
   return [brand.defaultServerUrl];
 }
@@ -134,10 +150,7 @@ export default function LoginScreen() {
     } catch (error) {
       setServerDetected(false);
       setServerVersion("");
-      Alert.alert(
-        "Connection failed",
-        error instanceof Error ? error.message : "Could not reach server"
-      );
+      Alert.alert("Connection failed", connectionErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -154,10 +167,7 @@ export default function LoginScreen() {
         setServerVersion(`${brand.serverProductName} v${status.version}`);
         setStep("credentials");
       } catch (error) {
-        Alert.alert(
-          "Connection failed",
-          error instanceof Error ? error.message : "Could not reach server"
-        );
+        Alert.alert("Connection failed", connectionErrorMessage(error));
       } finally {
         setLoading(false);
       }
@@ -335,7 +345,7 @@ export default function LoginScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="url"
-              placeholder="192.168.18.78:3030"
+              placeholder="192.168.18.61:3030"
               placeholderTextColor={theme.colors.textMuted}
               onBlur={handleDetectServer}
             />

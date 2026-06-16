@@ -11,19 +11,29 @@ function Initialize-KarsaazAndroidEnv {
     $WorkspaceRoot = Resolve-Path (Join-Path $MobileRoot "..")
     $SdkLong = Join-Path $WorkspaceRoot "tools\android-sdk"
 
-    if (-not (Test-Path $SdkLong)) {
-        throw "Android SDK not found at: $SdkLong"
-    }
-
     # Short junction paths avoid NDK linker failures (spaces) and MAX_PATH (260) errors.
     $SdkShort = "C:\sdk"
     $MobileShort = "C:\m"
 
-    if (-not (Test-Path $SdkShort)) {
+    $hasSdk = (Test-Path $SdkShort) -and (Test-Path (Join-Path $SdkShort "platform-tools"))
+    if (-not $hasSdk) {
+        if (-not (Test-Path $SdkLong)) {
+            throw "Android SDK not found at: $SdkLong"
+        }
+        if (Test-Path $SdkShort) {
+            Remove-Item $SdkShort -Force -ErrorAction SilentlyContinue
+        }
         cmd /c mklink /J "$SdkShort" "$SdkLong" | Out-Null
     }
-    if (-not (Test-Path $MobileShort)) {
-        cmd /c mklink /J "$MobileShort" "$MobileRoot" | Out-Null
+
+    $MobileRootPath = $MobileRoot.ProviderPath
+    $MobileShortTarget = if (Test-Path $MobileShort) { [string]((Get-Item $MobileShort).Target) } else { $null }
+
+    if ($null -eq $MobileShortTarget -or $MobileShortTarget -ne $MobileRootPath) {
+        if (Test-Path $MobileShort) {
+            Remove-Item $MobileShort -Force -ErrorAction SilentlyContinue
+        }
+        cmd /c mklink /J "$MobileShort" "$MobileRootPath" | Out-Null
     }
 
     $env:ANDROID_HOME = $SdkShort

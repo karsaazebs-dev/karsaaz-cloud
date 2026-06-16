@@ -121,6 +121,13 @@ export function DashboardView({
   const usedGb = Math.max(usedBytes / (1024 * 1024 * 1024), 0.1);
   const totalGb = isUnlimited ? 0 : totalBytes / (1024 * 1024 * 1024);
 
+  const usedPct = isUnlimited ? 0 : Math.min(Math.max((usedBytes / totalBytes) * 100, 0), 100);
+  const imgWeight = Math.max(usedPct * 0.40, 0.05);
+  const docWeight = Math.max(usedPct * 0.30, 0.05);
+  const vidWeight = Math.max(usedPct * 0.20, 0.05);
+  const othWeight = Math.max(usedPct * 0.10, 0.05);
+  const emptyWeight = Math.max(100 - usedPct, 0.05);
+
   useEffect(() => {
     debugLog(
       "DashboardView.tsx:mount",
@@ -156,8 +163,10 @@ export function DashboardView({
       <View style={styles.header}>
         <ConnectionStatus />
         <View style={styles.headerActions}>
-          <Image source={figmaAssets.home.bell} style={styles.headerIcon} />
-          <Pressable onPress={onAvatarPress}>
+          <View style={styles.bellWrap}>
+            <Image source={figmaAssets.home.bell} style={styles.headerIcon} />
+          </View>
+          <Pressable onPress={onAvatarPress} style={styles.avatarWrap}>
             <Image source={figmaAssets.home.avatar} style={styles.avatarImage} />
           </Pressable>
         </View>
@@ -182,11 +191,13 @@ export function DashboardView({
           </Text>
         </Text>
         <View style={styles.storageBar}>
-          <View style={[styles.barSeg, { flex: Math.min(usedGb, 3), backgroundColor: theme.colors.storageImages }]} />
-          <View style={[styles.barSeg, { flex: 2, backgroundColor: theme.colors.storageDocs }]} />
-          <View style={[styles.barSeg, { flex: 1, backgroundColor: theme.colors.storageVideos }]} />
-          <View style={[styles.barSeg, { flex: 1, backgroundColor: theme.colors.storageOther }]} />
-          <View style={[styles.barSeg, { flex: Math.max(10 - usedGb, 3), backgroundColor: theme.colors.storageEmpty }]} />
+          <View style={[styles.barSeg, { flex: imgWeight, backgroundColor: theme.colors.storageImages }]} />
+          <View style={[styles.barSeg, { flex: docWeight, backgroundColor: theme.colors.storageDocs }]} />
+          <View style={[styles.barSeg, { flex: vidWeight, backgroundColor: theme.colors.storageVideos }]} />
+          <View style={[styles.barSeg, { flex: othWeight, backgroundColor: theme.colors.storageOther }]} />
+          {emptyWeight > 0 && (
+            <View style={[styles.barSeg, { flex: emptyWeight, backgroundColor: theme.colors.storageEmpty }]} />
+          )}
         </View>
         <View style={styles.legend}>
           {[
@@ -259,7 +270,10 @@ export function DashboardView({
                     ? [theme.colors.folderOrangeStart, theme.colors.folderOrangeEnd]
                     : ["#ffffff", "#f4f4f5"]
                 }
-                style={styles.folderIconWrap}
+                style={[
+                  styles.folderIconWrap,
+                  i % 2 === 0 ? styles.folderOrangeShadow : styles.folderGrayShadow
+                ]}
               >
                 {i % 2 === 0 ? (
                   <Image source={figmaAssets.home.folderIcon} style={styles.folderIcon} />
@@ -374,6 +388,31 @@ const styles = StyleSheet.create({
   },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
   headerIcon: { width: 22, height: 22 },
+  bellWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...theme.shadow.card,
+  },
+  avatarWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#3b82f6",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#3b82f6",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   avatarImage: { width: 36, height: 36, borderRadius: 18 },
   storageCard: {
     marginHorizontal: theme.spacing.screen,
@@ -456,6 +495,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   folderIcon: { width: 42, height: 42 },
+  folderOrangeShadow: {
+    shadowColor: "#ea580c",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  folderGrayShadow: {
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
   dotsGrid: { flexDirection: "row", flexWrap: "wrap", width: 30, gap: 4 },
   colorDot: { width: 11, height: 11, borderRadius: 6 },
   folderName: { fontWeight: "600", fontSize: 13, color: "#09090b" },

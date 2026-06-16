@@ -1,8 +1,11 @@
 /*
  * SPDX-FileCopyrightText: 2026 Karsaaz
  * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Figma node 1:1939 — sidebar drawer with expandable Files section
  */
 
+import { useState } from "react";
 import {
   View,
   Text,
@@ -10,33 +13,51 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
+  Image,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/src/stores/authStore";
 import { useUiStore, type DrawerItemId } from "@/src/stores/uiStore";
+import { figmaAssets } from "@/src/constants/assets";
 import { theme } from "@/src/constants/theme";
 
-interface DrawerItem {
+interface FileSubItem {
   id: DrawerItemId;
   label: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: number;
 }
 
-const ITEMS: DrawerItem[] = [
-  { id: "all_files", label: "All files", icon: "folder-outline" },
-  { id: "recent_files", label: "Recent files", icon: "time-outline" },
-  { id: "personal_files", label: "Personal files", icon: "person-outline" },
-  { id: "favorites", label: "Favorites", icon: "star-outline" },
-  { id: "shared", label: "Shared", icon: "share-social-outline" },
-  { id: "activities", label: "Activities", icon: "pulse-outline" },
-  { id: "media", label: "Media", icon: "image-outline" },
-  { id: "uploads", label: "Uploads", icon: "cloud-upload-outline" },
-  { id: "on_device", label: "On device", icon: "phone-portrait-outline" },
-  { id: "trashbin", label: "Deleted files", icon: "trash-outline" },
-  { id: "settings", label: "Settings", icon: "settings-outline" },
+const FILE_SUB_ITEMS: FileSubItem[] = [
+  { id: "recent_files", label: "Recent files", icon: figmaAssets.drawer.recent },
+  { id: "all_files", label: "All files", icon: figmaAssets.drawer.allFiles },
+  { id: "personal_files", label: "Personal files", icon: figmaAssets.drawer.personal },
+  { id: "favorites", label: "Favorites", icon: figmaAssets.drawer.favorites },
+  { id: "shared", label: "Shared", icon: figmaAssets.drawer.shared },
 ];
+
+interface StandaloneItem {
+  id: DrawerItemId;
+  label: string;
+  icon: number;
+}
+
+const STANDALONE_ITEMS: StandaloneItem[] = [
+  { id: "activities", label: "Activities", icon: figmaAssets.drawer.activities },
+  { id: "media", label: "Media", icon: figmaAssets.drawer.media },
+  { id: "uploads", label: "Uploads", icon: figmaAssets.drawer.uploads },
+  { id: "on_device", label: "On device", icon: figmaAssets.drawer.onDevice },
+  { id: "trashbin", label: "Deleted files", icon: figmaAssets.drawer.deleted },
+  { id: "settings", label: "Settings", icon: figmaAssets.drawer.settings },
+];
+
+const FILE_ITEM_IDS = new Set<DrawerItemId>([
+  "recent_files",
+  "all_files",
+  "personal_files",
+  "favorites",
+  "shared",
+]);
 
 interface DrawerMenuProps {
   onBrowse: (item: DrawerItemId) => void;
@@ -52,6 +73,9 @@ export function DrawerMenu({ onBrowse }: DrawerMenuProps) {
   const displayName = useAuthStore((s) => s.displayName);
   const username = useAuthStore((s) => s.username);
   const logout = useAuthStore((s) => s.logout);
+  const [filesExpanded, setFilesExpanded] = useState(true);
+
+  const filesActive = FILE_ITEM_IDS.has(active);
 
   const handleSelect = (item: DrawerItemId) => {
     setActive(item);
@@ -84,50 +108,72 @@ export function DrawerMenu({ onBrowse }: DrawerMenuProps) {
     onBrowse(item);
   };
 
+  const renderMenuRow = (
+    item: { id: DrawerItemId; label: string; icon: number },
+    options?: { indent?: boolean }
+  ) => {
+    const selected = active === item.id;
+    return (
+      <Pressable
+        key={item.id}
+        style={[
+          styles.menuItem,
+          options?.indent && styles.menuItemIndent,
+          selected && styles.menuItemActive,
+        ]}
+        onPress={() => handleSelect(item.id)}
+      >
+        {selected && (
+          <Image source={figmaAssets.drawer.activeBar} style={styles.activeBar} />
+        )}
+        <Image source={item.icon} style={styles.menuIcon} />
+        <Text style={[styles.menuLabel, selected && styles.menuLabelActive]}>
+          {item.label}
+        </Text>
+      </Pressable>
+    );
+  };
+
   return (
     <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
       <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
         <Pressable style={styles.drawer} onPress={(e) => e.stopPropagation()}>
           <LinearGradient
-            colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
+            colors={[theme.colors.drawerHeaderStart, theme.colors.drawerHeaderEnd]}
             style={styles.header}
           >
             <Pressable style={styles.profileRow} onPress={() => setAccountSwitcher(true)}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
-              </View>
+              <Image source={figmaAssets.drawer.avatar} style={styles.avatar} />
               <View style={styles.profileMeta}>
                 <Text style={styles.profileName}>{displayName}</Text>
                 <Text style={styles.profileEmail}>{username}</Text>
               </View>
-              <Ionicons name="chevron-down" size={16} color="#fff" />
+              <Image source={figmaAssets.drawer.chevronDown} style={styles.chevron} />
             </Pressable>
           </LinearGradient>
 
           <ScrollView style={styles.menu} showsVerticalScrollIndicator={false}>
-            {ITEMS.map((item) => {
-              const selected = active === item.id;
-              return (
-                <Pressable
-                  key={item.id}
-                  style={[styles.menuItem, selected && styles.menuItemActive]}
-                  onPress={() => handleSelect(item.id)}
-                >
-                  {selected && <View style={styles.activeBar} />}
-                  <Ionicons
-                    name={item.icon}
-                    size={20}
-                    color={selected ? theme.colors.accent : theme.colors.textMuted}
-                  />
-                  <Text style={[styles.menuLabel, selected && styles.menuLabelActive]}>
-                    {item.label}
-                  </Text>
-                  {item.id === "all_files" && (
-                    <Ionicons name="chevron-down" size={14} color={theme.colors.textMuted} />
-                  )}
-                </Pressable>
-              );
-            })}
+            <Pressable
+              style={[styles.menuItem, filesActive && styles.menuItemActive]}
+              onPress={() => setFilesExpanded((v) => !v)}
+            >
+              {filesActive && (
+                <Image source={figmaAssets.drawer.activeBar} style={styles.activeBar} />
+              )}
+              <Image source={figmaAssets.drawer.files} style={styles.menuIcon} />
+              <Text style={[styles.menuLabel, filesActive && styles.menuLabelActive]}>
+                Files
+              </Text>
+              <Image
+                source={figmaAssets.drawer.chevronDown}
+                style={[styles.chevronSmall, !filesExpanded && styles.chevronCollapsed]}
+              />
+            </Pressable>
+
+            {filesExpanded &&
+              FILE_SUB_ITEMS.map((item) => renderMenuRow(item, { indent: true }))}
+
+            {STANDALONE_ITEMS.map((item) => renderMenuRow(item))}
           </ScrollView>
 
           <Pressable
@@ -152,26 +198,56 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   drawer: {
-    width: "82%",
-    maxWidth: 320,
+    width: 300,
     backgroundColor: theme.colors.surface,
     height: "100%",
+    borderTopRightRadius: theme.radius.xl,
+    borderBottomRightRadius: theme.radius.xl,
+    overflow: "hidden",
   },
-  header: { padding: 20, paddingTop: 56 },
-  profileRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 56,
+    paddingBottom: 20,
+  },
+  profileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.25)",
-    alignItems: "center",
-    justifyContent: "center",
+    resizeMode: "cover",
   },
-  avatarText: { color: "#fff", fontWeight: "700", fontSize: 18 },
   profileMeta: { flex: 1 },
-  profileName: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  profileEmail: { color: "rgba(255,255,255,0.85)", fontSize: 12, marginTop: 2 },
-  menu: { flex: 1, paddingVertical: 8 },
+  profileName: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  profileEmail: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 12,
+    marginTop: 2,
+  },
+  chevron: {
+    width: 16,
+    height: 16,
+    resizeMode: "contain",
+    tintColor: "#ffffff",
+  },
+  chevronSmall: {
+    width: 12,
+    height: 12,
+    resizeMode: "contain",
+    tintColor: theme.colors.textMuted,
+  },
+  chevronCollapsed: {
+    transform: [{ rotate: "-90deg" }],
+  },
+  menu: { flex: 1 },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -179,25 +255,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     position: "relative",
+    minHeight: 48,
   },
-  menuItemActive: { backgroundColor: theme.colors.infoBg },
+  menuItemIndent: {
+    paddingLeft: 44,
+  },
+  menuItemActive: {
+    backgroundColor: theme.colors.infoBg,
+  },
   activeBar: {
     position: "absolute",
-    left: 0,
+    right: 0,
     top: 8,
     bottom: 8,
     width: 4,
-    borderRadius: 2,
-    backgroundColor: theme.colors.accent,
+    resizeMode: "stretch",
   },
-  menuLabel: { flex: 1, fontSize: 15, color: theme.colors.textMuted },
-  menuLabelActive: { color: theme.colors.accent, fontWeight: "600" },
+  menuIcon: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+  },
+  menuLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: theme.colors.textMuted,
+  },
+  menuLabelActive: {
+    color: theme.colors.accentText,
+    fontWeight: "600",
+  },
   logoutBtn: {
-    margin: 20,
-    backgroundColor: "#242424",
+    marginHorizontal: 20,
+    marginBottom: 28,
+    backgroundColor: theme.colors.tabBar,
     borderRadius: theme.radius.md,
     paddingVertical: 14,
     alignItems: "center",
   },
-  logoutText: { color: "#fff", fontWeight: "600", fontSize: 15 },
+  logoutText: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 15,
+  },
 });

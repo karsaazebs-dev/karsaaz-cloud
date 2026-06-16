@@ -18,5 +18,5 @@ export const brand = {
   supportEmail: "support@karsaaz.com",
   bundleId: "com.karsaaz.sync",
   userAgentPrefix: "Karsaaz-Sync",
-  defaultServerUrl: "http://192.168.18.78:3030",
+  defaultServerUrl: "http://192.168.18.61:3030",
 } as const;

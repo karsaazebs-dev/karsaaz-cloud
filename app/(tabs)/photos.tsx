@@ -1,6 +1,8 @@
 /*
  * SPDX-FileCopyrightText: 2026 Karsaaz
  * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Figma node 1:995 — Photos tab with filter bar + masonry grid
  */
 
 import { useMemo, useEffect } from "react";
@@ -8,32 +10,27 @@ import { useQuery } from "@tanstack/react-query";
 import {
   View,
   Text,
-  FlatList,
-  Image,
-  Pressable,
   StyleSheet,
   ActivityIndicator,
-  Dimensions,
+  Image,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useFiles } from "@/src/hooks/useFiles";
 import { getCachedImages } from "@/src/sync/database";
 import { cacheEntryToKarsaazFile } from "@/src/utils/cacheFileMapping";
 import { useAuthStore } from "@/src/stores/authStore";
-import { ConnectionStatus } from "@/src/components/ui/ConnectionStatus";
+import { PhotosGallery } from "@/src/components/photos/PhotosGallery";
+import { figmaAssets } from "@/src/constants/assets";
 import { getFileDownloadUrl } from "@karsaaz/cloud-api";
 import { theme } from "@/src/constants/theme";
-
-const COLS = 3;
-const GAP = 2;
-const SIZE = (Dimensions.get("window").width - GAP * (COLS + 1)) / COLS;
+import type { KarsaazFile } from "@karsaaz/cloud-api";
 
 export default function PhotosScreen() {
   const router = useRouter();
   const { data, isLoading, refetch } = useFiles("/");
-  const { username, serverUrl, basicAuth, displayName } = useAuthStore();
+  const { username, serverUrl, basicAuth } = useAuthStore();
   const cachedQuery = useQuery({
     queryKey: ["cached-images"],
     queryFn: () => getCachedImages(300),
@@ -45,7 +42,7 @@ export default function PhotosScreen() {
   }, []);
 
   const photos = useMemo(() => {
-    const merged = new Map<string, ReturnType<typeof cacheEntryToKarsaazFile>>();
+    const merged = new Map<string, KarsaazFile>();
     for (const row of cachedQuery.data ?? []) {
       const file = cacheEntryToKarsaazFile(row);
       merged.set(file.path, file);
@@ -60,95 +57,116 @@ export default function PhotosScreen() {
 
   const loading = isLoading || cachedQuery.isLoading;
 
+  const resolveUri = (file: KarsaazFile) => {
+    const relPath = file.path.replace(`/files/${username}`, "");
+    return `${getFileDownloadUrl(serverUrl, username, relPath)}`;
+  };
+
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <View style={styles.header}>
-        <ConnectionStatus />
-        <View style={styles.headerActions}>
-          <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
-          </View>
-        </View>
+        <Pressable style={styles.backBtn} onPress={() => router.push("/(tabs)/files")}>
+          <Image source={figmaAssets.login.back} style={styles.backIcon} />
+        </Pressable>
+        <Text style={styles.headerTitle}>Photos</Text>
+        <View style={styles.headerSpacer} />
       </View>
 
-      <Text style={styles.title}>Photos</Text>
+      <View style={styles.filterBar}>
+        <Pressable style={styles.filterBtn}>
+          <Text style={styles.filterText}>Photos</Text>
+          <Image source={figmaAssets.photos.chevronDownWhite} style={styles.filterChevron} />
+        </Pressable>
+        <Pressable onPress={() => router.push("/(tabs)/shared")}>
+          <Image source={figmaAssets.home.searchTab} style={styles.searchIcon} />
+        </Pressable>
+      </View>
 
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator color={theme.colors.accent} />
         </View>
       ) : (
-        <FlatList
-          data={photos}
-          numColumns={COLS}
-          keyExtractor={(item) => item.path}
-          contentContainerStyle={styles.grid}
-          renderItem={({ item }) => {
-            const relPath = item.path.replace(`/files/${username}`, "");
-            const uri = `${getFileDownloadUrl(serverUrl, username, relPath)}`;
-            return (
-              <Pressable
-                onPress={() =>
-                  router.push({
-                    pathname: "/preview",
-                    params: { path: item.path, name: item.name, mime: item.mimeType },
-                  })
-                }
-              >
-                <Image
-                  source={{
-                    uri,
-                    headers: { Authorization: `Basic ${basicAuth}` },
-                  }}
-                  style={styles.thumb}
-                />
-              </Pressable>
-            );
-          }}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No photos in your cloud yet</Text>
+        <PhotosGallery
+          photos={photos}
+          resolveUri={resolveUri}
+          resolveHeaders={() => ({ Authorization: `Basic ${basicAuth}` })}
+          onPressPhoto={(item) =>
+            router.push({
+              pathname: "/preview",
+              params: { path: item.path, name: item.name, mime: item.mimeType },
+            })
           }
         />
       )}
+
+      <Pressable
+        style={styles.fab}
+        onPress={() => router.push("/(tabs)/files")}
+      >
+        <Image source={figmaAssets.home.fabPlus} style={styles.fabIcon} />
+      </Pressable>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: theme.colors.surface },
+  screen: { flex: 1, backgroundColor: theme.colors.background },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.screen,
     paddingVertical: 12,
   },
-  headerActions: { flexDirection: "row", alignItems: "center", gap: 12 },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.infoBg,
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { fontWeight: "600", color: theme.colors.accent },
-  title: {
-    fontSize: 22,
+  backIcon: { width: 20, height: 20, resizeMode: "contain" },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: "600",
     color: theme.colors.text,
+  },
+  headerSpacer: { width: 44 },
+  filterBar: {
+    height: 56,
+    backgroundColor: theme.colors.tabBar,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.screen,
-    marginBottom: 12,
   },
+  filterBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 100,
+  },
+  filterText: { color: "#ffffff", fontSize: 13 },
+  filterChevron: { width: 8, height: 5, resizeMode: "contain", tintColor: "#ffffff" },
+  searchIcon: { width: 24, height: 24, resizeMode: "contain", tintColor: "#ffffff" },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  grid: { padding: GAP, paddingBottom: 120 },
-  thumb: {
-    width: SIZE,
-    height: SIZE,
-    margin: GAP,
-    borderRadius: 4,
-    backgroundColor: theme.colors.borderLight,
+  fab: {
+    position: "absolute",
+    right: 24,
+    bottom: 100,
+    width: 65,
+    height: 65,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  empty: { textAlign: "center", color: theme.colors.textMuted, marginTop: 40 },
+  fabIcon: { width: 65, height: 65, resizeMode: "contain" },
 });

@@ -169,7 +169,7 @@ export function FilesBrowser({
         <View style={styles.topActions}>
           <Image source={figmaAssets.home.bell} style={styles.bellIcon} />
           <Pressable onPress={onAvatarPress} style={styles.avatar}>
-            <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
+            <Image source={figmaAssets.home.avatar} style={styles.avatarImage} />
           </Pressable>
         </View>
       </View>
@@ -219,7 +219,7 @@ export function FilesBrowser({
       )}
 
       <Pressable style={styles.fab} onPress={onFabPress}>
-        <ExpoImage source={figmaAssets.home.fabPlus} style={styles.fabIcon} contentFit="contain" />
+        <Ionicons name="add" size={28} color="#ffffff" />
       </Pressable>
     </View>
   );
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "rgba(43,127,255,0.2)",
   },
-  avatarText: { fontWeight: "600", color: theme.colors.accent },
+  avatarImage: { width: 40, height: 40, borderRadius: 20 },
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",

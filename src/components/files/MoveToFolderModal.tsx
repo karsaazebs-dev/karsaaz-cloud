@@ -23,7 +23,9 @@ import type { KarsaazFile } from "@karsaaz/cloud-api";
 export function MoveToFolderModal() {
   const visible = useUiStore((s) => s.showMoveToFolder);
   const setVisible = useUiStore((s) => s.setShowMoveToFolder);
-  const fileToMove = useUiStore((s) => s.actionFile) ?? useUiStore((s) => s.actionFolder);
+  const actionFile = useUiStore((s) => s.actionFile);
+  const actionFolder = useUiStore((s) => s.actionFolder);
+  const fileToMove = actionFile ?? actionFolder;
   const setActionFile = useUiStore((s) => s.setActionFile);
   const setActionFolder = useUiStore((s) => s.setActionFolder);
 
