@@ -1,0 +1,27 @@
+{"file":"D:/Dev/Karsaaz Cloud/Plans.md","action":"Edit","timestamp":"2026-06-17T08:52:58Z","important":true}
+{"file":"src/renderer/src/pages/SplashScreen.tsx","action":"Write","timestamp":"2026-06-17T08:54:06Z","important":false}
+{"file":"src/renderer/src/components/onboarding/PaginationDots.tsx","action":"Write","timestamp":"2026-06-17T08:54:13Z","important":false}
+{"file":"src/renderer/src/components/onboarding/OnboardingShell.tsx","action":"Write","timestamp":"2026-06-17T08:54:28Z","important":false}
+{"file":"src/renderer/src/pages/onboarding/Onboarding1.tsx","action":"Write","timestamp":"2026-06-17T08:54:56Z","important":false}
+{"file":"src/renderer/src/pages/onboarding/Onboarding2.tsx","action":"Write","timestamp":"2026-06-17T08:55:17Z","important":false}
+{"file":"src/renderer/src/pages/onboarding/Onboarding3.tsx","action":"Write","timestamp":"2026-06-17T08:55:49Z","important":false}
+{"file":"src/renderer/src/App.tsx","action":"Write","timestamp":"2026-06-17T08:55:58Z","important":false}
+{"file":"src/renderer/src/services/auth.ts","action":"Write","timestamp":"2026-06-17T08:57:05Z","important":false}
+{"file":"src/renderer/src/components/auth/AuthShell.tsx","action":"Write","timestamp":"2026-06-17T08:57:29Z","important":false}
+{"file":"src/renderer/src/pages/auth/ConnectToServer.tsx","action":"Write","timestamp":"2026-06-17T08:58:04Z","important":false}
+{"file":"src/renderer/src/pages/auth/Login.tsx","action":"Write","timestamp":"2026-06-17T08:58:37Z","important":false}
+{"file":"src/renderer/src/components/layout/Sidebar.tsx","action":"Write","timestamp":"2026-06-17T09:37:46Z","important":false}
+{"file":"src/renderer/src/components/layout/StorageWidget.tsx","action":"Write","timestamp":"2026-06-17T09:38:01Z","important":false}
+{"file":"src/renderer/src/components/layout/TopHeader.tsx","action":"Write","timestamp":"2026-06-17T09:38:19Z","important":false}
+{"file":"src/renderer/src/components/layout/AppShell.tsx","action":"Write","timestamp":"2026-06-17T09:38:26Z","important":false}
+{"file":"src/renderer/src/pages/dashboard/Dashboard.tsx","action":"Write","timestamp":"2026-06-17T09:40:59Z","important":false}
+{"file":"src/main/index.ts","action":"Edit","timestamp":"2026-06-17T10:35:42Z","important":false}
+{"file":"src/preload/index.ts","action":"Edit","timestamp":"2026-06-17T10:36:08Z","important":false}
+{"file":"src/preload/index.d.ts","action":"Write","timestamp":"2026-06-17T10:36:19Z","important":false}
+{"file":"src/renderer/src/hooks/useToast.tsx","action":"Write","timestamp":"2026-06-17T10:36:34Z","important":false}
+{"file":"src/renderer/src/components/ui/ToastContainer.tsx","action":"Write","timestamp":"2026-06-17T10:36:47Z","important":false}
+{"file":"tailwind.config.js","action":"Edit","timestamp":"2026-06-17T10:36:57Z","important":false}
+{"file":"src/renderer/src/components/ui/NetworkGuard.tsx","action":"Write","timestamp":"2026-06-17T10:37:18Z","important":false}
+{"file":"src/renderer/src/pages/Settings.tsx","action":"Edit","timestamp":"2026-06-17T10:37:25Z","important":false}
+{"file":"src/renderer/src/components/ui/GlobalErrorHandler.tsx","action":"Write","timestamp":"2026-06-17T10:38:28Z","important":false}
+{"file":".gitignore","action":"Write","timestamp":"2026-06-17T10:46:24Z","important":false}

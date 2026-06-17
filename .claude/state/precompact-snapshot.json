@@ -1,0 +1,99 @@
+{
+  "artifactType": "precompact-snapshot",
+  "context_reset": {
+    "policy": {
+      "mode": "auto",
+      "dryRun": false,
+      "thresholds": {
+        "wipTasks": 4,
+        "blockedTasks": 1,
+        "recentEdits": 8,
+        "failedChecks": 1,
+        "sessionAgeMinutes": 120
+      }
+    },
+    "recommended": true,
+    "summary": "Context reset recommended (auto): 20 recent edit count exceed threshold 8",
+    "reasons": [
+      "20 recent edit count exceed threshold 8"
+    ],
+    "candidates": [
+      {
+        "key": "wip_tasks",
+        "label": "WIP task count",
+        "actual": 0,
+        "threshold": 4,
+        "triggered": false
+      },
+      {
+        "key": "blocked_tasks",
+        "label": "blocked task count",
+        "actual": 0,
+        "threshold": 1,
+        "triggered": false
+      },
+      {
+        "key": "recent_edits",
+        "label": "recent edit count",
+        "actual": 20,
+        "threshold": 8,
+        "triggered": true
+      },
+      {
+        "key": "failed_checks",
+        "label": "failed check count",
+        "actual": 0,
+        "threshold": 1,
+        "triggered": false
+      },
+      {
+        "key": "session_age_minutes",
+        "label": "session age (minutes)",
+        "actual": 0,
+        "threshold": 120,
+        "triggered": false
+      }
+    ],
+    "counters": {
+      "wipTasks": 0,
+      "blockedTasks": 0,
+      "recentEdits": 20,
+      "failedChecks": 0,
+      "sessionAgeMinutes": null
+    }
+  },
+  "continuity": {
+    "plugin_first_workflow": true,
+    "resume_aware_effort_continuity": true,
+    "effort_hint": "medium",
+    "summary": "plugin-first workflow: enabled; resume-aware effort continuity: medium"
+  },
+  "legacy_version": "1.0.0",
+  "metrics": null,
+  "recentEdits": [
+    ".clang-format",
+    ".git-blame-ignore-revs",
+    ".git-blame-ignore-revs.license",
+    ".github/CODEOWNERS",
+    ".github/ISSUE_TEMPLATE/BUG_REPORT.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/feature.md",
+    ".github/ISSUE_TEMPLATE/feature.md.license",
+    ".github/dependabot.yml",
+    ".github/pull_request_template.md",
+    ".github/pull_request_template.md.license",
+    ".github/workflows.disabled/block-unconventional-commits.yml",
+    ".github/workflows.disabled/bug-report-labeler.yml",
+    ".github/workflows.disabled/check-translations.yml",
+    ".github/workflows.disabled/clang-format.yml",
+    ".github/workflows.disabled/clang-tidy-review.yml",
+    ".github/workflows.disabled/fixup.yml",
+    ".github/workflows.disabled/linux-appimage-comment.yml",
+    ".github/workflows.disabled/linux-appimage.yml",
+    ".github/workflows.disabled/linux-clang-compile-tests.yml"
+  ],
+  "sessionId": "",
+  "timestamp": "2026-06-17T09:00:10Z",
+  "version": "1.0.0",
+  "wipTasks": null
+}
