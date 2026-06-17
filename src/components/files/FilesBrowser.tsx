@@ -23,7 +23,6 @@ import { figmaAssets } from "@/src/constants/assets";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { useUiStore } from "@/src/stores/uiStore";
 import { useFavoritesStore } from "@/src/stores/favoritesStore";
-import { useAuthStore } from "@/src/stores/authStore";
 import { useTagsStore, parseTagDisplay } from "@/src/stores/tagsStore";
 import type { BrowseFilter } from "@/src/stores/uiStore";
 import { filterFiles, sortFiles, formatFileDate, formatFileSize } from "@/src/utils/fileFilters";
