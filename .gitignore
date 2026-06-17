@@ -1,57 +1,37 @@
-# Build artifacts
-build/
-build-*/
+# Dependencies
+node_modules/
+
+# Build output
+dist/
 out/
-cmake-build-*/
+.vite/
 
-# CMake
-CMakeCache.txt
-CMakeFiles/
-CMakeScripts/
-Testing/
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-_deps/
+# electron-vite cache
+.electron-vite/
 
-# Qt
-*.user
-*.user.*
-moc_*.cpp
-moc_*.h
-qrc_*.cpp
-ui_*.h
-Makefile.*
-*.qm
+# Environment
+.env
+.env.local
+.env.*.local
 
-# Object files / binaries
-*.o
-*.obj
-*.so
-*.so.*
-*.dylib
-*.dll
-*.exe
-*.app/
-*.a
-*.lib
-*.exp
-*.pdb
-*.ilk
-
-# Editor / OS
-.vs/
+# Editor
 .vscode/
 .idea/
-*.swp
-*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
 .DS_Store
 Thumbs.db
-*~
 
-# Secrets / local config
-*.env
-.env
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Type check cache
+*.tsbuildinfo
