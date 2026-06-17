@@ -16,6 +16,7 @@ import {
   Dimensions,
   Image,
 } from "react-native";
+import { useAuthStore } from "@/src/stores/authStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { figmaAssets } from "@/src/constants/assets";
@@ -26,6 +27,34 @@ import { useAuthStore } from "@/src/stores/authStore";
 import { useTagsStore, parseTagDisplay } from "@/src/stores/tagsStore";
 import type { BrowseFilter } from "@/src/stores/uiStore";
 import { filterFiles, sortFiles, formatFileDate, formatFileSize } from "@/src/utils/fileFilters";
+
+function FileThumbnail({ file, style }: { file: KarsaazFile; style: object }) {
+  const [imgError, setImgError] = useState(false);
+  const serverUrl = useAuthStore((s) => s.serverUrl);
+  const basicAuth = useAuthStore((s) => s.basicAuth);
+  const isImage = file.fileType === "image" || file.mimeType?.startsWith("image/");
+
+  if (isImage && !imgError && file.fileId && serverUrl) {
+    return (
+      <Image
+        source={{
+          uri: `${serverUrl}/index.php/core/preview.png?fileId=${file.fileId}&x=56&y=54&a=1`,
+          headers: { Authorization: `Basic ${basicAuth}` },
+        }}
+        style={style}
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+
+  return (
+    <Ionicons
+      name={file.type === "directory" ? "folder" : "image-outline"}
+      size={28}
+      color="#4e3cf4"
+    />
+  );
+}
 
 const GRID_COLS = 3;
 const GRID_GAP = 8;
@@ -45,13 +74,6 @@ interface FilesBrowserProps {
   onMenu: (file: KarsaazFile) => void;
   onAvatarPress: () => void;
   onBackToDashboard?: () => void;
-  onRename: (file: KarsaazFile) => void;
-  onMove: (file: KarsaazFile) => void;
-  onFavorite: (file: KarsaazFile) => void;
-  onDownload: (file: KarsaazFile) => void;
-  downloadingFilePath?: string | null;
-  onTags: (file: KarsaazFile) => void;
-  onDelete: (file: KarsaazFile) => void;
 }
 
 export function FilesBrowser({
@@ -66,15 +88,7 @@ export function FilesBrowser({
   onMenu,
   onAvatarPress,
   onBackToDashboard,
-  onRename,
-  onMove,
-  onFavorite,
-  onDownload,
-  downloadingFilePath,
-  onTags,
-  onDelete,
 }: FilesBrowserProps) {
-  const displayName = useAuthStore((s) => s.displayName);
   const searchQuery = useUiStore((s) => s.searchQuery);
   const setSearchQuery = useUiStore((s) => s.setSearchQuery);
   const storeFilter = useUiStore((s) => s.browseFilter);
@@ -87,12 +101,11 @@ export function FilesBrowser({
   const getTagsForFile = useTagsStore((s) => s.getTagsForFile);
   const tagsAll = useTagsStore((s) => s.tags);
   const loadFileTags = useTagsStore((s) => s.loadFileTags);
-  const [menuFileId, setMenuFileId] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [showTagPicker, setShowTagPicker] = useState(false);
   const loadedPathsRef = useRef(new Set<string>());
 
-  // Load tags for all files in the list (once per path)
+  // Load tags for each file once per path
   useEffect(() => {
     for (const f of files) {
       if (f.type === "file" && f.fileId && !loadedPathsRef.current.has(f.path)) {
@@ -116,10 +129,12 @@ export function FilesBrowser({
     setSortOrder(order[(idx + 1) % order.length]);
   };
 
-  const sortLabel =
-    sortOrder === "name-asc" || sortOrder === "name-desc" ? "A - Z" : "Sorted";
-
-  const closeMenu = () => setMenuFileId(null);
+  const sortLabel = {
+    "name-asc": "Name A→Z",
+    "name-desc": "Name Z→A",
+    "date-desc": "Date",
+    "size-desc": "Size",
+  }[sortOrder] ?? sortOrder;
 
   const renderListItem = ({ item }: { item: KarsaazFile }) => {
     const isFav = favoritePaths.includes(item.path);
@@ -128,97 +143,54 @@ export function FilesBrowser({
     const extraCount = fileTags.length - displayTags.length;
 
     return (
-      <View>
-        <Pressable
-          style={[styles.fileCard, menuFileId === item.path && styles.fileCardActive]}
-          onPress={() => {
-            if (menuFileId) { closeMenu(); return; }
-            onOpen(item);
-          }}
-        >
-          <View style={styles.thumb}>
-            <Ionicons
-              name={item.type === "directory" ? "folder" : "image-outline"}
-              size={28}
-              color="#4e3cf4"
-            />
-            {isFav && (
-              <View style={styles.starBadge}>
-                <Ionicons name="star" size={10} color="#f59e0b" />
-              </View>
-            )}
-          </View>
-          <View style={styles.fileMeta}>
-            <Text style={styles.fileName} numberOfLines={1}>{item.name}</Text>
-            <Text style={styles.fileSub}>
-              {item.type === "directory" ? "Folder" : formatFileSize(item.size)}
-              {item.type === "file" ? ` • ${formatFileDate(item.lastModified)}` : ""}
-            </Text>
-            {displayTags.length > 0 && (
-              <View style={styles.tagRow}>
-                {displayTags.map((tk) => {
-                  const tag = parseTagDisplay(tk);
-                  return (
-                    <View key={tk} style={[styles.tagChip, { backgroundColor: tag.color + "22" }]}>
-                      <View style={[styles.tagDot, { backgroundColor: tag.color }]} />
-                      <Text style={[styles.tagChipText, { color: tag.color }]} numberOfLines={1}>
-                        {tag.name}
-                      </Text>
-                    </View>
-                  );
-                })}
-                {extraCount > 0 && (
-                  <Text style={styles.tagMore}>+{extraCount} more</Text>
-                )}
-              </View>
-            )}
-          </View>
-          <Pressable onPress={() => onShare(item)} hitSlop={8}>
-            <Ionicons name="person-add-outline" size={20} color="#71717b" />
-          </Pressable>
-          <Pressable
-            onPress={() => setMenuFileId(menuFileId === item.path ? null : item.path)}
-            hitSlop={8}
-          >
-            <Ionicons name="ellipsis-vertical" size={16} color="#71717b" />
-          </Pressable>
+      <Pressable
+        style={styles.fileCard}
+        onPress={() => onOpen(item)}
+      >
+        <View style={styles.thumb}>
+          {item.type === "directory" ? (
+            <Ionicons name="folder" size={28} color="#4e3cf4" />
+          ) : (
+            <FileThumbnail file={item} style={styles.thumbImage} />
+          )}
+          {isFav && (
+            <View style={styles.starBadge}>
+              <Ionicons name="star" size={10} color="#f59e0b" />
+            </View>
+          )}
+        </View>
+        <View style={styles.fileMeta}>
+          <Text style={styles.fileName} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.fileSub}>
+            {item.type === "directory" ? "Folder" : formatFileSize(item.size)}
+            {item.type === "file" ? ` • ${formatFileDate(item.lastModified)}` : ""}
+          </Text>
+          {displayTags.length > 0 && (
+            <View style={styles.tagRow}>
+              {displayTags.map((tk) => {
+                const tag = parseTagDisplay(tk);
+                return (
+                  <View key={tk} style={[styles.tagChip, { backgroundColor: tag.color + "22" }]}>
+                    <View style={[styles.tagDot, { backgroundColor: tag.color }]} />
+                    <Text style={[styles.tagChipText, { color: tag.color }]} numberOfLines={1}>
+                      {tag.name}
+                    </Text>
+                  </View>
+                );
+              })}
+              {extraCount > 0 && (
+                <Text style={styles.tagMore}>+{extraCount} more</Text>
+              )}
+            </View>
+          )}
+        </View>
+        <Pressable onPress={() => onShare(item)} hitSlop={8}>
+          <Ionicons name="person-add-outline" size={20} color="#71717b" />
         </Pressable>
-
-        {menuFileId === item.path && (
-          <View style={styles.popupMenu}>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onRename(item); }}>
-              <Ionicons name="pencil-outline" size={18} color="#09090b" />
-              <Text style={styles.popupText}>Rename</Text>
-            </Pressable>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onMove(item); }}>
-              <Ionicons name="folder-open-outline" size={18} color="#09090b" />
-              <Text style={styles.popupText}>Move</Text>
-            </Pressable>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onFavorite(item); }}>
-              <Ionicons name={isFav ? "star" : "star-outline"} size={18} color="#f59e0b" />
-              <Text style={styles.popupText}>{isFav ? "Unfavorite" : "Favorite"}</Text>
-            </Pressable>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onDownload(item); }}>
-              {downloadingFilePath === item.path
-                ? <ActivityIndicator size="small" color="#09090b" />
-                : <Ionicons name="cloud-download-outline" size={18} color="#09090b" />}
-              <Text style={styles.popupText}>Download</Text>
-            </Pressable>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onTags(item); }}>
-              <Ionicons name="pricetag-outline" size={18} color="#09090b" />
-              <Text style={styles.popupText}>Tags</Text>
-            </Pressable>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onShare(item); }}>
-              <Ionicons name="share-social-outline" size={18} color="#09090b" />
-              <Text style={styles.popupText}>Share</Text>
-            </Pressable>
-            <Pressable style={styles.popupItem} onPress={() => { closeMenu(); onDelete(item); }}>
-              <Ionicons name="trash-outline" size={18} color="#dc2626" />
-              <Text style={[styles.popupText, styles.destructive]}>Delete</Text>
-            </Pressable>
-          </View>
-        )}
-      </View>
+        <Pressable onPress={() => onMenu(item)} hitSlop={8}>
+          <Ionicons name="ellipsis-vertical" size={16} color="#71717b" />
+        </Pressable>
+      </Pressable>
     );
   };
 
@@ -343,7 +315,6 @@ export function FilesBrowser({
           }
           renderItem={viewMode === "grid" ? renderGridItem : renderListItem}
           ListEmptyComponent={<Text style={styles.empty}>No files found</Text>}
-          onScrollBeginDrag={() => { if (menuFileId) closeMenu(); }}
         />
       )}
     </View>
@@ -452,7 +423,6 @@ const styles = StyleSheet.create({
     shadowRadius: 11,
     elevation: 2,
   },
-  fileCardActive: { backgroundColor: "#f4f4f5" },
   thumb: {
     width: 56,
     height: 54,
@@ -460,6 +430,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#f4f4f5",
     alignItems: "center",
     justifyContent: "center",
+  },
+  thumbImage: {
+    width: 56,
+    height: 54,
+    borderRadius: 12,
   },
   starBadge: {
     position: "absolute",
@@ -489,27 +464,6 @@ const styles = StyleSheet.create({
   tagDot: { width: 6, height: 6, borderRadius: 3 },
   tagChipText: { fontSize: 11, fontWeight: "500" },
   tagMore: { fontSize: 11, color: "#71717b", alignSelf: "center" },
-  popupMenu: {
-    backgroundColor: "#ffffff",
-    borderRadius: 16,
-    paddingVertical: 4,
-    marginTop: 4,
-    shadowColor: "#0f172a",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-    zIndex: 10,
-  },
-  popupItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  popupText: { fontSize: 15, color: "#09090b" },
-  destructive: { color: "#dc2626" },
   gridCard: {
     width: GRID_SIZE,
     height: GRID_SIZE,

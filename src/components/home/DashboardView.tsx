@@ -152,7 +152,7 @@ export function DashboardView({
 
         {/* ── Storage widget ── */}
         <View style={styles.storageSection}>
-          <Text style={styles.storageTitle}>Alloted Storage</Text>
+          <Text style={styles.storageTitle}>Allocated Storage</Text>
           <Text style={styles.storageAmountRow}>
             <Text style={styles.storageBold}>{usedLabel} </Text>
             <Text style={styles.storageMuted}>{totalLabel}</Text>

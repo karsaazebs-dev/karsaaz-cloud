@@ -112,7 +112,7 @@ export function FigmaTabBar({ state, navigation }: FigmaTabBarProps) {
             >
               <Image
                 source={slot.image}
-                style={[styles.tabImage, focused && styles.tabImageActive]}
+                style={[styles.tabImage, focused ? styles.tabImageActive : styles.tabImageInactive]}
                 onLoad={() => {
                   // #region agent log
                   phase1DebugLog(
@@ -173,5 +173,8 @@ const styles = StyleSheet.create({
   },
   tabImageActive: {
     tintColor: "#09090b",
+  },
+  tabImageInactive: {
+    tintColor: "#9ca3af",
   },
 });

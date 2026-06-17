@@ -17,6 +17,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useUiStore } from "@/src/stores/uiStore";
 import { useFiles } from "@/src/hooks/useFiles";
+import { NewFolderDialog } from "@/src/components/files/NewFolderDialog";
 import { theme } from "@/src/constants/theme";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 
@@ -30,6 +31,8 @@ export function MoveToFolderModal() {
   const setActionFolder = useUiStore((s) => s.setActionFolder);
 
   const [currentPath, setCurrentPath] = useState("/");
+  const [showNewFolder, setShowNewFolder] = useState(false);
+  const [newFolderError, setNewFolderError] = useState<string | null>(null);
   const { data: files, moveMutation, mkdirMutation, isLoading } = useFiles(currentPath);
 
   // Filter directories to browse, excluding the folder itself if we are moving a folder
@@ -50,17 +53,18 @@ export function MoveToFolderModal() {
   };
 
   const handleCreateFolder = () => {
-    Alert.prompt("New Folder", "Enter folder name:", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Create",
-        onPress: (name?: string) => {
-          if (name?.trim()) {
-            mkdirMutation.mutate(name.trim());
-          }
-        },
-      },
-    ]);
+    setNewFolderError(null);
+    setShowNewFolder(true);
+  };
+
+  const handleNewFolderCreate = async (name: string) => {
+    setNewFolderError(null);
+    try {
+      await mkdirMutation.mutateAsync(name);
+      setShowNewFolder(false);
+    } catch (e) {
+      setNewFolderError(String(e));
+    }
   };
 
   const handleMoveHere = () => {
@@ -89,6 +93,14 @@ export function MoveToFolderModal() {
   if (!fileToMove) return null;
 
   return (
+    <>
+    <NewFolderDialog
+      visible={showNewFolder}
+      onClose={() => { setShowNewFolder(false); setNewFolderError(null); }}
+      onCreate={handleNewFolderCreate}
+      isPending={mkdirMutation.isPending}
+      error={newFolderError}
+    />
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
@@ -177,6 +189,7 @@ export function MoveToFolderModal() {
         </Pressable>
       </Pressable>
     </Modal>
+    </>
   );
 }
 

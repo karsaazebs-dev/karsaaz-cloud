@@ -10,6 +10,7 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { FilesBrowser } from "@/src/components/files/FilesBrowser";
+import { FileDetailsSheet } from "@/src/components/files/FileDetailsSheet";
 import { FolderActionsSheet } from "@/src/components/files/FolderActionsSheet";
 import { CreateFolderModal } from "@/src/components/files/CreateFolderModal";
 import { UploadMenuSheet } from "@/src/components/files/UploadMenuSheet";
@@ -52,7 +53,6 @@ export function FileBrowserScreen({
   const username = useAuthStore((s) => s.username);
   const [path, setPath] = useState(initialPath);
   const [renameTarget, setRenameTarget] = useState<KarsaazFile | null>(null);
-  const [downloadingFilePath, setDownloadingFilePath] = useState<string | null>(null);
   const [showNewFolderDialog, setShowNewFolderDialog] = useState(false);
   const [newFolderError, setNewFolderError] = useState<string | null>(null);
   const browseFilter = useUiStore((s) => s.browseFilter);
@@ -146,58 +146,139 @@ export function FileBrowserScreen({
     }
   };
 
-  const handleRename = (file: KarsaazFile) => {
-    setRenameTarget(file);
-  };
-
-  const handleMove = (file: KarsaazFile) => {
-    if (file.type === "directory") {
-      setActionFile(null);
-      setActionFolder(file);
-    } else {
-      setActionFolder(null);
-      setActionFile(file);
-    }
-    setShowMoveToFolder(true);
-  };
-
-  const handleFavorite = (file: KarsaazFile) => {
-    favoriteMutation.mutate(
-      { file, favorite: !(file.isFavorite || false) },
-      {
-        onSuccess: () => toggleFavorite(file.path),
-        onError: () => Alert.alert("Favorite", "Could not update favorite on server."),
-      }
+  const handleFileAction = (actionId: string, file: KarsaazFile) => {
+    // #region agent log
+    phase1DebugLog(
+      "FileBrowserScreen.tsx:handleFileAction",
+      "file action selected",
+      { actionId, fileName: file.name, fileId: file.fileId },
+      "H3"
     );
+    // #endregion
+    switch (actionId) {
+      case "edit":
+        if (
+          file.mimeType.includes("document") ||
+          file.mimeType.includes("spreadsheet") ||
+          file.mimeType.includes("presentation") ||
+          file.name.endsWith(".md")
+        ) {
+          router.push({
+            pathname: "/preview",
+            params: { path: file.path, name: file.name, mime: file.mimeType, edit: "1" },
+          });
+        } else {
+          setRenameTarget(file);
+        }
+        break;
+      case "favourite":
+      case "favorite":
+        favoriteMutation.mutate(
+          { file, favorite: !(file.isFavorite || false) },
+          {
+            onSuccess: () => toggleFavorite(file.path),
+            onError: () => Alert.alert("Favorite", "Could not update favorite on server."),
+          }
+        );
+        break;
+      case "details":
+        Alert.alert(
+          file.name,
+          `Size: ${formatFileSize(file.size)}\nModified: ${formatFileDate(file.lastModified)}\nType: ${file.mimeType}`
+        );
+        break;
+      case "rename":
+        setRenameTarget(file);
+        break;
+      case "tag":
+        setActionFolder(null);
+        setActionFile(file);
+        setShowCreateTag(true);
+        break;
+      case "download":
+      case "export":
+        downloadMutation.mutate(file);
+        break;
+      case "share":
+        handleShare(file);
+        break;
+      case "sync":
+        refetch();
+        break;
+      case "wallpaper":
+        Alert.alert("Use picture as", "Set as wallpaper is not supported on this platform yet.");
+        break;
+      case "move":
+        setActionFolder(null);
+        setActionFile(file);
+        setShowMoveToFolder(true);
+        break;
+      case "pin":
+        Alert.alert("Pin", "Pin to device is not available yet.");
+        break;
+      case "delete":
+        Alert.alert("Delete", `Delete "${file.name}"?`, [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(file) },
+        ]);
+        break;
+      default:
+        phase1DebugLog(
+          "FileBrowserScreen.tsx:handleFileAction",
+          "unhandled file action",
+          { actionId },
+          "H3"
+        );
+        break;
+    }
   };
 
-  const handleDownload = (file: KarsaazFile) => {
-    setDownloadingFilePath(file.path);
-    downloadMutation.mutate(file, {
-      onSuccess: () => setDownloadingFilePath(null),
-      onError: () => {
-        setDownloadingFilePath(null);
-        Alert.alert("Download", "Could not download file.");
-      },
-    });
-  };
-
-  const handleTags = (file: KarsaazFile) => {
-    setActionFolder(null);
-    setActionFile(file);
-    setShowCreateTag(true);
-  };
-
-  const handleDelete = (file: KarsaazFile) => {
-    const label = file.type === "directory" ? "folder" : "file";
-    Alert.alert("Delete", `Delete ${label} "${file.name}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => deleteMutation.mutate(file),
-      },
-    ]);
+  const handleFolderAction = (actionId: string, folder: KarsaazFile) => {
+    switch (actionId) {
+      case "details":
+        Alert.alert(folder.name, `Modified: ${formatFileDate(folder.lastModified)}`);
+        break;
+      case "favorite":
+      case "favourite":
+        favoriteMutation.mutate(
+          { file: folder, favorite: !(folder.isFavorite || false) },
+          {
+            onSuccess: () => toggleFavorite(folder.path),
+            onError: () => Alert.alert("Favorite", "Could not update favorite on server."),
+          }
+        );
+        break;
+      case "tag":
+        setActionFile(null);
+        setActionFolder(folder);
+        setShowCreateTag(true);
+        break;
+      case "rename":
+      case "edit":
+        setRenameTarget(folder);
+        break;
+      case "export":
+      case "share":
+        handleShare(folder);
+        break;
+      case "sync":
+        refetch();
+        break;
+      case "pin":
+        Alert.alert("Pin", "Pin to device is not available yet.");
+        break;
+      case "move":
+        setActionFile(null);
+        setActionFolder(folder);
+        setShowMoveToFolder(true);
+        break;
+      case "delete":
+        Alert.alert("Delete", `Delete folder "${folder.name}"?`, [
+          { text: "Cancel", style: "cancel" },
+          { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(folder) },
+        ]);
+        break;
+    }
   };
 
   const pickDocument = async () => {
@@ -227,46 +308,6 @@ export function FileBrowserScreen({
     }
   };
 
-  const handleFolderAction = (actionId: string, folder: KarsaazFile) => {
-    switch (actionId) {
-      case "details":
-        Alert.alert(folder.name, `Modified: ${formatFileDate(folder.lastModified)}`);
-        break;
-      case "favorite":
-      case "favourite":
-        handleFavorite(folder);
-        break;
-      case "tag":
-        setActionFolder(folder);
-        setShowCreateTag(true);
-        break;
-      case "rename":
-      case "edit":
-        setRenameTarget(folder);
-        break;
-      case "export":
-      case "share":
-        handleShare(folder);
-        break;
-      case "sync":
-        refetch();
-        break;
-      case "pin":
-        Alert.alert("Pin", "Pin to device is not available yet.");
-        break;
-      case "move":
-        setActionFolder(folder);
-        setShowMoveToFolder(true);
-        break;
-      case "delete":
-        Alert.alert("Delete", `Delete folder "${folder.name}"?`, [
-          { text: "Cancel", style: "cancel" },
-          { text: "Delete", style: "destructive", onPress: () => deleteMutation.mutate(folder) },
-        ]);
-        break;
-    }
-  };
-
   return (
     <View style={styles.container}>
       <FilesBrowser
@@ -281,14 +322,9 @@ export function FileBrowserScreen({
         onMenu={handleMenu}
         onAvatarPress={() => setShowAccountSwitcher(true)}
         onBackToDashboard={showBackToDashboard ? onBackToDashboard : undefined}
-        onRename={handleRename}
-        onMove={handleMove}
-        onFavorite={handleFavorite}
-        onDownload={handleDownload}
-        downloadingFilePath={downloadingFilePath}
-        onTags={handleTags}
-        onDelete={handleDelete}
       />
+      <FileDetailsSheet onAction={handleFileAction} />
+      <FolderActionsSheet onAction={handleFolderAction} />
       <UploadMenuSheet
         onUpload={pickDocument}
         onCreateFolder={() => setShowCreateFolder(true)}
@@ -309,7 +345,6 @@ export function FileBrowserScreen({
         onCreate={(name) => mkdirMutation.mutate(name)}
         isPending={mkdirMutation.isPending}
       />
-      <FolderActionsSheet onAction={handleFolderAction} />
       <CreateTagModal />
       <MoveToFolderModal />
       <RenameModal

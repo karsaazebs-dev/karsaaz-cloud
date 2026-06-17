@@ -5,10 +5,11 @@
  * Figma node 1:2034 — File Details bottom sheet
  */
 
-import { View, Text, Pressable, StyleSheet, Modal } from "react-native";
+import { View, Text, Pressable, StyleSheet, Modal, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { useUiStore } from "@/src/stores/uiStore";
+import { useFavoritesStore } from "@/src/stores/favoritesStore";
 import { theme } from "@/src/constants/theme";
 import { formatFileSize } from "@/src/utils/fileFilters";
 import { phase1DebugLog } from "@/src/utils/phase1DebugLog";
@@ -20,14 +21,13 @@ interface Action {
   destructive?: boolean;
 }
 
-const ACTIONS: Action[] = [
+const BASE_ACTIONS: Action[] = [
   { id: "edit", label: "Edit", icon: "create-outline" },
-  { id: "favourite", label: "Add to favourite", icon: "star-outline" },
   { id: "details", label: "Details", icon: "information-circle-outline" },
   { id: "rename", label: "Rename", icon: "pencil-outline" },
   { id: "tag", label: "Tag", icon: "pricetag-outline" },
   { id: "export", label: "Export", icon: "exit-outline" },
-  { id: "share", label: "Share / Activity", icon: "share-social-outline" },
+  { id: "share", label: "Share/Activity", icon: "share-social-outline" },
   { id: "sync", label: "Sync", icon: "sync-outline" },
   { id: "move", label: "Move to folder", icon: "folder-open-outline" },
   { id: "pin", label: "Pin", icon: "pin-outline" },
@@ -41,14 +41,27 @@ interface FileDetailsSheetProps {
 export function FileDetailsSheet({ onAction }: FileDetailsSheetProps) {
   const file = useUiStore((s) => s.actionFile);
   const setActionFile = useUiStore((s) => s.setActionFile);
+  const isFavorite = useFavoritesStore((s) => s.isFavorite);
 
   if (!file) return null;
+
+  const alreadyFav = isFavorite(file.path);
+
+  const actions: Action[] = [
+    BASE_ACTIONS[0],
+    {
+      id: "favourite",
+      label: alreadyFav ? "Remove from favourite" : "Add to favourite",
+      icon: alreadyFav ? "star" : "star-outline",
+    },
+    ...BASE_ACTIONS.slice(1),
+  ];
 
   // #region agent log
   phase1DebugLog(
     "FileDetailsSheet.tsx:render",
     "file menu rendered",
-    { actionCount: ACTIONS.length, actionIds: ACTIONS.map((a) => a.id), fileName: file.name },
+    { actionCount: actions.length, fileName: file.name },
     "H1"
   );
   // #endregion
@@ -79,26 +92,28 @@ export function FileDetailsSheet({ onAction }: FileDetailsSheetProps) {
 
           <View style={styles.divider} />
 
-          {ACTIONS.map((action) => (
-            <Pressable
-              key={action.id}
-              style={styles.row}
-              onPress={() => {
-                const target = file;
-                setActionFile(null);
-                onAction(action.id, target);
-              }}
-            >
-              <Ionicons
-                name={action.icon}
-                size={22}
-                color={action.destructive ? "#b71d21" : "#09090b"}
-              />
-              <Text style={[styles.label, action.destructive && styles.destructive]}>
-                {action.label}
-              </Text>
-            </Pressable>
-          ))}
+          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            {actions.map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.row}
+                onPress={() => {
+                  const target = file;
+                  setActionFile(null);
+                  onAction(action.id, target);
+                }}
+              >
+                <Ionicons
+                  name={action.icon}
+                  size={22}
+                  color={action.destructive ? "#b71d21" : action.id === "favourite" && alreadyFav ? "#f59e0b" : "#09090b"}
+                />
+                <Text style={[styles.label, action.destructive && styles.destructive]}>
+                  {action.label}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>

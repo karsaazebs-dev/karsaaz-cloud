@@ -58,7 +58,7 @@ const SLIDES: Slide[] = [
     title: "Share With Confidence",
     subtitle: "Secure sharing and real-time collaboration with your team.",
     primaryLabel: "Continue",
-    illustration: figmaAssets.onboarding.hero2,
+    illustration: figmaAssets.onboarding.hero3,
   },
   {
     id: "4",

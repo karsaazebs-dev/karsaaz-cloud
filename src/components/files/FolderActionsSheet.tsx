@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { View, Text, Pressable, StyleSheet, Modal } from "react-native";
+import { View, Text, Pressable, StyleSheet, Modal, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { useUiStore } from "@/src/stores/uiStore";
+import { useFavoritesStore } from "@/src/stores/favoritesStore";
 import { theme } from "@/src/constants/theme";
 
 interface Action {
@@ -16,9 +17,8 @@ interface Action {
   destructive?: boolean;
 }
 
-const ACTIONS: Action[] = [
+const BASE_FOLDER_ACTIONS: Action[] = [
   { id: "details", label: "Details", icon: "information-circle-outline" },
-  { id: "favourite", label: "Add to favourite", icon: "star-outline" },
   { id: "tag", label: "Tag", icon: "pricetag-outline" },
   { id: "rename", label: "Rename", icon: "create-outline" },
   { id: "edit", label: "Edit", icon: "pencil-outline" },
@@ -37,8 +37,20 @@ interface FolderActionsSheetProps {
 export function FolderActionsSheet({ onAction }: FolderActionsSheetProps) {
   const folder = useUiStore((s) => s.actionFolder);
   const setActionFolder = useUiStore((s) => s.setActionFolder);
+  const isFavorite = useFavoritesStore((s) => s.isFavorite);
 
   if (!folder) return null;
+
+  const alreadyFav = isFavorite(folder.path);
+
+  const actions: Action[] = [
+    {
+      id: "favourite",
+      label: alreadyFav ? "Remove from favourite" : "Add to favourite",
+      icon: alreadyFav ? "star" : "star-outline",
+    },
+    ...BASE_FOLDER_ACTIONS,
+  ];
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={() => setActionFolder(null)}>
@@ -46,26 +58,28 @@ export function FolderActionsSheet({ onAction }: FolderActionsSheetProps) {
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.handle} />
           <Text style={styles.title} numberOfLines={1}>{folder.name}</Text>
-          {ACTIONS.map((action) => (
-            <Pressable
-              key={action.id}
-              style={styles.row}
-              onPress={() => {
-                const target = folder;
-                setActionFolder(null);
-                onAction(action.id, target);
-              }}
-            >
-              <Ionicons
-                name={action.icon}
-                size={20}
-                color={action.destructive ? "#dc2626" : theme.colors.text}
-              />
-              <Text style={[styles.label, action.destructive && styles.destructive]}>
-                {action.label}
-              </Text>
-            </Pressable>
-          ))}
+          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            {actions.map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.row}
+                onPress={() => {
+                  const target = folder;
+                  setActionFolder(null);
+                  onAction(action.id, target);
+                }}
+              >
+                <Ionicons
+                  name={action.icon}
+                  size={20}
+                  color={action.destructive ? "#dc2626" : action.id === "favourite" && alreadyFav ? "#f59e0b" : theme.colors.text}
+                />
+                <Text style={[styles.label, action.destructive && styles.destructive]}>
+                  {action.label}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
