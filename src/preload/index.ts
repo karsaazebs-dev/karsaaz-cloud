@@ -41,9 +41,15 @@ const api = {
   },
   syncFolders: {
     list: () => ipcRenderer.invoke('sync:list-folders'),
-    add: (localPath: string, remotePath: string) => ipcRenderer.invoke('sync:add-folder', localPath, remotePath),
+    add: (localPath: string, remotePath: string) => ipcRenderer.invoke('sync:add-folder', localPath, remotePath) as Promise<string>,
     remove: (id: string) => ipcRenderer.invoke('sync:remove-folder', id),
-    updateStatus: (id: string, status: string) => ipcRenderer.invoke('sync:update-folder-status', id, status)
+    updateStatus: (id: string, status: string) => ipcRenderer.invoke('sync:update-folder-status', id, status),
+    runNow: (id?: string) => ipcRenderer.invoke('sync:run-now', id) as Promise<void>,
+    openLocal: (path: string) => ipcRenderer.invoke('sync:open-local', path) as Promise<void>,
+    onUpdated: (cb: () => void) => {
+      ipcRenderer.on('sync:folders-updated', cb)
+      return () => ipcRenderer.removeListener('sync:folders-updated', cb)
+    }
   },
   onCheckUpdates: (callback: () => void) => {
     ipcRenderer.on('app:check-updates', callback)

@@ -36,10 +36,13 @@ declare global {
         download: (remotePath: string, filename: string) => Promise<{ ok: boolean; reason?: string }>
       }
       syncFolders: {
-        list: () => Promise<Array<{ id: string; localPath: string; remotePath: string; status: string; lastSynced?: string }>>
+        list: () => Promise<Array<{ id: string; localPath: string; remotePath: string; status: string; lastSynced?: string; error?: string }>>
         add: (localPath: string, remotePath: string) => Promise<string>
         remove: (id: string) => Promise<void>
         updateStatus: (id: string, status: string) => Promise<void>
+        runNow: (id?: string) => Promise<void>
+        openLocal: (path: string) => Promise<void>
+        onUpdated: (cb: () => void) => () => void
       }
       onCheckUpdates: (callback: () => void) => () => void
       updater: {

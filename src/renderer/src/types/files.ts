@@ -36,6 +36,7 @@ export interface SyncFolder {
   remotePath: string
   status: 'synced' | 'syncing' | 'error' | 'paused'
   lastSynced?: string
+  error?: string
 }
 
 export interface ActivityEntry {

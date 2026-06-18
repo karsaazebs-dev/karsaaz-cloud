@@ -4,11 +4,23 @@ import { createWriteStream, mkdirSync, existsSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
 import { autoUpdater } from 'electron-updater'
+import { type DavAuth } from './dav'
+import { createSyncEngine } from './syncEngine'
 
 const store = new Store()
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
-let syncPaused = false
+let syncPaused = (store.get('syncPaused', false) as boolean) ?? false
+
+function readAuth(): DavAuth | null {
+  const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  const authToken = String(store.get('authToken') ?? '')
+  const username = String(store.get('username') ?? '')
+  if (!serverUrl.startsWith('http') || !authToken || !username) return null
+  return { serverUrl, authToken, username }
+}
+
+const syncEngine = createSyncEngine(store, () => mainWindow, readAuth)
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -73,6 +85,7 @@ function createTray(): void {
       checked: syncPaused,
       click: (item) => {
         syncPaused = item.checked
+        store.set('syncPaused', syncPaused)
         mainWindow?.webContents.send('sync:status', syncPaused ? 'paused' : 'active')
       }
     },
@@ -266,22 +279,18 @@ ipcMain.handle('file:download', async (_event, remotePath: string, filename: str
 })
 
 // Sync folder management
-ipcMain.handle('sync:list-folders', () => store.get('syncFolders', []))
-ipcMain.handle('sync:add-folder', (_event, localPath: string, remotePath: string) => {
-  const folders = store.get('syncFolders', []) as Array<{ id: string; localPath: string; remotePath: string; status: string }>
-  const id = `sf-${Date.now()}`
-  folders.push({ id, localPath, remotePath, status: 'synced' })
-  store.set('syncFolders', folders)
-  return id
+ipcMain.handle('sync:list-folders', () => syncEngine.list())
+ipcMain.handle('sync:add-folder', (_event, localPath: string, remotePath: string) =>
+  syncEngine.addFolder(localPath, remotePath))
+ipcMain.handle('sync:remove-folder', (_event, id: string) => syncEngine.removeFolder(id))
+ipcMain.handle('sync:run-now', async (_event, id?: string) => {
+  if (id) await syncEngine.syncFolder(id)
+  else await syncEngine.syncAll()
 })
-ipcMain.handle('sync:remove-folder', (_event, id: string) => {
-  const folders = store.get('syncFolders', []) as Array<{ id: string }>
-  store.set('syncFolders', folders.filter((f) => f.id !== id))
-})
+ipcMain.handle('sync:open-local', (_event, localPath: string) => syncEngine.openLocal(localPath))
 ipcMain.handle('sync:update-folder-status', (_event, id: string, status: string) => {
-  const folders = store.get('syncFolders', []) as Array<{ id: string; status: string }>
-  const updated = folders.map((f) => f.id === id ? { ...f, status, lastSynced: new Date().toISOString() } : f)
-  store.set('syncFolders', updated)
+  if (status === 'paused') syncEngine.setFolderPaused(id, true)
+  else if (status === 'synced') syncEngine.setFolderPaused(id, false)
 })
 
 ipcMain.handle('app:open-external', async (_event, url: string) => {
@@ -317,6 +326,7 @@ ipcMain.handle('notification:show', (_event, { title, body }: { title: string; b
 ipcMain.handle('sync:get-status', () => (syncPaused ? 'paused' : 'active'))
 ipcMain.handle('sync:set-paused', (_event, paused: boolean) => {
   syncPaused = paused
+  store.set('syncPaused', paused)
 })
 
 // Auto-updater IPC
@@ -329,18 +339,6 @@ ipcMain.handle('updater:download', () => {
 ipcMain.handle('updater:install', () => {
   autoUpdater.quitAndInstall()
 })
-
-let remotePollingTimer: ReturnType<typeof setInterval> | null = null
-
-function startRemotePolling(): void {
-  if (remotePollingTimer) clearInterval(remotePollingTimer)
-  remotePollingTimer = setInterval(() => {
-    const paused = store.get('syncPaused', false) as boolean
-    if (!paused) {
-      mainWindow?.webContents.send('sync:poll-remote')
-    }
-  }, 30000)
-}
 
 function setupAutoUpdater(): void {
   autoUpdater.autoDownload = false
@@ -414,7 +412,7 @@ app.whenReady().then(() => {
   createWindow()
   createTray()
   setupAutoUpdater()
-  startRemotePolling()
+  syncEngine.start()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
     else mainWindow?.show()
