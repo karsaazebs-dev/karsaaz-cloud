@@ -54,26 +54,46 @@ export interface RemoteEntry {
   isDir: boolean
 }
 
-export function parsePropfind(xml: string, remoteRoot: string): RemoteEntry[] {
+const DAV_PREFIX = '/remote.php/dav/files/'
+
+export function davHrefToUserPath(href: string, username: string): string | null {
+  let path = href
+  try {
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      path = new URL(path).pathname
+    }
+  } catch {
+    // keep original
+  }
+  path = decodeURIComponent(path)
+  const userPrefix = `${DAV_PREFIX}${username}/`
+  const userIdx = path.indexOf(userPrefix)
+  if (userIdx >= 0) {
+    const rest = path.slice(userIdx + userPrefix.length)
+    return rest ? `/${rest}` : '/'
+  }
+  const davIdx = path.indexOf(DAV_PREFIX)
+  if (davIdx < 0) return null
+  const afterDav = path.slice(davIdx + DAV_PREFIX.length)
+  const slash = afterDav.indexOf('/')
+  if (slash < 0) return '/'
+  const rest = afterDav.slice(slash + 1)
+  return rest ? `/${rest}` : '/'
+}
+
+export function parsePropfind(xml: string, remoteRoot: string, username: string): RemoteEntry[] {
   const entries: RemoteEntry[] = []
   const root = remoteRoot === '/' ? '' : remoteRoot.replace(/\/$/, '')
   const responses = xml.match(/<d:response>[\s\S]*?<\/d:response>/g) ?? []
 
   for (const block of responses) {
     const href = block.match(/<d:href>([^<]+)<\/d:href>/)?.[1] ?? ''
-    let path = href
-    try {
-      if (path.startsWith('http')) path = new URL(path).pathname
-    } catch { /* keep */ }
-    path = decodeURIComponent(path)
-    const davIdx = path.indexOf('/remote.php/dav/files/')
-    if (davIdx < 0) continue
-    const afterUser = path.slice(davIdx).split('/').slice(4).join('/')
-    const userRel = afterUser ? `/${afterUser}` : '/'
-    if (userRel === root || userRel === `${root}/`) continue
+    const userRel = davHrefToUserPath(href, username)
+    if (!userRel || userRel === '/' || userRel === root || userRel === `${root}/`) continue
 
-    const isDir = block.includes('<d:collection')
-    if (!userRel.startsWith(root === '' ? '/' : root)) continue
+    const isDir = /<d:collection[\s/>]/.test(block)
+    const rootPrefix = root === '' ? '/' : root
+    if (!userRel.startsWith(rootPrefix)) continue
     const rel = root ? userRel.slice(root.length).replace(/^\//, '') : userRel.replace(/^\//, '')
     if (!rel || rel.endsWith('/')) continue
 

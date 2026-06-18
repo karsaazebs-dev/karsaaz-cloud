@@ -34,13 +34,19 @@ function fmtDate(d: Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function parsePropfind(xml: string, serverUrl: string): FileItem[] {
+function parsePropfind(xml: string, serverUrl: string, username: string): FileItem[] {
   const items: FileItem[] = []
   const responses = xml.match(/<d:response>[\s\S]*?<\/d:response>/g) ?? []
   responses.slice(1).forEach((block) => {
     const href = block.match(/<d:href>([^<]+)<\/d:href>/)?.[1] ?? ''
-    const name = decodeURIComponent(href.split('/').filter(Boolean).pop() ?? 'unknown')
-    const isCollection = block.includes('<d:collection')
+    const userPath = davHrefToUserPath(href, username)
+    if (!userPath || userPath === '/') return
+
+    const displayName = block.match(/<d:displayname>([^<]*)<\/d:displayname>/)?.[1]
+    const name = displayName
+      ? decodeURIComponent(displayName)
+      : userPath.split('/').filter(Boolean).pop() ?? 'unknown'
+    const isCollection = /<d:collection[\s/>]/.test(block)
     const size = parseInt(block.match(/<d:getcontentlength>(\d+)<\/d:getcontentlength>/)?.[1] ?? '0', 10)
     const modified = block.match(/<d:getlastmodified>([^<]+)<\/d:getlastmodified>/)?.[1]
     const modifiedAt = modified ? new Date(modified) : new Date()
@@ -51,8 +57,11 @@ function parsePropfind(xml: string, serverUrl: string): FileItem[] {
     const thumbnail = fileId && !isCollection
       ? `${serverUrl}/index.php/core/preview?fileId=${fileId}&x=256&y=256&forceIcon=0`
       : undefined
+    const parentPath = userPath.lastIndexOf('/') > 0
+      ? userPath.slice(0, userPath.lastIndexOf('/')) || '/'
+      : '/'
     items.push({
-      id: fileId || `nc-${href}`,
+      id: fileId || `nc-${userPath}`,
       name,
       size,
       sizeLabel: size > 0 ? fmtSize(size) : '—',
@@ -60,7 +69,8 @@ function parsePropfind(xml: string, serverUrl: string): FileItem[] {
       modifiedLabel: fmtDate(modifiedAt),
       type,
       isFolder: isCollection,
-      path: href,
+      path: userPath,
+      parentPath,
       owner: ownerId,
       favourite,
       thumbnail
@@ -73,15 +83,15 @@ export async function listFiles(path = '/'): Promise<FileItem[]> {
   try {
     const username = await getUsername()
     const serverUrl = ((await window.api.store.get('serverUrl')) as string ?? '').replace(/\/$/, '')
-    const cleanPath = path === '/' ? '' : path
-    const res = await ncFetch(`/remote.php/dav/files/${username}${cleanPath}`, {
+    const href = await userPathToDavHref(path)
+    const res = await ncFetch(href, {
       method: 'PROPFIND',
       headers: { Depth: '1', 'Content-Type': 'application/xml' },
       body: PROPFIND_BODY
     })
     if (!res.ok) throw new Error(`PROPFIND failed: ${res.status}`)
     const xml = await res.text()
-    return applyPinnedState(parsePropfind(xml, serverUrl))
+    return applyPinnedState(parsePropfind(xml, serverUrl, username))
   } catch {
     return []
   }
@@ -102,7 +112,7 @@ export async function listFavouriteFiles(): Promise<FileItem[]> {
     })
     if (!res.ok) throw new Error('Favourites fetch failed')
     const xml = await res.text()
-    return applyPinnedState(parsePropfind(xml, serverUrl))
+    return applyPinnedState(parsePropfind(xml, serverUrl, username))
   } catch {
     return []
   }

@@ -56,7 +56,7 @@ export default function AllFiles(): JSX.Element {
   ]
 
   const handleFolderOpen = (file: FileItem): void => {
-    if (file.isFolder) setCurrentPath(file.path)
+    if (file.isFolder) setCurrentPath(file.path.startsWith('/') ? file.path : `/${file.path}`)
   }
 
   const handleCreateFolder = useCallback(async () => {

@@ -84,7 +84,9 @@ export function createSyncEngine(store: Store, getWindow: GetWindow, getAuth: Ge
       : `${remoteRoot.replace(/\/$/, '')}/${rel}`
     const url = buildDavUrl(auth.serverUrl, auth.username, remotePath)
     const res = await davRequest('GET', url, auth.authToken)
-    if (res.status < 200 || res.status >= 300) throw new Error(`Download failed (HTTP ${res.status})`)
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error(`Download failed for "${rel}" (HTTP ${res.status})`)
+    }
     const dest = join(localRoot, rel)
     await mkdir(dirname(dest), { recursive: true })
     await writeFile(dest, res.body)
@@ -97,7 +99,7 @@ export function createSyncEngine(store: Store, getWindow: GetWindow, getAuth: Ge
       'Content-Type': 'application/xml'
     })
     if (res.status < 200 || res.status >= 300) throw new Error(`Remote listing failed (HTTP ${res.status})`)
-    return parsePropfind(res.body.toString('utf8'), remoteRoot)
+    return parsePropfind(res.body.toString('utf8'), remoteRoot, auth.username)
   }
 
   async function syncFolder(id: string): Promise<void> {

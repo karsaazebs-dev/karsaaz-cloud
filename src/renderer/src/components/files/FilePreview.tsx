@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { X, Download, ExternalLink } from 'lucide-react'
+import { resolveDavHref, userPathToAbsoluteUrl } from '../../utils/davPaths'
 import type { FileItem } from '../../types/files'
 
 interface FilePreviewProps {
@@ -50,10 +51,7 @@ export default function FilePreview({ file, onClose }: FilePreviewProps): JSX.El
     if (!file.path) return
 
     async function load(): Promise<void> {
-      const serverUrl = ((await window.api.store.get('serverUrl')) as string ?? '').replace(/\/$/, '')
-      const username = (await window.api.store.get('username')) as string ?? ''
-      if (!serverUrl || !username) return
-      const davUrl = `${serverUrl}/remote.php/dav/files/${encodeURIComponent(username)}${file.path}`
+      const davUrl = await userPathToAbsoluteUrl(file.path)
       setMediaUrl(davUrl)
 
       if (isImage(file)) {
@@ -72,7 +70,9 @@ export default function FilePreview({ file, onClose }: FilePreviewProps): JSX.El
   }, [file])
 
   const handleDownload = (): void => {
-    window.api.file.download(file.path, file.name).catch(() => {})
+    resolveDavHref(file.path)
+      .then((href) => window.api.file.download(href, file.name))
+      .catch(() => {})
   }
 
   const handleKeyDown = (e: React.KeyboardEvent): void => {

@@ -14,7 +14,7 @@ const labelCls = 'mb-1.5 block font-display text-[13px] font-medium text-[#71717
 
 export default function AddSyncFolderDrawer({ open, onClose, onSubmit }: AddSyncFolderDrawerProps): JSX.Element {
   const [localPath, setLocalPath] = useState('')
-  const [remotePath, setRemotePath] = useState('/')
+  const [remotePath, setRemotePath] = useState('')
   const [showRemotePicker, setShowRemotePicker] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,9 +32,10 @@ export default function AddSyncFolderDrawer({ open, onClose, onSubmit }: AddSync
     setBusy(true)
     setError(null)
     try {
-      await onSubmit(localPath.trim(), remotePath || '/')
+      const cloudPath = remotePath.trim() || `/${localPath.trim().split(/[/\\]/).filter(Boolean).pop() ?? 'Sync'}`
+      await onSubmit(localPath.trim(), cloudPath)
       setLocalPath('')
-      setRemotePath('/')
+      setRemotePath('')
       onClose()
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to add sync folder')
@@ -79,7 +80,7 @@ export default function AddSyncFolderDrawer({ open, onClose, onSubmit }: AddSync
               </button>
             </div>
             <p className="mt-1.5 font-display text-[12px] text-[#71717b]">
-              Files sync both ways — changes on this PC or in the cloud stay in sync.
+              Pick a dedicated cloud folder (e.g. /Documents). Leave blank to use a folder matching the local name.
             </p>
           </div>
 

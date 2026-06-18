@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ChevronRight, Folder, FolderPlus } from 'lucide-react'
 import { listFiles, createFolder } from '../../services/filesApi'
-import { davHrefToUserPath } from '../../utils/davPaths'
-import { getUsername } from '../../services/nextcloud'
 
 interface MoveFolderDialogProps {
   excludePath?: string
@@ -20,14 +18,10 @@ export default function MoveFolderDialog({ excludePath, onSelect, onCancel }: Mo
   const loadFolders = useCallback(async (path: string) => {
     setLoading(true)
     try {
-      const username = await getUsername()
       const items = await listFiles(path)
       const dirs = items
         .filter((f) => f.isFolder)
-        .map((f) => ({
-          name: f.name,
-          path: davHrefToUserPath(f.path, username)
-        }))
+        .map((f) => ({ name: f.name, path: f.path }))
         .filter((f) => f.path !== excludePath)
         .sort((a, b) => a.name.localeCompare(b.name))
       setFolders(dirs)
