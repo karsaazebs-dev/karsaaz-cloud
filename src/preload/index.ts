@@ -16,6 +16,15 @@ const api = {
     delete: (key: string) => ipcRenderer.invoke('store:delete', key),
     clear: () => ipcRenderer.invoke('store:clear')
   },
+  app: {
+    openExternal: (url: string) => ipcRenderer.invoke('app:open-external', url)
+  },
+  dialog: {
+    selectFolder: () => ipcRenderer.invoke('dialog:select-folder') as Promise<string | null>
+  },
+  clipboard: {
+    write: (text: string) => ipcRenderer.invoke('clipboard:write', text)
+  },
   notification: {
     show: (title: string, body: string) => ipcRenderer.invoke('notification:show', { title, body })
   },

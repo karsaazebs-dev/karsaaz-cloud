@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Search, Bell } from 'lucide-react'
 import { useUpload } from '../../hooks/useUpload'
+import { useSearch } from '../../hooks/useSearch'
 
 const ROUTE_TITLES: Record<string, string> = {
   '/app/dashboard': 'Dashboard',
@@ -22,7 +23,7 @@ const ROUTE_TITLES: Record<string, string> = {
 
 export default function TopHeader(): JSX.Element {
   const location = useLocation()
-  const [search, setSearch] = useState('')
+  const { query: search, setQuery: setSearch } = useSearch()
   const [username, setUsername] = useState('User')
   const { uploads, activeCount } = useUpload()
   const title = ROUTE_TITLES[location.pathname] ?? 'Karsaaz Cloud'

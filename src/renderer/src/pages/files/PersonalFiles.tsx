@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import FilesBrowser from '../../components/files/FilesBrowser'
 import { listFiles } from '../../services/filesApi'
 import { getUsername } from '../../services/nextcloud'
@@ -9,18 +9,22 @@ export default function PersonalFiles(): JSX.Element {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const [all, me] = await Promise.all([listFiles('/'), getUsername()])
-        setFiles(all.filter((f) => !f.sharedBy && (!f.owner || f.owner === me)))
-      } catch {
-        setError('Failed to load files')
-      } finally {
-        setLoading(false)
-      }
-    })()
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const [all, me] = await Promise.all([listFiles('/'), getUsername()])
+      setFiles(all.filter((f) => !f.sharedBy && (!f.owner || f.owner === me)))
+    } catch {
+      setError('Failed to load files')
+    } finally {
+      setLoading(false)
+    }
   }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
 
   return (
     <FilesBrowser
@@ -28,6 +32,7 @@ export default function PersonalFiles(): JSX.Element {
       files={files}
       loading={loading}
       error={error}
+      onRefresh={load}
       breadcrumbs={[{ label: 'Dashboard' }, { label: 'Personal Files' }]}
       emptyMessage="You have no personal files yet"
     />

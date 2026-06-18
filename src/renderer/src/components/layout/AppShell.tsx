@@ -4,6 +4,8 @@ import Sidebar from './Sidebar'
 import TopHeader from './TopHeader'
 import { UploadProvider } from '../../hooks/useUpload'
 import { ToastProvider } from '../../hooks/useToast'
+import { ActionDialogProvider } from '../../hooks/useActionDialog'
+import { SearchProvider } from '../../hooks/useSearch'
 import ToastContainer from '../ui/ToastContainer'
 import NetworkGuard from '../ui/NetworkGuard'
 import GlobalErrorHandler from '../ui/GlobalErrorHandler'
@@ -37,6 +39,8 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Erro
 export default function AppShell(): JSX.Element {
   return (
     <ToastProvider>
+      <ActionDialogProvider>
+      <SearchProvider>
       <UploadProvider>
         <div className="flex h-full w-full flex-col">
           {/* Titlebar drag zone — matches titleBarOverlay height (32px) so content clears native Win controls */}
@@ -61,6 +65,8 @@ export default function AppShell(): JSX.Element {
         <GlobalErrorHandler />
         <ToastContainer />
       </UploadProvider>
+      </SearchProvider>
+      </ActionDialogProvider>
     </ToastProvider>
   )
 }

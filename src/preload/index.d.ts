@@ -15,6 +15,15 @@ declare global {
         delete: (key: string) => Promise<void>
         clear: () => Promise<void>
       }
+      app: {
+        openExternal: (url: string) => Promise<void>
+      }
+      dialog: {
+        selectFolder: () => Promise<string | null>
+      }
+      clipboard: {
+        write: (text: string) => Promise<void>
+      }
       notification: {
         show: (title: string, body: string) => Promise<void>
       }

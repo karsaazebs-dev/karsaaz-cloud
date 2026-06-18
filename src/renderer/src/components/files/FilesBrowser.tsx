@@ -1,14 +1,16 @@
 import { useCallback, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useUpload } from '../../hooks/useUpload'
+import { useFileActions } from '../../hooks/useFileActions'
 import FilterTabs from './FilterTabs'
 import FileCard from './FileCard'
 import FileRow from './FileRow'
 import FileViewToolbar from './FileViewToolbar'
 import EmptyState from './EmptyState'
 import FilePreview from './FilePreview'
+import FileDetailsModal from './FileDetailsModal'
 import { useFileView } from '../../hooks/useFileView'
 import type { FileItem } from '../../types/files'
-import type { FileAction } from './FileContextMenu'
+import type { FileAction } from '../../types/fileActions'
 import { getTabCounts } from '../../data/mockFiles'
 
 interface FilesBrowserProps {
@@ -18,6 +20,7 @@ interface FilesBrowserProps {
   showFilters?: boolean
   onFolderOpen?: (file: FileItem) => void
   onFileAction?: (action: FileAction, file: FileItem) => Promise<void>
+  onRefresh?: () => void
   onCreateFolder?: () => Promise<void>
   currentPath?: string
   loading?: boolean
@@ -35,6 +38,7 @@ export default function FilesBrowser({
   showFilters = true,
   onFolderOpen,
   onFileAction,
+  onRefresh,
   onCreateFolder,
   currentPath = '/',
   loading = false,
@@ -47,12 +51,14 @@ export default function FilesBrowser({
   const {
     activeTab, setActiveTab, viewGrid, setViewGrid,
     sort, setSort, sortOpen, setSortOpen,
-    displayFiles, toggleFavourite
+    displayFiles
   } = useFileView(files)
   const { addFiles } = useUpload()
   const [dragOver, setDragOver] = useState(false)
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null)
+  const [detailsFile, setDetailsFile] = useState<FileItem | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const defaultFileAction = useFileActions(onRefresh, setDetailsFile)
 
   const handleUploadClick = (): void => { fileInputRef.current?.click() }
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -64,10 +70,9 @@ export default function FilesBrowser({
   const counts = getTabCounts(files)
 
   const handleAction = useCallback(async (action: FileAction, file: FileItem) => {
-    if (onFileAction) {
-      await onFileAction(action, file)
-    }
-  }, [onFileAction])
+    if (onFileAction) await onFileAction(action, file)
+    else await defaultFileAction(action, file)
+  }, [onFileAction, defaultFileAction])
 
   const handleDoubleClick = (file: FileItem): void => {
     if (file.isFolder && onFolderOpen) onFolderOpen(file)
@@ -102,6 +107,7 @@ export default function FilesBrowser({
   return (
     <>
     {previewFile && <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />}
+    {detailsFile && <FileDetailsModal file={detailsFile} onClose={() => setDetailsFile(null)} />}
     <div
       className={`relative flex flex-col gap-6 ${dragOver ? 'rounded-[16px] ring-2 ring-[#2b7fff] ring-offset-2' : ''}`}
       onDragOver={onDragOver}
@@ -182,7 +188,6 @@ export default function FilesBrowser({
               key={f.id}
               file={f}
               onAction={handleAction}
-              onToggleFavourite={(file) => toggleFavourite(file.id)}
               onDoubleClick={handleDoubleClick}
               onClick={handleFileClick}
             />
@@ -204,8 +209,8 @@ export default function FilesBrowser({
               key={f.id}
               file={f}
               onAction={handleAction}
-              onToggleFavourite={(file) => toggleFavourite(file.id)}
               onDoubleClick={handleDoubleClick}
+              onClick={handleFileClick}
             />
           ))}
         </div>

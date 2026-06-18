@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import FilesBrowser from '../../components/files/FilesBrowser'
-import { listFiles, deleteFile, createFolder, toggleFavourite, moveFile } from '../../services/filesApi'
-import { createShare } from '../../services/sharingApi'
+import { listFiles, createFolder } from '../../services/filesApi'
 import { useUpload } from '../../hooks/useUpload'
 import type { FileItem } from '../../types/files'
-import type { FileAction } from '../../components/files/FileContextMenu'
 
 export default function AllFiles(): JSX.Element {
   const navigate = useNavigate()
@@ -57,53 +55,6 @@ export default function AllFiles(): JSX.Element {
     if (file.isFolder) setCurrentPath(file.path)
   }
 
-  const handleFileAction = useCallback(async (action: FileAction, file: FileItem) => {
-    if (action === 'delete') {
-      if (!confirm(`Delete "${file.name}"?`)) return
-      try {
-        await deleteFile(file.path)
-        setFiles((prev) => prev.filter((f) => f.id !== file.id))
-      } catch {
-        alert('Delete failed')
-      }
-    } else if (action === 'share') {
-      try {
-        const share = await createShare(file.path)
-        const serverUrl = ((await window.api.store.get('serverUrl')) as string ?? '').replace(/\/$/, '')
-        const link = `${serverUrl}/s/${share.token}`
-        await navigator.clipboard.writeText(link)
-        alert(`Link copied: ${link}`)
-      } catch {
-        alert('Share failed')
-      }
-    } else if (action === 'download') {
-      try {
-        await window.api.file.download(file.path, file.name)
-      } catch {
-        alert('Download failed')
-      }
-    } else if (action === 'favourite') {
-      try {
-        const newVal = !file.favourite
-        await toggleFavourite(file.path, newVal)
-        setFiles((prev) => prev.map((f) => f.id === file.id ? { ...f, favourite: newVal } : f))
-      } catch {
-        alert('Failed to update favourite')
-      }
-    } else if (action === 'rename') {
-      const newName = prompt('New name:', file.name)
-      if (!newName || newName === file.name) return
-      const dir = file.path.substring(0, file.path.lastIndexOf('/') + 1)
-      const newPath = dir + newName
-      try {
-        await moveFile(file.path, newPath)
-        await loadFiles(currentPath)
-      } catch {
-        alert('Rename failed')
-      }
-    }
-  }, [currentPath, loadFiles])
-
   const handleCreateFolder = useCallback(async () => {
     const name = prompt('Folder name:')
     if (!name) return
@@ -122,7 +73,7 @@ export default function AllFiles(): JSX.Element {
       files={files}
       breadcrumbs={breadcrumbs}
       onFolderOpen={handleFolderOpen}
-      onFileAction={handleFileAction}
+      onRefresh={() => loadFiles(currentPath)}
       onCreateFolder={handleCreateFolder}
       currentPath={currentPath}
       loading={loading}

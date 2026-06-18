@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification, session, dialog, net } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification, session, dialog, net, clipboard } from 'electron'
 import { join } from 'path'
 import { createWriteStream, mkdirSync, existsSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -238,6 +238,25 @@ ipcMain.handle('sync:update-folder-status', (_event, id: string, status: string)
   const folders = store.get('syncFolders', []) as Array<{ id: string; status: string }>
   const updated = folders.map((f) => f.id === id ? { ...f, status, lastSynced: new Date().toISOString() } : f)
   store.set('syncFolders', updated)
+})
+
+ipcMain.handle('app:open-external', async (_event, url: string) => {
+  if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+    await shell.openExternal(url)
+  }
+})
+
+ipcMain.handle('dialog:select-folder', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow ?? undefined, {
+    properties: ['openDirectory', 'createDirectory'],
+    title: 'Select local folder'
+  })
+  if (canceled || !filePaths[0]) return null
+  return filePaths[0]
+})
+
+ipcMain.handle('clipboard:write', (_event, text: string) => {
+  clipboard.writeText(String(text ?? ''))
 })
 
 ipcMain.handle('notification:show', (_event, { title, body }: { title: string; body: string }) => {

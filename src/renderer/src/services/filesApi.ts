@@ -1,4 +1,5 @@
 import { ncFetch, getUsername } from './nextcloud'
+import { davHrefToUserPath, normalizeDavHref, resolveDavHref, userPathToAbsoluteUrl, userPathToDavHref } from '../utils/davPaths'
 import type { FileItem, FileType } from '../types/files'
 
 const PROPFIND_BODY = `<?xml version="1.0"?>
@@ -185,7 +186,8 @@ export async function emptyTrashbin(): Promise<void> {
 }
 
 export async function toggleFavourite(path: string, favourite: boolean): Promise<void> {
-  const res = await ncFetch(path, {
+  const href = path.includes('/remote.php/dav/') ? normalizeDavHref(path) : await resolveDavHref(path)
+  const res = await ncFetch(href, {
     method: 'PROPPATCH',
     headers: { 'Content-Type': 'application/xml' },
     body: `<?xml version="1.0"?><d:propertyupdate xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns"><d:set><d:prop><oc:favorite>${favourite ? 1 : 0}</oc:favorite></d:prop></d:set></d:propertyupdate>`
@@ -205,19 +207,25 @@ export async function uploadFile(path: string, data: Blob): Promise<void> {
 }
 
 export async function deleteFile(path: string): Promise<void> {
-  const res = await ncFetch(path, { method: 'DELETE' })
-  if (!res.ok) throw new Error('Delete failed')
+  const href = path.includes('/remote.php/dav/') ? normalizeDavHref(path) : await resolveDavHref(path)
+  const res = await ncFetch(href, { method: 'DELETE' })
+  if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`)
 }
 
-export async function moveFile(from: string, to: string): Promise<void> {
-  const res = await ncFetch(from, {
+export async function moveFile(fromDavHref: string, toUserPath: string): Promise<void> {
+  const source = normalizeDavHref(fromDavHref)
+  const destUrl = await userPathToAbsoluteUrl(toUserPath)
+  const res = await ncFetch(source, {
     method: 'MOVE',
-    headers: { Destination: to }
+    headers: { Destination: destUrl, Overwrite: 'T' }
   })
-  if (!res.ok) throw new Error('Move failed')
+  if (!res.ok && res.status !== 201 && res.status !== 204) {
+    throw new Error(`Move failed: ${res.status}`)
+  }
 }
 
 export async function createFolder(path: string): Promise<void> {
-  const res = await ncFetch(path, { method: 'MKCOL' })
+  const href = await userPathToDavHref(path)
+  const res = await ncFetch(href, { method: 'MKCOL' })
   if (!res.ok) throw new Error('Create folder failed')
 }

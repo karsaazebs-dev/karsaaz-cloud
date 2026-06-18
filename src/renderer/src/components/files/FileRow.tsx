@@ -1,5 +1,6 @@
 import type { FileItem } from '../../types/files'
-import FileContextMenu, { type FileAction } from './FileContextMenu'
+import FileActionsMenu from '../ui/FileActionsMenu'
+import type { FileAction } from '../../types/fileActions'
 
 const TYPE_ICONS: Record<string, string> = {
   folder: '📁',
@@ -12,16 +13,17 @@ const TYPE_ICONS: Record<string, string> = {
 interface FileRowProps {
   file: FileItem
   onAction?: (action: FileAction, file: FileItem) => void
-  onToggleFavourite?: (file: FileItem) => void
   onDoubleClick?: (file: FileItem) => void
+  onClick?: (file: FileItem) => void
 }
 
-export default function FileRow({ file, onAction, onToggleFavourite, onDoubleClick }: FileRowProps): JSX.Element {
+export default function FileRow({ file, onAction, onDoubleClick, onClick }: FileRowProps): JSX.Element {
   const typeLabel = file.type.charAt(0).toUpperCase() + file.type.slice(1)
 
   return (
     <div
       className="group flex h-[56px] cursor-pointer items-center gap-4 rounded-[10px] border border-transparent bg-white px-4 transition-colors hover:border-[#e5e5e5] hover:bg-[#fafafa]"
+      onClick={() => onClick?.(file)}
       onDoubleClick={() => onDoubleClick?.(file)}
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-[#f5f5f7] text-lg">
@@ -43,12 +45,8 @@ export default function FileRow({ file, onAction, onToggleFavourite, onDoubleCli
         </span>
       )}
       {file.favourite && <span className="text-sm">⭐</span>}
-      <div className="w-8 opacity-0 transition-opacity group-hover:opacity-100">
-        <FileContextMenu
-          file={file}
-          onAction={onAction ?? (() => {})}
-          onToggleFavourite={onToggleFavourite}
-        />
+      <div className="w-8" onClick={(e) => e.stopPropagation()}>
+        <FileActionsMenu file={file} onAction={onAction ?? (() => {})} />
       </div>
     </div>
   )

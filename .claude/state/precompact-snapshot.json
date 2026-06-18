@@ -13,9 +13,9 @@
       }
     },
     "recommended": true,
-    "summary": "Context reset recommended (auto): 20 recent edit count exceed threshold 8",
+    "summary": "Context reset recommended (auto): 11 recent edit count exceed threshold 8",
     "reasons": [
-      "20 recent edit count exceed threshold 8"
+      "11 recent edit count exceed threshold 8"
     ],
     "candidates": [
       {
@@ -35,7 +35,7 @@
       {
         "key": "recent_edits",
         "label": "recent edit count",
-        "actual": 20,
+        "actual": 11,
         "threshold": 8,
         "triggered": true
       },
@@ -57,7 +57,7 @@
     "counters": {
       "wipTasks": 0,
       "blockedTasks": 0,
-      "recentEdits": 20,
+      "recentEdits": 11,
       "failedChecks": 0,
       "sessionAgeMinutes": null
     }
@@ -72,28 +72,19 @@
   "metrics": null,
   "recentEdits": [
     ".claude/sessions/.last_inbox_check",
-    ".claude/state/changed-files.jsonl",
-    ".claude/state/handoff-artifact.json",
-    ".claude/state/instructions-loaded.jsonl",
-    ".claude/state/precompact-snapshot.json",
-    ".gitignore",
-    "ipcRenderer.removeListener('app",
-    "package-lock.json",
-    "package.json",
-    "resources/icon.ico",
-    "resources/icon.png",
-    "src/main/index.ts",
-    "src/preload/index.d.ts",
-    "src/preload/index.ts",
-    "src/renderer/src/components/files/FilesBrowser.tsx",
-    "src/renderer/src/components/layout/StorageWidget.tsx",
-    "src/renderer/src/hooks/useUpload.tsx",
-    "src/renderer/src/pages/Activities.tsx",
-    "src/renderer/src/pages/DeletedFiles.tsx",
-    "src/renderer/src/pages/Media.tsx"
+    "src/renderer/src/components/files/FileCard.tsx",
+    "src/renderer/src/components/files/FileContextMenu.tsx",
+    "src/renderer/src/components/layout/AppShell.tsx",
+    "src/renderer/src/components/layout/TopHeader.tsx",
+    "src/renderer/src/pages/Settings.tsx",
+    "src/renderer/src/pages/files/AllFiles.tsx",
+    "src/renderer/src/components/dashboard/UploadActivityChart.tsx",
+    "src/renderer/src/hooks/useFileActions.ts",
+    "src/renderer/src/hooks/useSearch.tsx",
+    "src/renderer/src/utils/fileStats.ts"
   ],
   "sessionId": "",
-  "timestamp": "2026-06-18T07:17:53Z",
+  "timestamp": "2026-06-18T07:58:21Z",
   "version": "1.0.0",
   "wipTasks": null
 }

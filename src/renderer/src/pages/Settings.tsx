@@ -205,7 +205,7 @@ export default function Settings(): JSX.Element {
       <Section title="About">
         <Row label="Version" value="1.0.0" />
         <Row label="Product" value="Karsaaz Cloud" />
-        <Row label="Electron" value={process.versions.electron ?? 'unknown'} />
+        <Row label="Electron" value={typeof process !== 'undefined' ? (process.versions?.electron ?? 'unknown') : 'unknown'} />
 
         {/* Update banner */}
         {updateState === 'available' && (

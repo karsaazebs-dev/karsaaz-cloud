@@ -1,6 +1,7 @@
 import { Pin, Star } from 'lucide-react'
 import type { FileItem } from '../../types/files'
-import FileContextMenu, { type FileAction } from './FileContextMenu'
+import FileActionsMenu from '../ui/FileActionsMenu'
+import type { FileAction } from '../../types/fileActions'
 
 const TYPE_ICON: Record<string, string> = {
   image: '🖼️',
@@ -14,12 +15,11 @@ const TYPE_ICON: Record<string, string> = {
 interface FileCardProps {
   file: FileItem
   onAction?: (action: FileAction, file: FileItem) => void
-  onToggleFavourite?: (file: FileItem) => void
   onDoubleClick?: (file: FileItem) => void
   onClick?: (file: FileItem) => void
 }
 
-export default function FileCard({ file, onAction, onToggleFavourite, onDoubleClick, onClick }: FileCardProps): JSX.Element {
+export default function FileCard({ file, onAction, onDoubleClick, onClick }: FileCardProps): JSX.Element {
   const meta = file.sharedBy
     ? `Shared by ${file.sharedBy} • ${file.modifiedLabel}`
     : `${file.sizeLabel} • ${file.modifiedLabel}${file.shared ? ' • Shared' : ''}`
@@ -62,12 +62,8 @@ export default function FileCard({ file, onAction, onToggleFavourite, onDoubleCl
           {file.name}
         </p>
         <p className="pr-8 font-display text-[11px] text-[#71717b]">{meta}</p>
-        <div className="absolute bottom-0 right-0 opacity-0 transition-opacity group-hover:opacity-100">
-          <FileContextMenu
-            file={file}
-            onAction={onAction ?? (() => {})}
-            onToggleFavourite={onToggleFavourite}
-          />
+        <div className="absolute bottom-0 right-0" onClick={(e) => e.stopPropagation()}>
+          <FileActionsMenu file={file} onAction={onAction ?? (() => {})} />
         </div>
       </div>
     </div>
