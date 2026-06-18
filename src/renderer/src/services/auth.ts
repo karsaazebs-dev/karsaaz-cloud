@@ -7,9 +7,9 @@ export interface ServerInfo {
 export async function detectServer(url: string): Promise<ServerInfo | null> {
   try {
     const cleanUrl = url.replace(/\/$/, '')
-    const res = await fetch(`${cleanUrl}/status.php`)
-    if (!res.ok) return null
-    const data = await res.json()
+    const result = await window.api.nc.fetch(`${cleanUrl}/status.php`, 'GET', {})
+    if (!result.ok) return null
+    const data = JSON.parse(result.text)
     return {
       version: data.version || 'Unknown',
       edition: data.edition || 'Community',
@@ -24,20 +24,21 @@ export async function loginWithCredentials(
   serverUrl: string,
   username: string,
   password: string
-): Promise<{ token: string } | null> {
+): Promise<{ token: string } | { error: string }> {
   try {
     const cleanUrl = serverUrl.replace(/\/$/, '')
     const credentials = btoa(`${username}:${password}`)
-    const res = await fetch(`${cleanUrl}/ocs/v2.php/cloud/user?format=json`, {
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'OCS-APIREQUEST': 'true'
-      }
-    })
-    if (!res.ok) return null
+    const result = await window.api.nc.fetch(
+      `${cleanUrl}/ocs/v2.php/cloud/user?format=json`,
+      'GET',
+      { Authorization: `Basic ${credentials}`, 'OCS-APIREQUEST': 'true' }
+    )
+    if (result.status === 401) return { error: 'Invalid credentials. Please try again.' }
+    if (!result.ok) return { error: `Server error (${result.status}). Try again.` }
     return { token: credentials }
-  } catch {
-    return null
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    return { error: `Cannot reach server: ${msg}` }
   }
 }
 

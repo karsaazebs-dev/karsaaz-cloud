@@ -2,6 +2,14 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 const api = {
+  nc: {
+    fetch: (url: string, method: string, headers: Record<string, string>, body?: string) =>
+      ipcRenderer.invoke('nc:fetch', url, method, headers, body) as Promise<{ status: number; text: string; ok: boolean }>,
+    upload: (uploadPath: string, buffer: ArrayBuffer) =>
+      ipcRenderer.invoke('nc:upload', uploadPath, buffer) as Promise<{ ok: boolean; status: number; error?: string }>,
+    fetchBinary: (url: string) =>
+      ipcRenderer.invoke('nc:fetchBinary', url) as Promise<{ ok: boolean; base64: string; contentType: string }>
+  },
   store: {
     get: (key: string) => ipcRenderer.invoke('store:get', key),
     set: (key: string, value: unknown) => ipcRenderer.invoke('store:set', key, value),
@@ -13,7 +21,20 @@ const api = {
   },
   sync: {
     getStatus: () => ipcRenderer.invoke('sync:get-status'),
-    setPaused: (paused: boolean) => ipcRenderer.invoke('sync:set-paused', paused)
+    setPaused: (paused: boolean) => ipcRenderer.invoke('sync:set-paused', paused),
+    onStatus: (cb: (status: string) => void) => {
+      ipcRenderer.on('sync:status', (_e, status) => cb(status))
+      return () => ipcRenderer.removeAllListeners('sync:status')
+    }
+  },
+  file: {
+    download: (remotePath: string, filename: string) => ipcRenderer.invoke('file:download', remotePath, filename)
+  },
+  syncFolders: {
+    list: () => ipcRenderer.invoke('sync:list-folders'),
+    add: (localPath: string, remotePath: string) => ipcRenderer.invoke('sync:add-folder', localPath, remotePath),
+    remove: (id: string) => ipcRenderer.invoke('sync:remove-folder', id),
+    updateStatus: (id: string, status: string) => ipcRenderer.invoke('sync:update-folder-status', id, status)
   },
   onCheckUpdates: (callback: () => void) => {
     ipcRenderer.on('app:check-updates', callback)

@@ -2,46 +2,31 @@ import { useNavigate } from 'react-router-dom'
 import OnboardingShell from '../../components/onboarding/OnboardingShell'
 import PaginationDots from '../../components/onboarding/PaginationDots'
 
-const imgLayer1Copy6 = 'https://www.figma.com/api/mcp/asset/20ca7415-ba57-47a0-8d71-2dae37ad3190'
-const imgEllipse451 = 'https://www.figma.com/api/mcp/asset/55ce6409-994a-44d6-86b9-6d27fe152e53'
-const imgGroup = 'https://www.figma.com/api/mcp/asset/ca4a7445-79de-4742-a17d-b2b88c3a601f'
-const imgVscodeIconsFileTypeExcel = 'https://www.figma.com/api/mcp/asset/de82a013-226c-4bee-9176-2e50399b4cce'
-const imgGroup1 = 'https://www.figma.com/api/mcp/asset/431eec32-1f8d-44c3-914e-0cf714b90f66'
-const imgGlyphsPolyImage = 'https://www.figma.com/api/mcp/asset/c46a205c-056a-41ab-b417-3266ac410e77'
-
 function VisualPanel(): JSX.Element {
   return (
-    <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-      {/* Orbit rings */}
-      <div className="absolute left-1/2 top-[234px] h-[557px] w-[557px] -translate-x-1/2">
-        <img alt="" className="block h-full w-full" src={imgEllipse451} />
-      </div>
+    <div className="relative flex h-full w-full items-center justify-center">
+      <div className="relative flex h-[320px] w-[320px] items-center justify-center">
+        {/* Orbit rings */}
+        <div className="absolute inset-0 rounded-full border-[1.8px] border-[rgba(43,127,255,0.2)]" />
+        <div className="absolute inset-[60px] rounded-full border-[1.8px] border-[rgba(43,127,255,0.15)]" />
 
-      {/* Center share icon */}
-      <div className="relative flex h-[150px] w-[150px] items-center justify-center overflow-hidden rounded-full">
-        <img alt="" className="block h-full w-full" src={imgLayer1Copy6} />
-      </div>
+        {/* Center share icon */}
+        <div className="flex h-[100px] w-[100px] items-center justify-center rounded-[28px] bg-[#10b981] shadow-[0px_20px_60px_rgba(16,185,129,0.35)]">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <circle cx="8" cy="24" r="5" fill="white" />
+            <circle cx="40" cy="10" r="5" fill="white" />
+            <circle cx="40" cy="38" r="5" fill="white" />
+            <line x1="13" y1="21" x2="35" y2="13" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+            <line x1="13" y1="27" x2="35" y2="35" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        </div>
 
-      {/* Orbiting file icons */}
-      <div className="absolute" style={{ left: 159, top: 236 }}>
-        <div className="h-[97px] w-[97px] rotate-[10.85deg] overflow-hidden rounded-[19px] shadow-[0px_0px_0px_3.6px_white]">
-          <img alt="" className="block h-full w-full" src={imgGroup} />
-        </div>
-      </div>
-      <div className="absolute" style={{ left: 572, top: 289 }}>
-        <div className="h-[97px] w-[97px] rotate-[4.8deg] overflow-hidden rounded-[19px] shadow-[0px_0px_0px_3.6px_white]">
-          <img alt="" className="block h-full w-full" src={imgVscodeIconsFileTypeExcel} />
-        </div>
-      </div>
-      <div className="absolute" style={{ left: 561, top: 627 }}>
-        <div className="h-[97px] w-[97px] rotate-30 overflow-hidden rounded-[19px] shadow-[0px_0px_0px_3.6px_white]">
-          <img alt="" className="block h-full w-full" src={imgGroup1} />
-        </div>
-      </div>
-      <div className="absolute" style={{ left: 168, top: 660 }}>
-        <div className="h-[69px] w-[69px] rotate-[-24.29deg] overflow-hidden rounded-[14px] shadow-[0px_0px_0px_3.6px_white]">
-          <img alt="" className="block h-full w-full" src={imgGlyphsPolyImage} />
-        </div>
+        {/* Floating file cards */}
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex h-[70px] w-[70px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">📤</div>
+        <div className="absolute right-0 top-1/4 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">🔗</div>
+        <div className="absolute bottom-4 right-8 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">📥</div>
+        <div className="absolute bottom-4 left-8 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">🔒</div>
+        <div className="absolute left-0 top-1/4 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">📊</div>
       </div>
     </div>
   )

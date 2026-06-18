@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import MediaViewer from '../components/media/MediaViewer'
-import { MOCK_FILES } from '../data/mockFiles'
+import { listFiles } from '../services/filesApi'
 import type { FileItem } from '../types/files'
 
 const TABS = ['All', 'Photos', 'Videos'] as const
@@ -8,13 +8,20 @@ const TABS = ['All', 'Photos', 'Videos'] as const
 export default function Media(): JSX.Element {
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('All')
   const [viewerIndex, setViewerIndex] = useState<number | null>(null)
+  const [allFiles, setAllFiles] = useState<FileItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    listFiles('/')
+      .then((files) => setAllFiles(files.filter((f) => f.type === 'image' || f.type === 'video')))
+      .finally(() => setLoading(false))
+  }, [])
 
   const mediaFiles = useMemo(() => {
-    const all = MOCK_FILES.filter((f) => f.type === 'image' || f.type === 'video')
-    if (activeTab === 'Photos') return all.filter((f) => f.type === 'image')
-    if (activeTab === 'Videos') return all.filter((f) => f.type === 'video')
-    return all
-  }, [activeTab])
+    if (activeTab === 'Photos') return allFiles.filter((f) => f.type === 'image')
+    if (activeTab === 'Videos') return allFiles.filter((f) => f.type === 'video')
+    return allFiles
+  }, [allFiles, activeTab])
 
   const grouped = useMemo(() => {
     const groups: Record<string, FileItem[]> = {}
@@ -47,37 +54,49 @@ export default function Media(): JSX.Element {
         </div>
       </div>
 
-      {Object.entries(grouped).map(([month, items]) => (
-        <div key={month} className="flex flex-col gap-3">
-          <button
-            onClick={() => setCollapsed((p) => ({ ...p, [month]: !p[month] }))}
-            className="flex items-center gap-2 font-display text-[14px] font-semibold text-[#09090b]"
-          >
-            <span className={`transition-transform ${collapsed[month] ? '' : 'rotate-90'}`}>▶</span>
-            {month} ({items.length})
-          </button>
-          {!collapsed[month] && (
-            <div className="grid grid-cols-5 gap-3">
-              {items.map((f) => {
-                const idx = mediaFiles.indexOf(f)
-                return (
-                  <button
-                    key={f.id}
-                    onClick={() => setViewerIndex(idx)}
-                    className="aspect-square overflow-hidden rounded-[12px] bg-[#f5f5f7]"
-                  >
-                    {f.thumbnail ? (
-                      <img alt={f.name} className="h-full w-full object-cover" src={f.thumbnail} />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-3xl">🎬</div>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          )}
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#2b7fff] border-t-transparent" />
         </div>
-      ))}
+      ) : mediaFiles.length === 0 ? (
+        <div className="rounded-[16px] bg-white py-12 text-center shadow-sm">
+          <p className="font-display text-[15px] text-[#71717b]">No media files found</p>
+        </div>
+      ) : (
+        Object.entries(grouped).map(([month, items]) => (
+          <div key={month} className="flex flex-col gap-3">
+            <button
+              onClick={() => setCollapsed((p) => ({ ...p, [month]: !p[month] }))}
+              className="flex items-center gap-2 font-display text-[14px] font-semibold text-[#09090b]"
+            >
+              <span className={`transition-transform ${collapsed[month] ? '' : 'rotate-90'}`}>▶</span>
+              {month} ({items.length})
+            </button>
+            {!collapsed[month] && (
+              <div className="grid grid-cols-5 gap-3">
+                {items.map((f) => {
+                  const idx = mediaFiles.indexOf(f)
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => setViewerIndex(idx)}
+                      className="aspect-square overflow-hidden rounded-[12px] bg-[#f5f5f7]"
+                    >
+                      {f.thumbnail ? (
+                        <img alt={f.name} className="h-full w-full object-cover" src={f.thumbnail} />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-3xl">
+                          {f.type === 'video' ? '🎬' : '🖼️'}
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        ))
+      )}
 
       {viewerIndex !== null && (
         <MediaViewer

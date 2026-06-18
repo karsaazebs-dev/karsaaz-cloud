@@ -1,6 +1,5 @@
 import { ncFetch } from './nextcloud'
 import type { CloudUser } from '../types/files'
-import { MOCK_USERS } from '../data/mockFiles'
 
 export async function listUsers(): Promise<CloudUser[]> {
   try {
@@ -9,23 +8,29 @@ export async function listUsers(): Promise<CloudUser[]> {
     const data = await res.json()
     const ids: string[] = data?.ocs?.data?.users ?? []
     const users: CloudUser[] = []
+    const fmtGb = (b: number): string => `${(b / 1073741824).toFixed(1)} GB`
     for (const id of ids) {
-      const uRes = await ncFetch(`/ocs/v1.php/cloud/users/${id}`)
+      const uRes = await ncFetch(`/ocs/v1.php/cloud/users/${encodeURIComponent(id)}?format=json`)
       if (!uRes.ok) continue
-      const text = await uRes.text()
+      const uData = await uRes.json()
+      const d = uData?.ocs?.data ?? {}
+      const q = d.quota ?? {}
+      const usedBytes = Math.max(0, Number(q.used ?? 0))
+      const totalBytes = Number(q.total ?? 0)
+      const groups: string[] = d.groups ?? []
       users.push({
         id,
-        name: text.match(/<displayname>([^<]+)<\/displayname>/)?.[1] ?? id,
-        email: text.match(/<email>([^<]+)<\/email>/)?.[1] ?? `${id}@karsaaz.com`,
-        quota: text.match(/<quota>(\d+)<\/quota>/)?.[1] ? `${(parseInt(text.match(/<quota>(\d+)<\/quota>/)![1], 10) / 1073741824).toFixed(0)} GB` : '—',
-        used: text.match(/<quota-used>(\d+)<\/quota-used>/)?.[1] ? `${(parseInt(text.match(/<quota-used>(\d+)<\/quota-used>/)![1], 10) / 1073741824).toFixed(0)} GB` : '0 GB',
-        role: text.includes('<groups><element>admin</element>') ? 'admin' : 'user',
-        status: text.includes('<enabled>1</enabled>') ? 'active' : 'disabled'
+        name: d.displayname ?? id,
+        email: d.email ?? `${id}@karsaaz.com`,
+        quota: totalBytes > 0 ? fmtGb(totalBytes) : '∞',
+        used: fmtGb(usedBytes),
+        role: groups.includes('admin') ? 'admin' : 'user',
+        status: d.enabled ? 'active' : 'disabled'
       })
     }
     return users
   } catch {
-    return MOCK_USERS
+    return []
   }
 }
 

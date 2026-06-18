@@ -1,14 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Server, Link, ShieldCheck, Lock, Clock, ChevronRight } from 'lucide-react'
 import AuthShell from '../../components/auth/AuthShell'
 import { detectServer, saveRecentServer, getRecentServers, type ServerInfo } from '../../services/auth'
-
-const imgServer = 'https://www.figma.com/api/mcp/asset/da7c42bc-8b46-4533-901c-04372d586798'
-const imgLink = 'https://www.figma.com/api/mcp/asset/d3941fc2-d2bc-4e06-8c29-7bcd8b200084'
-const imgShieldCheck = 'https://www.figma.com/api/mcp/asset/e29d3d32-97aa-4233-9257-cecc70e14a11'
-const imgLock = 'https://www.figma.com/api/mcp/asset/18c9381f-b721-4e98-9034-3c302f8d82c0'
-const imgClock = 'https://www.figma.com/api/mcp/asset/9234be04-6c01-405c-8d8a-3f1b31791ca0'
-const imgChevronRight = 'https://www.figma.com/api/mcp/asset/cc6d357b-1e73-47a3-bb6f-82bde6dcbffd'
 
 export default function ConnectToServer(): JSX.Element {
   const navigate = useNavigate()
@@ -64,7 +58,7 @@ export default function ConnectToServer(): JSX.Element {
           <div className="flex flex-col gap-2">
             <label className="font-display text-sm font-semibold text-[#101010]">Server Address</label>
             <div className="flex h-[52px] items-center gap-3 rounded-[12px] border border-[#e5e7eb] bg-white px-4">
-              <img alt="" className="h-5 w-5 shrink-0" src={imgServer} />
+              <Server className="h-5 w-5 shrink-0 text-[#9ca3af]" />
               <input
                 type="url"
                 value={serverUrl}
@@ -72,7 +66,7 @@ export default function ConnectToServer(): JSX.Element {
                 placeholder="https://cloud.mycompany.io"
                 className="flex-1 border-none bg-transparent text-base text-[#101010] outline-none placeholder:text-[#6b7280]"
               />
-              <img alt="" className="h-5 w-5 shrink-0 opacity-40" src={imgLink} />
+              <Link className="h-5 w-5 shrink-0 text-[#d1d5db]" />
             </div>
           </div>
 
@@ -102,7 +96,7 @@ export default function ConnectToServer(): JSX.Element {
           {serverInfo && (
             <div className="flex items-center gap-4 rounded-[12px] border-[1.5px] border-[#3d7bff] bg-white p-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-[20px] bg-[#e8f1ff]">
-                <img alt="" className="h-5 w-5" src={imgShieldCheck} />
+                <ShieldCheck className="h-5 w-5 text-[#3d7bff]" />
               </div>
               <div className="flex flex-1 flex-col gap-0.5">
                 <p className="font-display text-sm font-semibold text-black">Secure connection</p>
@@ -110,7 +104,7 @@ export default function ConnectToServer(): JSX.Element {
                   {serverInfo.ssl ? 'End-to-end encrypted · SSL verified' : 'HTTP connection (not encrypted)'}
                 </p>
               </div>
-              <img alt="" className="h-5 w-5 opacity-40" src={imgLock} />
+              <Lock className="h-5 w-5 text-[#d1d5db]" />
             </div>
           )}
 
@@ -141,14 +135,14 @@ export default function ConnectToServer(): JSX.Element {
                   onClick={() => handleRecentClick(url)}
                   className="flex items-center gap-3 rounded-[10px] bg-white p-3 text-left hover:shadow-sm transition-shadow"
                 >
-                  <img alt="" className="h-[18px] w-[18px] shrink-0 opacity-50" src={imgClock} />
+                  <Clock className="h-[18px] w-[18px] shrink-0 text-[#9ca3af]" />
                   <div className="flex flex-1 flex-col gap-0.5">
                     <p className="font-display text-[15px] font-semibold text-black">
                       {url.replace(/^https?:\/\//, '')}
                     </p>
                     <p className="font-display text-[13px] font-medium text-[#6b7280]">{url}</p>
                   </div>
-                  <img alt="" className="h-4 w-4 shrink-0 opacity-40" src={imgChevronRight} />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#d1d5db]" />
                 </button>
               ))}
             </div>

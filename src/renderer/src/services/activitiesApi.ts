@@ -1,6 +1,5 @@
 import { ncFetch } from './nextcloud'
 import type { ActivityEntry } from '../types/files'
-import { MOCK_ACTIVITIES } from '../data/mockFiles'
 
 export async function getActivities(): Promise<ActivityEntry[]> {
   try {
@@ -17,6 +16,6 @@ export async function getActivities(): Promise<ActivityEntry[]> {
       type: 'other' as const
     }))
   } catch {
-    return MOCK_ACTIVITIES
+    return []
   }
 }

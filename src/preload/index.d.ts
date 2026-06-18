@@ -4,6 +4,11 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      nc: {
+        fetch: (url: string, method: string, headers: Record<string, string>, body?: string) => Promise<{ status: number; text: string; ok: boolean }>
+        upload: (uploadPath: string, buffer: ArrayBuffer) => Promise<{ ok: boolean; status: number; error?: string }>
+        fetchBinary: (url: string) => Promise<{ ok: boolean; base64: string; contentType: string }>
+      }
       store: {
         get: (key: string) => Promise<unknown>
         set: (key: string, value: unknown) => Promise<void>
@@ -16,6 +21,16 @@ declare global {
       sync: {
         getStatus: () => Promise<string>
         setPaused: (paused: boolean) => Promise<void>
+        onStatus: (cb: (status: string) => void) => () => void
+      }
+      file: {
+        download: (remotePath: string, filename: string) => Promise<{ ok: boolean; reason?: string }>
+      }
+      syncFolders: {
+        list: () => Promise<Array<{ id: string; localPath: string; remotePath: string; status: string; lastSynced?: string }>>
+        add: (localPath: string, remotePath: string) => Promise<string>
+        remove: (id: string) => Promise<void>
+        updateStatus: (id: string, status: string) => Promise<void>
       }
       onCheckUpdates: (callback: () => void) => () => void
       updater: {

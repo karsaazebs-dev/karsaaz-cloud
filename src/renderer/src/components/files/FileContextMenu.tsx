@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { MoreHorizontal } from 'lucide-react'
 import type { FileItem } from '../../types/files'
-
-const imgMoreHorizontal1 = 'https://www.figma.com/api/mcp/asset/29eb2e5d-67cd-4cf0-8004-a1896e23f4e2'
 
 export type FileAction = 'download' | 'share' | 'rename' | 'move' | 'favourite' | 'copy-link' | 'delete'
 
@@ -44,9 +43,9 @@ export default function FileContextMenu({ file, onAction, onToggleFavourite }: F
     <div ref={ref} className="relative">
       <button
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v) }}
-        className="flex h-[30px] w-[30px] rotate-90 items-center justify-center rounded-[6px] hover:bg-[#f3f4f6]"
+        className="flex h-[30px] w-[30px] items-center justify-center rounded-[6px] hover:bg-[#f3f4f6]"
       >
-        <img alt="More actions" className="h-4 w-4" src={imgMoreHorizontal1} />
+        <MoreHorizontal className="h-4 w-4 text-[#6b7280]" />
       </button>
       {open && (
         <div className="absolute bottom-full right-0 z-50 mb-1 min-w-[180px] rounded-[8px] border border-[#e5e5e5] bg-white py-1 shadow-lg">

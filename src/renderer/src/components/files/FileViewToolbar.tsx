@@ -1,8 +1,5 @@
+import { ChevronDown, LayoutGrid, List } from 'lucide-react'
 import type { SortOption } from '../../types/files'
-
-const imgChevronDown = 'https://www.figma.com/api/mcp/asset/e74a1a48-638b-4ecd-a791-9506cc88d171'
-const imgLayoutGrid = 'https://www.figma.com/api/mcp/asset/b8a54c88-7f69-4282-ba49-e985a72d4165'
-const imgList = 'https://www.figma.com/api/mcp/asset/81d98a7a-5e45-4aa0-aa86-d2e3aedbc16e'
 
 const SORT_LABELS: Record<SortOption, string> = {
   newest: 'Newest First',
@@ -37,7 +34,7 @@ export default function FileViewToolbar({
           className="flex items-center gap-2 rounded-[8px] border border-[#e5e5e5] bg-white px-3 py-2"
         >
           <span className="font-display text-[13px] font-semibold text-black">{SORT_LABELS[sort]}</span>
-          <img alt="" className="h-3.5 w-3.5" src={imgChevronDown} />
+          <ChevronDown className="h-3.5 w-3.5 text-[#6b7280]" />
         </button>
         {sortOpen && (
           <div className="absolute right-0 top-full z-50 mt-1 min-w-[160px] rounded-[8px] border border-[#e5e5e5] bg-white py-1 shadow-lg">
@@ -60,13 +57,13 @@ export default function FileViewToolbar({
           onClick={() => onViewChange(true)}
           className={`flex items-center justify-center rounded-[4px] p-1.5 ${viewGrid ? 'bg-white shadow-[0px_1px_1px_rgba(0,0,0,0.1)]' : ''}`}
         >
-          <img alt="Grid view" className="h-4 w-4" src={imgLayoutGrid} />
+          <LayoutGrid className="h-4 w-4 text-[#6b7280]" />
         </button>
         <button
           onClick={() => onViewChange(false)}
           className={`flex items-center justify-center rounded-[4px] p-1.5 ${!viewGrid ? 'bg-white shadow-[0px_1px_1px_rgba(0,0,0,0.1)]' : ''}`}
         >
-          <img alt="List view" className="h-4 w-4" src={imgList} />
+          <List className="h-4 w-4 text-[#6b7280]" />
         </button>
       </div>
     </div>

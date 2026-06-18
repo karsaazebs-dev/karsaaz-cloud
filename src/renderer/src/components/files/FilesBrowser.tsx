@@ -1,10 +1,11 @@
-import { useCallback, useState, type DragEvent, type ReactNode } from 'react'
+import { useCallback, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useUpload } from '../../hooks/useUpload'
 import FilterTabs from './FilterTabs'
 import FileCard from './FileCard'
 import FileRow from './FileRow'
 import FileViewToolbar from './FileViewToolbar'
 import EmptyState from './EmptyState'
+import FilePreview from './FilePreview'
 import { useFileView } from '../../hooks/useFileView'
 import type { FileItem } from '../../types/files'
 import type { FileAction } from './FileContextMenu'
@@ -16,6 +17,11 @@ interface FilesBrowserProps {
   breadcrumbs?: { label: string; onClick?: () => void }[]
   showFilters?: boolean
   onFolderOpen?: (file: FileItem) => void
+  onFileAction?: (action: FileAction, file: FileItem) => Promise<void>
+  onCreateFolder?: () => Promise<void>
+  currentPath?: string
+  loading?: boolean
+  error?: string
   emptyMessage?: string
   emptyCta?: string
   onEmptyCta?: () => void
@@ -28,6 +34,11 @@ export default function FilesBrowser({
   breadcrumbs,
   showFilters = true,
   onFolderOpen,
+  onFileAction,
+  onCreateFolder,
+  currentPath = '/',
+  loading = false,
+  error = '',
   emptyMessage = 'No files found',
   emptyCta,
   onEmptyCta,
@@ -40,17 +51,30 @@ export default function FilesBrowser({
   } = useFileView(files)
   const { addFiles } = useUpload()
   const [dragOver, setDragOver] = useState(false)
+  const [previewFile, setPreviewFile] = useState<FileItem | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleUploadClick = (): void => { fileInputRef.current?.click() }
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const picked = Array.from(e.target.files ?? [])
+    if (picked.length) addFiles(picked, currentPath)
+    e.target.value = ''
+  }
 
   const counts = getTabCounts(files)
 
-  const handleAction = useCallback((action: FileAction, file: FileItem) => {
-    if (action === 'delete') console.log('Delete', file.name)
-    if (action === 'download') console.log('Download', file.name)
-    if (action === 'share') console.log('Share', file.name)
-  }, [])
+  const handleAction = useCallback(async (action: FileAction, file: FileItem) => {
+    if (onFileAction) {
+      await onFileAction(action, file)
+    }
+  }, [onFileAction])
 
   const handleDoubleClick = (file: FileItem): void => {
     if (file.isFolder && onFolderOpen) onFolderOpen(file)
+  }
+
+  const handleFileClick = (file: FileItem): void => {
+    if (!file.isFolder) setPreviewFile(file)
   }
 
   const onDragOver = (e: DragEvent): void => {
@@ -64,10 +88,20 @@ export default function FilesBrowser({
     e.preventDefault()
     setDragOver(false)
     const dropped = Array.from(e.dataTransfer.files)
-    if (dropped.length) addFiles(dropped)
+    if (dropped.length) addFiles(dropped, currentPath)
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-[16px] bg-white py-12 text-center shadow-sm">
+        <p className="font-display text-[15px] text-[#ef4444]">{error}</p>
+      </div>
+    )
   }
 
   return (
+    <>
+    {previewFile && <FilePreview file={previewFile} onClose={() => setPreviewFile(null)} />}
     <div
       className={`relative flex flex-col gap-6 ${dragOver ? 'rounded-[16px] ring-2 ring-[#2b7fff] ring-offset-2' : ''}`}
       onDragOver={onDragOver}
@@ -99,12 +133,31 @@ export default function FilesBrowser({
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
             <p className="font-display text-[20px] font-bold text-[#09090b]">{title}</p>
-            <p className="font-display text-[14px] text-[#71717b]">({displayFiles.length})</p>
+            {loading ? (
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#2b7fff] border-t-transparent" />
+            ) : (
+              <p className="font-display text-[14px] text-[#71717b]">({displayFiles.length})</p>
+            )}
           </div>
           {showFilters && <FilterTabs activeTab={activeTab} counts={counts} onChange={setActiveTab} />}
         </div>
         <div className="flex items-center gap-3">
           {headerExtra}
+          <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileInputChange} />
+          <button
+            onClick={handleUploadClick}
+            className="flex items-center gap-1.5 rounded-[8px] bg-[#2b7fff] px-3 py-1.5 font-display text-[13px] font-semibold text-white hover:opacity-90"
+          >
+            ⬆ Upload
+          </button>
+          {onCreateFolder && (
+            <button
+              onClick={onCreateFolder}
+              className="flex items-center gap-1.5 rounded-[8px] border border-[#e5e5e5] bg-white px-3 py-1.5 font-display text-[13px] font-semibold text-[#09090b] hover:shadow-sm"
+            >
+              ＋ New Folder
+            </button>
+          )}
           <FileViewToolbar
             viewGrid={viewGrid}
             onViewChange={setViewGrid}
@@ -116,7 +169,11 @@ export default function FilesBrowser({
         </div>
       </div>
 
-      {displayFiles.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-16">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#2b7fff] border-t-transparent" />
+        </div>
+      ) : displayFiles.length === 0 ? (
         <EmptyState message={emptyMessage} cta={emptyCta} onCta={onEmptyCta} />
       ) : viewGrid ? (
         <div className="grid grid-cols-4 gap-6">
@@ -127,6 +184,7 @@ export default function FilesBrowser({
               onAction={handleAction}
               onToggleFavourite={(file) => toggleFavourite(file.id)}
               onDoubleClick={handleDoubleClick}
+              onClick={handleFileClick}
             />
           ))}
         </div>
@@ -153,5 +211,6 @@ export default function FilesBrowser({
         </div>
       )}
     </div>
+    </>
   )
 }

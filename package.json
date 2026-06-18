@@ -19,6 +19,7 @@
     "@electron-toolkit/utils": "^4.0.0",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.8.9",
+    "lucide-react": "^1.20.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"
@@ -33,7 +34,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "electron": "^33.2.1",
-    "electron-builder": "^25.1.8",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^3.0.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
@@ -44,7 +45,7 @@
     "appId": "com.karsaaz.cloud",
     "productName": "Karsaaz Cloud",
     "directories": {
-      "output": "dist"
+      "output": "release"
     },
     "win": {
       "target": [
@@ -80,6 +81,7 @@
       ],
       "icon": "resources/icon.png"
     },
+    "asar": false,
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,

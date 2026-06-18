@@ -2,51 +2,27 @@ import { useNavigate } from 'react-router-dom'
 import OnboardingShell from '../../components/onboarding/OnboardingShell'
 import PaginationDots from '../../components/onboarding/PaginationDots'
 
-const imgMember = 'https://www.figma.com/api/mcp/asset/fe5e71a5-dce1-467f-a0be-772dd0f6f64a'
-const imgColor = 'https://www.figma.com/api/mcp/asset/45fef34a-2833-4a0b-a41f-9a9b2d446b09'
-const imgVscodeIconsFileTypeExcel = 'https://www.figma.com/api/mcp/asset/6e9fe322-67e0-4b58-8ef8-1f23926b5ee2'
-const imgGroup = 'https://www.figma.com/api/mcp/asset/d0945a09-bc32-435e-bb29-0217efba7b2b'
-const imgGlyphsPolyImage = 'https://www.figma.com/api/mcp/asset/3d99ac88-9d44-46a0-ae74-1ed16d1701a1'
-const imgGroup2 = 'https://www.figma.com/api/mcp/asset/26556bbc-74b6-43d8-9913-829cd9f8913d'
-
 function VisualPanel(): JSX.Element {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
-      <div className="absolute left-[130px] top-[224px] h-[575px] w-[575px]">
-        {/* Outer orbit ring */}
-        <div className="absolute inset-[43px] rounded-full border-[1.8px] border-[rgba(228,228,231,0.7)]" />
-        {/* Inner orbit ring */}
-        <div className="absolute inset-[115px] rounded-full border-[1.8px] border-[rgba(228,228,231,0.5)]" />
+      <div className="relative flex h-[320px] w-[320px] items-center justify-center">
+        {/* Orbit rings */}
+        <div className="absolute inset-0 rounded-full border-[1.8px] border-[rgba(43,127,255,0.2)]" />
+        <div className="absolute inset-[60px] rounded-full border-[1.8px] border-[rgba(43,127,255,0.15)]" />
 
         {/* Center cloud icon */}
-        <div className="absolute left-1/2 top-1/2 flex h-[201px] w-[201px] -translate-x-1/2 -translate-y-1/2 flex-col items-start justify-center overflow-hidden rounded-[43px] shadow-[0px_0px_0px_7.2px_white,0px_36px_81px_-21.6px_rgba(20,106,227,0.35)]">
-          <img alt="" className="block h-full w-full" src={imgColor} />
+        <div className="flex h-[100px] w-[100px] items-center justify-center rounded-[28px] bg-[#2B7FFF] shadow-[0px_20px_60px_rgba(43,127,255,0.35)]">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+            <path d="M24 8C17.373 8 12 13.373 12 20c0 2.21.635 4.277 1.732 6.02C8.516 27.386 5 31.29 5 36c0 3.866 3.134 7 7 7h24c3.866 0 7-3.134 7-7 0-4.71-3.516-8.614-8.732-9.98A11.94 11.94 0 0 0 36 20c0-6.627-5.373-12-12-12z" fill="white" />
+          </svg>
         </div>
 
-        {/* Excel icon — top */}
-        <div className="absolute left-1/2 top-[-27px] flex h-[115px] w-[115px] -translate-x-1/2 flex-col items-start justify-center overflow-hidden rounded-[29px] shadow-[0px_0px_0px_3.6px_white,0px_21.6px_50px_-14.4px_rgba(0,0,0,0.25)]">
-          <img alt="" className="block h-full w-full object-contain p-2.5" src={imgVscodeIconsFileTypeExcel} />
-        </div>
-
-        {/* PDF icon — right-middle */}
-        <div className="absolute right-[-6px] top-[107px] flex h-[101px] w-[101px] flex-col items-start justify-center overflow-hidden rounded-[29px] shadow-[0px_0px_0px_3.6px_white,0px_21.6px_50px_-14.4px_rgba(0,0,0,0.25)]">
-          <img alt="" className="block h-full w-full" src={imgGroup} />
-        </div>
-
-        {/* Image icon — bottom-right */}
-        <div className="absolute bottom-[58px] right-[22px] flex h-[115px] w-[115px] flex-col items-start justify-center overflow-hidden rounded-[29px] shadow-[0px_0px_0px_3.6px_white,0px_21.6px_50px_-14.4px_rgba(0,0,0,0.25)]">
-          <img alt="" className="block h-full w-full object-contain p-5" src={imgGlyphsPolyImage} />
-        </div>
-
-        {/* User avatar — bottom-left */}
-        <div className="absolute bottom-[72px] left-[14px] flex h-[101px] w-[101px] flex-col items-start justify-center overflow-hidden rounded-[29px] shadow-[0px_0px_0px_3.6px_white,0px_21.6px_50px_-14.4px_rgba(0,0,0,0.25)]">
-          <img alt="" className="block h-full w-full object-cover" src={imgMember} />
-        </div>
-
-        {/* Doc icon — left */}
-        <div className="absolute left-[7px] top-[72px] flex h-[115px] w-[115px] flex-col items-start justify-center overflow-hidden rounded-[29px] shadow-[0px_0px_0px_3.6px_white,0px_21.6px_50px_-14.4px_rgba(0,0,0,0.25)]">
-          <img alt="" className="block h-full w-full" src={imgGroup2} />
-        </div>
+        {/* Floating file cards */}
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex h-[70px] w-[70px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">📄</div>
+        <div className="absolute right-0 top-1/4 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">📊</div>
+        <div className="absolute bottom-4 right-8 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">🖼️</div>
+        <div className="absolute bottom-4 left-8 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">👤</div>
+        <div className="absolute left-0 top-1/4 flex h-[60px] w-[60px] items-center justify-center rounded-[18px] bg-white shadow-md text-2xl">📁</div>
       </div>
     </div>
   )
@@ -58,7 +34,6 @@ export default function Onboarding1(): JSX.Element {
   return (
     <OnboardingShell visualPanel={<VisualPanel />}>
       <div className="flex flex-col gap-12">
-        {/* Heading + body */}
         <div className="flex flex-col gap-3">
           <div className="text-[44px] font-semibold leading-[1.2] text-[#101010]">
             <p>Your Files,</p>
@@ -70,7 +45,6 @@ export default function Onboarding1(): JSX.Element {
           </p>
         </div>
 
-        {/* Pagination + CTA */}
         <div className="flex flex-col gap-7">
           <PaginationDots total={3} active={0} />
           <button

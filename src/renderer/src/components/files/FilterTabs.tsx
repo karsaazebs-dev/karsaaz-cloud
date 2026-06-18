@@ -1,9 +1,5 @@
-const imgEllipse4 = 'https://www.figma.com/api/mcp/asset/c7530330-df26-4070-bbd8-ef98842ee9b8'
-const imgEllipse5 = 'https://www.figma.com/api/mcp/asset/07759c2d-35c8-467c-af02-d77d8a81a03e'
-const imgEllipse6 = 'https://www.figma.com/api/mcp/asset/9b7993b7-cc61-4b0f-a805-41df9be013da'
-const imgEllipse7 = 'https://www.figma.com/api/mcp/asset/cea6ebfa-65fd-4a20-8038-1b34683da47b'
-
 const TABS = ['All Files', 'Photos', 'Documents', 'Videos', 'Others']
+const DOT_COLORS = ['#2b7fff', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 interface FilterTabsProps {
   activeTab: number
@@ -12,8 +8,6 @@ interface FilterTabsProps {
 }
 
 export default function FilterTabs({ activeTab, counts, onChange }: FilterTabsProps): JSX.Element {
-  const dots = [imgEllipse4, imgEllipse5, imgEllipse5, imgEllipse6, imgEllipse7]
-
   return (
     <div className="flex gap-[3px]">
       {TABS.map((label, i) => (
@@ -26,7 +20,10 @@ export default function FilterTabs({ activeTab, counts, onChange }: FilterTabsPr
               : 'border-[#e5e5e5] bg-white'
           }`}
         >
-          <img alt="" className="h-2 w-2" src={dots[i]} />
+          <div
+            className="h-2 w-2 rounded-full"
+            style={{ background: activeTab === i ? 'rgba(255,255,255,0.8)' : DOT_COLORS[i] }}
+          />
           <span className={`font-display text-[14px] font-semibold ${activeTab === i ? 'text-white' : 'text-[#09090b]'}`}>
             {label}
           </span>

@@ -1,5 +1,6 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification, session, dialog, net } from 'electron'
 import { join } from 'path'
+import { createWriteStream, mkdirSync, existsSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import Store from 'electron-store'
 import { autoUpdater } from 'electron-updater'
@@ -98,12 +99,146 @@ function createTray(): void {
   })
 }
 
+// Upload a file to Nextcloud WebDAV via main process (bypasses renderer CORS)
+ipcMain.handle('nc:upload', async (_event, uploadPath: string, buffer: ArrayBuffer) => {
+  const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  const authToken = String(store.get('authToken') ?? '')
+  const username = String(store.get('username') ?? '')
+  const url = `${serverUrl}/remote.php/dav/files/${encodeURIComponent(username)}${uploadPath}`
+  return new Promise<{ ok: boolean; status: number; error?: string }>((resolve) => {
+    try {
+      const req = net.request({ url, method: 'PUT' })
+      req.setHeader('Authorization', `Basic ${authToken}`)
+      req.setHeader('OCS-APIREQUEST', 'true')
+      req.setHeader('Content-Length', String(buffer.byteLength))
+      req.on('response', (res) => {
+        const status = res.statusCode ?? 0
+        res.on('data', () => {})
+        res.on('end', () => resolve({ ok: status >= 200 && status < 300, status }))
+        res.on('error', (err) => resolve({ ok: false, status: 0, error: err.message }))
+      })
+      req.on('error', (err) => resolve({ ok: false, status: 0, error: err.message }))
+      req.write(Buffer.from(buffer))
+      req.end()
+    } catch (err) {
+      resolve({ ok: false, status: 0, error: err instanceof Error ? err.message : 'Upload error' })
+    }
+  })
+})
+
+// Fetch binary content (image/video) via main process, returned as base64
+ipcMain.handle('nc:fetchBinary', async (_event, url: string) => {
+  const authToken = String(store.get('authToken') ?? '')
+  return new Promise<{ ok: boolean; base64: string; contentType: string }>((resolve) => {
+    try {
+      const req = net.request({ url, method: 'GET' })
+      req.setHeader('Authorization', `Basic ${authToken}`)
+      req.setHeader('OCS-APIREQUEST', 'true')
+      req.on('response', (res) => {
+        const status = res.statusCode ?? 0
+        const ct = String((res.headers['content-type'] as string) ?? 'application/octet-stream').split(';')[0].trim()
+        const chunks: Buffer[] = []
+        res.on('data', (chunk: Buffer) => chunks.push(chunk))
+        res.on('end', () => {
+          if (status >= 200 && status < 300) {
+            resolve({ ok: true, base64: Buffer.concat(chunks).toString('base64'), contentType: ct })
+          } else {
+            resolve({ ok: false, base64: '', contentType: '' })
+          }
+        })
+        res.on('error', () => resolve({ ok: false, base64: '', contentType: '' }))
+      })
+      req.on('error', () => resolve({ ok: false, base64: '', contentType: '' }))
+      req.end()
+    } catch {
+      resolve({ ok: false, base64: '', contentType: '' })
+    }
+  })
+})
+
+// Proxy HTTP requests through main process to avoid CORS in renderer
+ipcMain.handle('nc:fetch', async (_event, url: string, method: string, headers: Record<string, string>, body?: string) => {
+  return new Promise<{ status: number; text: string; ok: boolean }>((resolve, reject) => {
+    try {
+      const req = net.request({ url, method })
+      Object.entries(headers).forEach(([k, v]) => req.setHeader(k, v))
+      req.on('response', (res) => {
+        const chunks: Buffer[] = []
+        res.on('data', (chunk: Buffer) => chunks.push(chunk))
+        res.on('end', () => {
+          const text = Buffer.concat(chunks).toString('utf8')
+          const status = res.statusCode ?? 0
+          resolve({ status, text, ok: status >= 200 && status < 300 })
+        })
+        res.on('error', (err) => reject(err))
+      })
+      req.on('error', (err) => reject(err))
+      if (body) req.write(body)
+      req.end()
+    } catch (err) {
+      reject(err)
+    }
+  })
+})
+
 ipcMain.handle('store:get', (_event, key: string) => store.get(key))
 ipcMain.handle('store:set', (_event, key: string, value: unknown) => {
   store.set(key, value)
 })
 ipcMain.handle('store:delete', (_event, key: string) => store.delete(key))
 ipcMain.handle('store:clear', () => store.clear())
+
+ipcMain.handle('file:download', async (_event, remotePath: string, filename: string) => {
+  const { canceled, filePath } = await dialog.showSaveDialog(mainWindow!, {
+    defaultPath: filename,
+    title: 'Save File'
+  })
+  if (canceled || !filePath) return { ok: false, reason: 'cancelled' }
+
+  const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  const authToken = String(store.get('authToken') ?? '')
+  const url = remotePath.startsWith('http') ? remotePath : `${serverUrl}${remotePath}`
+
+  return new Promise<{ ok: boolean; reason?: string }>((resolve) => {
+    const req = net.request({ url, method: 'GET' })
+    req.setHeader('Authorization', `Basic ${authToken}`)
+    req.setHeader('OCS-APIREQUEST', 'true')
+
+    req.on('response', (res) => {
+      if (res.statusCode !== 200) {
+        resolve({ ok: false, reason: `HTTP ${res.statusCode}` })
+        return
+      }
+      const dir = filePath.substring(0, filePath.lastIndexOf('\\') || filePath.lastIndexOf('/'))
+      if (dir && !existsSync(dir)) mkdirSync(dir, { recursive: true })
+      const ws = createWriteStream(filePath)
+      res.on('data', (chunk) => ws.write(chunk))
+      res.on('end', () => { ws.end(); resolve({ ok: true }) })
+      res.on('error', (err) => { ws.destroy(); resolve({ ok: false, reason: err.message }) })
+    })
+    req.on('error', (err) => resolve({ ok: false, reason: err.message }))
+    req.end()
+  })
+})
+
+// Sync folder management
+ipcMain.handle('sync:list-folders', () => store.get('syncFolders', []))
+ipcMain.handle('sync:add-folder', (_event, localPath: string, remotePath: string) => {
+  const folders = store.get('syncFolders', []) as Array<{ id: string; localPath: string; remotePath: string; status: string }>
+  const id = `sf-${Date.now()}`
+  folders.push({ id, localPath, remotePath, status: 'synced' })
+  store.set('syncFolders', folders)
+  return id
+})
+ipcMain.handle('sync:remove-folder', (_event, id: string) => {
+  const folders = store.get('syncFolders', []) as Array<{ id: string }>
+  store.set('syncFolders', folders.filter((f) => f.id !== id))
+})
+ipcMain.handle('sync:update-folder-status', (_event, id: string, status: string) => {
+  const folders = store.get('syncFolders', []) as Array<{ id: string; status: string }>
+  const updated = folders.map((f) => f.id === id ? { ...f, status, lastSynced: new Date().toISOString() } : f)
+  store.set('syncFolders', updated)
+})
 
 ipcMain.handle('notification:show', (_event, { title, body }: { title: string; body: string }) => {
   if (Notification.isSupported()) {
@@ -131,6 +266,18 @@ ipcMain.handle('updater:download', () => {
 ipcMain.handle('updater:install', () => {
   autoUpdater.quitAndInstall()
 })
+
+let remotePollingTimer: ReturnType<typeof setInterval> | null = null
+
+function startRemotePolling(): void {
+  if (remotePollingTimer) clearInterval(remotePollingTimer)
+  remotePollingTimer = setInterval(() => {
+    const paused = store.get('syncPaused', false) as boolean
+    if (!paused) {
+      mainWindow?.webContents.send('sync:poll-remote')
+    }
+  }, 30000)
+}
 
 function setupAutoUpdater(): void {
   autoUpdater.autoDownload = false
@@ -170,9 +317,40 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  // Add CORS headers to all responses (belt-and-suspenders for webSecurity:false)
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'access-control-allow-origin': ['*'],
+        'access-control-allow-headers': ['*'],
+        'access-control-allow-methods': ['GET, POST, PUT, DELETE, OPTIONS, PROPFIND, MKCOL, MOVE, COPY, REPORT, PROPPATCH']
+      }
+    })
+  })
+
+  // Inject Basic auth into requests to the Nextcloud server (for <img> thumbnail previews etc.)
+  session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
+    const serverUrl = store.get('serverUrl') as string | undefined
+    const authToken = store.get('authToken') as string | undefined
+    if (serverUrl && authToken && details.url.startsWith(serverUrl)) {
+      callback({
+        requestHeaders: {
+          ...details.requestHeaders,
+          Authorization: `Basic ${authToken}`,
+          'OCS-APIREQUEST': 'true'
+        }
+      })
+    } else {
+      callback({ requestHeaders: details.requestHeaders })
+    }
+  })
+
   createWindow()
   createTray()
   setupAutoUpdater()
+  startRemotePolling()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
     else mainWindow?.show()

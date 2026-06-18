@@ -1,10 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../services/auth'
 import { useToast } from '../hooks/useToast'
+import { ncFetch, getUsername } from '../services/nextcloud'
 
 type Theme = 'light' | 'dark' | 'system'
 type UpdateState = 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'up-to-date' | 'error'
+
+interface UserInfo {
+  displayName: string
+  email: string
+  serverUrl: string
+}
 
 export default function Settings(): JSX.Element {
   const navigate = useNavigate()
@@ -16,6 +23,7 @@ export default function Settings(): JSX.Element {
   const [updateState, setUpdateState] = useState<UpdateState>('idle')
   const [updateVersion, setUpdateVersion] = useState('')
   const [updateProgress, setUpdateProgress] = useState(0)
+  const [userInfo, setUserInfo] = useState<UserInfo>({ displayName: '—', email: '—', serverUrl: '—' })
 
   useEffect(() => {
     Promise.all([
@@ -29,6 +37,26 @@ export default function Settings(): JSX.Element {
       if (m !== undefined) setMinimizeToTray(m as boolean)
       if (n) setNotifications(n as typeof notifications)
     })
+    ;(async () => {
+      try {
+        const [username, serverUrl] = await Promise.all([
+          getUsername(),
+          window.api.store.get('serverUrl') as Promise<string>
+        ])
+        const res = await ncFetch(`/ocs/v1.php/cloud/users/${encodeURIComponent(username)}?format=json`)
+        if (res.ok) {
+          const data = await res.json()
+          const d = data?.ocs?.data ?? {}
+          const displayName = d.displayname ?? username
+          const email = d.email ?? ''
+          setUserInfo({ displayName, email, serverUrl: String(serverUrl ?? '').replace(/\/$/, '') })
+        } else {
+          setUserInfo((u) => ({ ...u, serverUrl: String(serverUrl ?? '') }))
+        }
+      } catch {
+        // keep defaults
+      }
+    })()
   }, [])
 
   useEffect(() => {
@@ -95,11 +123,10 @@ export default function Settings(): JSX.Element {
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#eff6ff] text-2xl">👤</div>
           <div>
-            <p className="font-display text-[15px] font-semibold text-[#09090b]">Alex Johnson</p>
-            <p className="font-display text-[13px] text-[#71717b]">alex@karsaaz.com</p>
+            <p className="font-display text-[15px] font-semibold text-[#09090b]">{userInfo.displayName}</p>
+            <p className="font-display text-[13px] text-[#71717b]">{userInfo.email || '—'}</p>
           </div>
         </div>
-        <button className="mt-4 rounded-[8px] border border-[#e5e5e5] px-4 py-2 font-display text-[13px]">Change Password</button>
         <button
           onClick={handleSignOut}
           className="mt-2 rounded-[8px] border border-[#ef4444] px-4 py-2 font-display text-[13px] text-[#ef4444]"
@@ -109,7 +136,7 @@ export default function Settings(): JSX.Element {
       </Section>
 
       <Section title="Server">
-        <Row label="Server URL" value="http://192.168.18.61:3030" />
+        <Row label="Server URL" value={userInfo.serverUrl || '—'} />
         <Row label="Connection" value="Connected" valueClass="text-[#22c55e]" />
       </Section>
 
@@ -239,7 +266,7 @@ export default function Settings(): JSX.Element {
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }): JSX.Element {
+function Section({ title, children }: { title: string; children: ReactNode }): JSX.Element {
   return (
     <div className="rounded-[16px] bg-white p-6 shadow-sm">
       <h3 className="mb-4 font-display text-[16px] font-bold text-[#09090b]">{title}</h3>
