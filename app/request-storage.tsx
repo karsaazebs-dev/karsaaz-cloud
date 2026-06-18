@@ -20,6 +20,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUserQuota } from "@/src/hooks/useUserQuota";
 import { useCreateRequestMutation } from "@/src/hooks/useQuotaAllocation";
+import type { StorageType } from "@/src/api/quotaAllocation";
 import { theme } from "@/src/constants/theme";
 import { BackButton } from "@/src/components/ui/BackButton";
 import { StorageUsageBlock } from "@/src/components/storage/StorageUsageBlock";
@@ -37,6 +38,13 @@ export default function RequestStorageScreen() {
   >("+100 GB");
   const [customAmount, setCustomAmount] = useState("150");
   const [reason, setReason] = useState("");
+  const [storageType, setStorageType] = useState<StorageType>("general");
+
+  const STORAGE_TYPE_OPTIONS: { value: StorageType; label: string }[] = [
+    { value: "general", label: "General purpose" },
+    { value: "documents", label: "Documents (PDF, TXT)" },
+    { value: "media", label: "Media (images, video)" },
+  ];
 
 
   const totalBytes = userQuota?.quota?.total ?? 500 * 1024 * 1024 * 1024;
@@ -67,7 +75,7 @@ export default function RequestStorageScreen() {
     const currentBytes   = currentGb * 1_073_741_824;
     const requestedBytes = newTotalGb * 1_073_741_824;
     createRequestMutation.mutate(
-      { currentBytes, requestedBytes, reason },
+      { currentBytes, requestedBytes, reason, storageType },
       {
         onSuccess: () => setStep("success"),
         onError: () => alert("Failed to submit request. Please try again."),
@@ -185,6 +193,24 @@ export default function RequestStorageScreen() {
               {/* Progress Quota Visual */}
               <View style={styles.storageBarContainer}>
                 <StorageUsageBlock usedBytes={usedBytes} totalBytes={totalBytes} />
+              </View>
+
+              <Text style={styles.fieldLabel}>Storage type</Text>
+              <View style={styles.deltaPillsRow}>
+                {STORAGE_TYPE_OPTIONS.map((opt) => {
+                  const active = opt.value === storageType;
+                  return (
+                    <Pressable
+                      key={opt.value}
+                      style={[styles.deltaPill, active && styles.deltaPillActive]}
+                      onPress={() => setStorageType(opt.value)}
+                    >
+                      <Text style={[styles.deltaPillLabel, active && styles.deltaPillLabelActive]}>
+                        {opt.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
               </View>
 
               {/* Delta Selector Pills */}

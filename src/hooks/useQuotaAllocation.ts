@@ -79,11 +79,14 @@ export function useCreateRequestMutation() {
       currentBytes,
       requestedBytes,
       reason,
+      storageType = "general",
     }: {
       currentBytes: number;
       requestedBytes: number;
       reason: string;
-    }) => createQuotaRequest(serverUrl, basicAuth, currentBytes, requestedBytes, reason),
+      storageType?: import("../api/quotaAllocation").StorageType;
+    }) =>
+      createQuotaRequest(serverUrl, basicAuth, currentBytes, requestedBytes, reason, storageType),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["quota-requests"] }),
   });
 }

@@ -8,18 +8,45 @@
 
 const OCS_BASE = "/ocs/v2.php/apps/karsaaz_quota/api/v1";
 
-function ocsHeaders(basicAuth: string) {
+function ocsHeaders(basicAuth: string, contentType = "application/json") {
   return {
     Authorization: `Basic ${basicAuth}`,
     "OCS-APIREQUEST": "true",
-    "Content-Type": "application/json",
+    "Content-Type": contentType,
     Accept: "application/json",
   };
+}
+
+function formBody(params: Record<string, string | number>): string {
+  return Object.entries(params)
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+    .join("&");
 }
 
 async function ocsJson(serverUrl: string, basicAuth: string, path: string, opts?: RequestInit) {
   const url = `${serverUrl}${OCS_BASE}${path}`;
   const res = await fetch(url, { ...opts, headers: ocsHeaders(basicAuth) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
+  if (json?.ocs?.meta?.status !== "ok") {
+    throw new Error(json?.ocs?.meta?.message ?? "OCS error");
+  }
+  return json.ocs.data;
+}
+
+async function ocsForm(
+  serverUrl: string,
+  basicAuth: string,
+  path: string,
+  params: Record<string, string | number>,
+  method = "POST"
+) {
+  const url = `${serverUrl}${OCS_BASE}${path}`;
+  const res = await fetch(url, {
+    method,
+    headers: ocsHeaders(basicAuth, "application/x-www-form-urlencoded"),
+    body: formBody(params),
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const json = await res.json();
   if (json?.ocs?.meta?.status !== "ok") {
@@ -44,12 +71,15 @@ export interface ManagedUser {
   updated_at: number;
 }
 
+export type StorageType = "general" | "documents" | "media";
+
 export interface QuotaRequest {
   id: string;
   requester_uid: string;
   current_bytes: number;
   requested_bytes: number;
   reason: string;
+  storage_type?: StorageType;
   status: "pending" | "approved" | "rejected";
   reviewer_uid: string | null;
   created_at: number;
@@ -77,10 +107,7 @@ export async function allocateQuota(
   uid: string,
   bytes: number
 ): Promise<void> {
-  await ocsJson(serverUrl, basicAuth, `/allocate/${encodeURIComponent(uid)}`, {
-    method: "PUT",
-    body: JSON.stringify({ bytes }),
-  });
+  await ocsForm(serverUrl, basicAuth, `/allocate/${encodeURIComponent(uid)}`, { bytes }, "PUT");
 }
 
 // ── Requests ──────────────────────────────────────────────────────────────────
@@ -95,15 +122,14 @@ export async function createQuotaRequest(
   basicAuth: string,
   currentBytes: number,
   requestedBytes: number,
-  reason: string
+  reason: string,
+  storageType: StorageType = "general"
 ): Promise<string> {
-  const data = await ocsJson(serverUrl, basicAuth, "/requests", {
-    method: "POST",
-    body: JSON.stringify({
-      current_bytes: currentBytes,
-      requested_bytes: requestedBytes,
-      reason,
-    }),
+  const data = await ocsForm(serverUrl, basicAuth, "/requests", {
+    current_bytes: currentBytes,
+    requested_bytes: requestedBytes,
+    reason,
+    storage_type: storageType,
   });
   return data.id as string;
 }
@@ -114,8 +140,11 @@ export async function reviewQuotaRequest(
   requestId: string,
   status: "approved" | "rejected"
 ): Promise<void> {
-  await ocsJson(serverUrl, basicAuth, `/requests/${encodeURIComponent(requestId)}`, {
-    method: "PUT",
-    body: JSON.stringify({ status }),
-  });
+  await ocsForm(
+    serverUrl,
+    basicAuth,
+    `/requests/${encodeURIComponent(requestId)}`,
+    { status },
+    "PUT"
+  );
 }
