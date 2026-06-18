@@ -34,19 +34,23 @@ export async function listUsers(): Promise<CloudUser[]> {
   }
 }
 
-export async function createUser(email: string, password: string, quotaGb: number): Promise<void> {
-  const userid = email.split('@')[0]
+export async function createUser(userid: string, password: string): Promise<void> {
   const res = await ncFetch('/ocs/v1.php/cloud/users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `userid=${encodeURIComponent(userid)}&password=${encodeURIComponent(password)}`
   })
   if (!res.ok) throw new Error('User creation failed')
-  await ncFetch(`/ocs/v1.php/cloud/users/${userid}`, {
+}
+
+export async function setUserDisplayName(userid: string, displayName: string): Promise<void> {
+  if (!displayName.trim()) return
+  const res = await ncFetch(`/ocs/v1.php/cloud/users/${encodeURIComponent(userid)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `key=quota&value=${quotaGb * 1073741824}`
+    body: `key=displayname&value=${encodeURIComponent(displayName)}`
   })
+  if (!res.ok) throw new Error('Failed to set display name')
 }
 
 export async function deleteUser(userId: string): Promise<void> {

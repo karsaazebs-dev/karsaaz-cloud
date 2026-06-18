@@ -33,9 +33,7 @@ function realUpload(
       const buffer = await file.arrayBuffer()
       if (aborted) return
       onProgress(id, 40)
-      const cleanPath = remotePath === '/' ? '' : remotePath
-      const uploadPath = `${cleanPath}/${encodeURIComponent(file.name)}`
-      const result = await window.api.nc.upload(uploadPath, buffer)
+      const result = await window.api.nc.upload(remotePath, file.name, buffer)
       if (aborted) return
       if (result.ok) {
         onProgress(id, 100)
@@ -108,7 +106,7 @@ export function UploadProvider({ children }: { children: ReactNode }): JSX.Eleme
   }, [cancellers, pendingFiles, updateUpload])
 
   const clearCompleted = useCallback(() => {
-    setUploads((prev) => prev.filter((u) => u.status !== 'completed' && u.status !== 'cancelled'))
+    setUploads((prev) => prev.filter((u) => u.status === 'uploading' || u.status === 'pending'))
   }, [])
 
   const activeCount = uploads.filter((u) => u.status === 'uploading' || u.status === 'pending').length

@@ -1,5 +1,6 @@
 import { ncFetch, getUsername } from './nextcloud'
 import { davHrefToUserPath, normalizeDavHref, resolveDavHref, userPathToAbsoluteUrl, userPathToDavHref } from '../utils/davPaths'
+import { applyPinnedState } from './pinnedFiles'
 import type { FileItem, FileType } from '../types/files'
 
 const PROPFIND_BODY = `<?xml version="1.0"?>
@@ -80,7 +81,7 @@ export async function listFiles(path = '/'): Promise<FileItem[]> {
     })
     if (!res.ok) throw new Error(`PROPFIND failed: ${res.status}`)
     const xml = await res.text()
-    return parsePropfind(xml, serverUrl)
+    return applyPinnedState(parsePropfind(xml, serverUrl))
   } catch {
     return []
   }
@@ -101,7 +102,7 @@ export async function listFavouriteFiles(): Promise<FileItem[]> {
     })
     if (!res.ok) throw new Error('Favourites fetch failed')
     const xml = await res.text()
-    return parsePropfind(xml, serverUrl)
+    return applyPinnedState(parsePropfind(xml, serverUrl))
   } catch {
     return []
   }
@@ -131,7 +132,7 @@ export async function listSharedWithMe(): Promise<FileItem[]> {
         sharedBy: String(s.displayname_owner ?? s.uid_owner ?? '')
       }
     })
-    return shares
+    return applyPinnedState(shares)
   } catch {
     return []
   }

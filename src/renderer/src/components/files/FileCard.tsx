@@ -43,7 +43,7 @@ export default function FileCard({ file, onAction, onDoubleClick, onClick }: Fil
           </div>
         )}
         {(file.pinned || file.favourite) && (
-          <div className="absolute right-3 top-3 flex items-center gap-1">
+          <div className="absolute left-3 top-3 flex items-center gap-1">
             {file.pinned && (
               <div className="flex h-8 w-8 items-center justify-center rounded-[16px] bg-[rgba(255,255,255,0.8)] backdrop-blur-[2px]">
                 <Pin className="h-4 w-4 text-[#2b7fff]" />
@@ -51,7 +51,7 @@ export default function FileCard({ file, onAction, onDoubleClick, onClick }: Fil
             )}
             {file.favourite && (
               <div className="flex h-8 w-8 items-center justify-center rounded-[16px] bg-[rgba(255,255,255,0.8)] backdrop-blur-[2px]">
-                <Star className="h-4 w-4 text-[#f59e0b]" />
+                <Star className="h-4 w-4 fill-[#f59e0b] text-[#f59e0b]" />
               </div>
             )}
           </div>

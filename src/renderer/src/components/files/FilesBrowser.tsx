@@ -8,6 +8,7 @@ import FileViewToolbar from './FileViewToolbar'
 import EmptyState from './EmptyState'
 import FilePreview from './FilePreview'
 import FileDetailsModal from './FileDetailsModal'
+import NewFileMenu from './NewFileMenu'
 import { useFileView } from '../../hooks/useFileView'
 import type { FileItem } from '../../types/files'
 import type { FileAction } from '../../types/fileActions'
@@ -150,20 +151,7 @@ export default function FilesBrowser({
         <div className="flex items-center gap-3">
           {headerExtra}
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileInputChange} />
-          <button
-            onClick={handleUploadClick}
-            className="flex items-center gap-1.5 rounded-[8px] bg-[#2b7fff] px-3 py-1.5 font-display text-[13px] font-semibold text-white hover:opacity-90"
-          >
-            ⬆ Upload
-          </button>
-          {onCreateFolder && (
-            <button
-              onClick={onCreateFolder}
-              className="flex items-center gap-1.5 rounded-[8px] border border-[#e5e5e5] bg-white px-3 py-1.5 font-display text-[13px] font-semibold text-[#09090b] hover:shadow-sm"
-            >
-              ＋ New Folder
-            </button>
-          )}
+          <NewFileMenu onUploadFiles={handleUploadClick} onCreateFolder={onCreateFolder} />
           <FileViewToolbar
             viewGrid={viewGrid}
             onViewChange={setViewGrid}
@@ -201,7 +189,7 @@ export default function FilesBrowser({
             <span className="w-24">Type</span>
             <span className="w-20">Size</span>
             <span className="w-28">Modified</span>
-            <span className="w-24">Status</span>
+            <span className="w-14" />
             <span className="w-8" />
           </div>
           {displayFiles.map((f) => (

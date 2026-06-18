@@ -1,4 +1,6 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react'
+import MoveFolderDialog from '../components/ui/MoveFolderDialog'
+import TagPickerDialog from '../components/ui/TagPickerDialog'
 
 interface PromptOptions {
   title: string
@@ -23,6 +25,8 @@ interface ActionDialogContextValue {
   prompt: (options: PromptOptions) => Promise<string | null>
   confirm: (options: ConfirmOptions) => Promise<boolean>
   selectFolder: () => Promise<string | null>
+  pickMoveFolder: (excludePath?: string) => Promise<string | null>
+  pickTag: () => Promise<string | null>
 }
 
 const ActionDialogContext = createContext<ActionDialogContextValue | null>(null)
@@ -30,6 +34,9 @@ const ActionDialogContext = createContext<ActionDialogContextValue | null>(null)
 export function ActionDialogProvider({ children }: { children: ReactNode }): JSX.Element {
   const [state, setState] = useState<DialogState | null>(null)
   const [input, setInput] = useState('')
+  const [moveFolderOpen, setMoveFolderOpen] = useState(false)
+  const [moveExclude, setMoveExclude] = useState<string | undefined>()
+  const [showTagPicker, setShowTagPicker] = useState(false)
   const resolverRef = useRef<((value: unknown) => void) | null>(null)
 
   const finish = useCallback((value: unknown) => {
@@ -37,6 +44,9 @@ export function ActionDialogProvider({ children }: { children: ReactNode }): JSX
     resolverRef.current = null
     setState(null)
     setInput('')
+    setMoveFolderOpen(false)
+    setMoveExclude(undefined)
+    setShowTagPicker(false)
   }, [])
 
   const prompt = useCallback((options: PromptOptions) => {
@@ -58,9 +68,37 @@ export function ActionDialogProvider({ children }: { children: ReactNode }): JSX
     return window.api.dialog.selectFolder()
   }, [])
 
+  const pickMoveFolder = useCallback((excludePath?: string) => {
+    setMoveExclude(excludePath)
+    setMoveFolderOpen(true)
+    return new Promise<string | null>((resolve) => {
+      resolverRef.current = resolve
+    })
+  }, [])
+
+  const pickTag = useCallback(() => {
+    setShowTagPicker(true)
+    return new Promise<string | null>((resolve) => {
+      resolverRef.current = resolve
+    })
+  }, [])
+
   return (
-    <ActionDialogContext.Provider value={{ prompt, confirm, selectFolder }}>
+    <ActionDialogContext.Provider value={{ prompt, confirm, selectFolder, pickMoveFolder, pickTag }}>
       {children}
+      {moveFolderOpen && (
+        <MoveFolderDialog
+          excludePath={moveExclude}
+          onSelect={(path) => finish(path)}
+          onCancel={() => finish(null)}
+        />
+      )}
+      {showTagPicker && (
+        <TagPickerDialog
+          onSelect={(tag) => finish(tag)}
+          onCancel={() => finish(null)}
+        />
+      )}
       {state?.type === 'prompt' && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40" onClick={() => finish(null)}>
           <div

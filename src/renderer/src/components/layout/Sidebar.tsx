@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useIsAdmin } from '../../hooks/useIsAdmin'
 import {
   LayoutDashboard, Folder, ChevronRight, Clock, Files, User, Star, Share2,
   Image, Inbox, Users, Upload, HardDrive, Trash2, Activity, Settings,
@@ -66,6 +67,7 @@ function SubNavItem({ to, Icon, label }: SubNavItemProps): JSX.Element {
 export default function Sidebar(): JSX.Element {
   const [filesOpen, setFilesOpen] = useState(true)
   const navigate = useNavigate()
+  const { isAdmin } = useIsAdmin()
 
   return (
     <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-[#e5e7eb] bg-white">
@@ -112,7 +114,7 @@ export default function Sidebar(): JSX.Element {
 
           <NavItem to="/app/media" Icon={Image} label="Media" />
           <NavItem to="/app/requests" Icon={Inbox} label="Requests" />
-          <NavItem to="/app/user-management" Icon={Users} label="User Management" />
+          {isAdmin && <NavItem to="/app/user-management" Icon={Users} label="User Management" />}
           <NavItem to="/app/uploads" Icon={Upload} label="Uploads" />
           <NavItem to="/app/on-device" Icon={HardDrive} label="On Device" />
           <NavItem to="/app/deleted" Icon={Trash2} label="Deleted Files" />

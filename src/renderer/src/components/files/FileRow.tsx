@@ -1,3 +1,4 @@
+import { Pin, Star } from 'lucide-react'
 import type { FileItem } from '../../types/files'
 import FileActionsMenu from '../ui/FileActionsMenu'
 import type { FileAction } from '../../types/fileActions'
@@ -44,8 +45,11 @@ export default function FileRow({ file, onAction, onDoubleClick, onClick }: File
           {file.sharedBy ? `by ${file.sharedBy}` : 'Shared'}
         </span>
       )}
-      {file.favourite && <span className="text-sm">⭐</span>}
-      <div className="w-8" onClick={(e) => e.stopPropagation()}>
+      <div className="flex w-14 shrink-0 items-center justify-end gap-2">
+        {file.pinned && <Pin className="h-4 w-4 text-[#2b7fff]" aria-label="Pinned" />}
+        {file.favourite && <Star className="h-4 w-4 fill-[#f59e0b] text-[#f59e0b]" aria-label="Favourite" />}
+      </div>
+      <div className="w-8 shrink-0" onClick={(e) => e.stopPropagation()}>
         <FileActionsMenu file={file} onAction={onAction ?? (() => {})} />
       </div>
     </div>

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getQuota, getStorageBreakdown } from '../../services/storageApi'
 import type { StorageStats, StorageBreakdown } from '../../services/storageApi'
 
 const COLORS = ['#2B7FFF', '#a78bfa', '#34d399', '#f59e0b']
 
 export default function StorageWidget(): JSX.Element {
+  const navigate = useNavigate()
   const [quota, setQuota] = useState<StorageStats | null>(null)
   const [breakdown, setBreakdown] = useState<StorageBreakdown[]>([])
   const [syncStatus, setSyncStatus] = useState<string>('active')
@@ -61,11 +63,17 @@ export default function StorageWidget(): JSX.Element {
       </div>
 
       <div className="mt-3 flex gap-2">
-        <button className="flex h-8 flex-1 items-center justify-center rounded-[8px] border border-[#e5e7eb] bg-white font-display text-[12px] font-semibold text-[#101010] hover:shadow-sm transition-shadow">
+        <button
+          onClick={() => navigate('/app/settings')}
+          className="flex h-8 flex-1 items-center justify-center rounded-[8px] border border-[#e5e7eb] bg-white font-display text-[12px] font-semibold text-[#101010] hover:shadow-sm transition-shadow"
+        >
           Manage
         </button>
-        <button className="flex h-8 flex-1 items-center justify-center rounded-[8px] bg-[#2B7FFF] font-display text-[12px] font-semibold text-white hover:opacity-90 transition-opacity">
-          Upgrade
+        <button
+          onClick={() => navigate('/app/requests')}
+          className="flex h-8 flex-1 items-center justify-center rounded-[8px] bg-[#2B7FFF] font-display text-[12px] font-semibold text-white hover:opacity-90 transition-opacity"
+        >
+          Request Storage
         </button>
       </div>
     </div>

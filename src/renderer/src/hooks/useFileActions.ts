@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
 import { deleteFile, moveFile, toggleFavourite } from '../services/filesApi'
 import { createShare } from '../services/sharingApi'
-import { assignTagToFile, getOrCreateTag } from '../services/tagsApi'
+import { addTagToFile } from '../services/tagsApi'
+import { togglePin } from '../services/pinnedFiles'
 import { davHrefToUserPath, resolveDavHref } from '../utils/davPaths'
 import { getUsername } from '../services/nextcloud'
 import { useToast } from './useToast'
@@ -21,12 +22,20 @@ async function copyToClipboard(text: string): Promise<void> {
   }
 }
 
+function buildEditUrl(serverUrl: string, file: FileItem, userPath: string): string {
+  const parentDir = userPath.substring(0, userPath.lastIndexOf('/')) || '/'
+  if (isNumericFileId(file.id)) {
+    return `${serverUrl}/index.php/apps/files/f/${file.id}?openfile=true`
+  }
+  return `${serverUrl}/index.php/apps/files/?dir=${encodeURIComponent(parentDir)}&openfile=${encodeURIComponent(file.name)}`
+}
+
 export function useFileActions(
   onChanged?: () => void,
   onShowDetails?: (file: FileItem) => void
 ) {
   const { toast } = useToast()
-  const { prompt, confirm, selectFolder } = useActionDialog()
+  const { prompt, confirm, selectFolder, pickMoveFolder, pickTag } = useActionDialog()
 
   const handleFileAction = useCallback(async (action: FileAction, file: FileItem) => {
     const username = await getUsername()
@@ -80,14 +89,25 @@ export function useFileActions(
       return
     }
 
-    if (action === 'favourite' || action === 'pin') {
+    if (action === 'favourite') {
       try {
-        const newVal = action === 'pin' ? true : !file.favourite
+        const newVal = !file.favourite
         await toggleFavourite(davPath, newVal)
         toast('success', newVal ? 'Added to favourites' : 'Removed from favourites', file.name)
         onChanged?.()
       } catch (e) {
         toast('error', 'Favourite update failed', e instanceof Error ? e.message : file.name)
+      }
+      return
+    }
+
+    if (action === 'pin') {
+      try {
+        const pinned = await togglePin(file.id)
+        toast('success', pinned ? 'Pinned' : 'Unpinned', file.name)
+        onChanged?.()
+      } catch (e) {
+        toast('error', 'Pin update failed', e instanceof Error ? e.message : file.name)
       }
       return
     }
@@ -112,15 +132,10 @@ export function useFileActions(
     }
 
     if (action === 'move') {
-      const dest = await prompt({
-        title: 'Move to folder',
-        label: 'Destination folder path',
-        defaultValue: '/',
-        placeholder: '/Documents',
-        confirmLabel: 'Move'
-      })
-      if (!dest) return
-      const destPath = dest.endsWith('/') ? dest + file.name : `${dest}/${file.name}`
+      const parentDir = userPath.substring(0, userPath.lastIndexOf('/')) || '/'
+      const destDir = await pickMoveFolder(file.isFolder ? userPath : parentDir)
+      if (!destDir) return
+      const destPath = destDir.endsWith('/') ? destDir + file.name : `${destDir}/${file.name}`
       try {
         await moveFile(davPath, destPath)
         toast('success', 'Moved', file.name)
@@ -132,12 +147,10 @@ export function useFileActions(
     }
 
     if (action === 'edit') {
+      if (file.isFolder) return
       try {
         const serverUrl = ((await window.api.store.get('serverUrl')) as string ?? '').replace(/\/$/, '')
-        const parentDir = userPath.substring(0, userPath.lastIndexOf('/')) || '/'
-        const url = isNumericFileId(file.id)
-          ? `${serverUrl}/apps/files/files/${file.id}?dir=${encodeURIComponent(parentDir)}&openfile=true`
-          : `${serverUrl}/apps/files/?dir=${encodeURIComponent(parentDir)}&openfile=${encodeURIComponent(file.name)}`
+        const url = buildEditUrl(serverUrl, file, userPath)
         await window.api.app.openExternal(url)
         toast('info', 'Opening in browser', file.name)
       } catch {
@@ -160,27 +173,17 @@ export function useFileActions(
     }
 
     if (action === 'tag') {
-      if (!isNumericFileId(file.id)) {
-        toast('error', 'Cannot tag file', 'File ID not available')
-        return
-      }
-      const tagName = await prompt({
-        title: 'Add tag',
-        label: 'Tag name',
-        placeholder: 'e.g. Important',
-        confirmLabel: 'Add tag'
-      })
+      const tagName = await pickTag()
       if (!tagName) return
       try {
-        const tag = await getOrCreateTag(tagName)
-        await assignTagToFile(file.id, tag.id)
-        toast('success', 'Tag added', tag.name)
+        await addTagToFile(userPath, tagName)
+        toast('success', 'Tag added', tagName)
         onChanged?.()
       } catch (e) {
         toast('error', 'Tag failed', e instanceof Error ? e.message : tagName)
       }
     }
-  }, [onChanged, onShowDetails, toast, prompt, confirm, selectFolder])
+  }, [onChanged, onShowDetails, toast, prompt, confirm, selectFolder, pickMoveFolder, pickTag])
 
   return handleFileAction
 }

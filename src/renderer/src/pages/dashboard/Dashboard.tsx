@@ -254,6 +254,7 @@ export default function Dashboard(): JSX.Element {
               <span className="w-24">Type</span>
               <span className="w-20">Size</span>
               <span className="w-28">Modified</span>
+              <span className="w-14" />
               <span className="w-8" />
             </div>
             {displayFiles.map((f) => (

@@ -6,7 +6,7 @@ declare global {
     api: {
       nc: {
         fetch: (url: string, method: string, headers: Record<string, string>, body?: string) => Promise<{ status: number; text: string; ok: boolean }>
-        upload: (uploadPath: string, buffer: ArrayBuffer) => Promise<{ ok: boolean; status: number; error?: string }>
+        upload: (userPath: string, fileName: string, buffer: ArrayBuffer) => Promise<{ ok: boolean; status: number; error?: string }>
         fetchBinary: (url: string) => Promise<{ ok: boolean; base64: string; contentType: string }>
       }
       store: {

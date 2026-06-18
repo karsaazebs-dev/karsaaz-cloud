@@ -100,26 +100,70 @@ function createTray(): void {
 }
 
 // Upload a file to Nextcloud WebDAV via main process (bypasses renderer CORS)
-ipcMain.handle('nc:upload', async (_event, uploadPath: string, buffer: ArrayBuffer) => {
+function toUploadBuffer(data: ArrayBuffer | Uint8Array): Buffer {
+  if (data instanceof ArrayBuffer) return Buffer.from(data)
+  if (ArrayBuffer.isView(data)) return Buffer.from(data.buffer, data.byteOffset, data.byteLength)
+  throw new Error('Invalid upload payload')
+}
+
+function buildDavUploadUrl(serverUrl: string, username: string, userPath: string, fileName: string): string {
+  const base = serverUrl.replace(/\/$/, '')
+  if (!base.startsWith('http://') && !base.startsWith('https://')) {
+    throw new Error('Invalid server URL — sign in again')
+  }
+  if (!username) throw new Error('Missing username — sign in again')
+
+  const segments = userPath === '/' || userPath === ''
+    ? []
+    : userPath.split('/').filter(Boolean)
+  segments.push(fileName)
+  const encodedPath = segments.map((s) => encodeURIComponent(s)).join('/')
+  return `${base}/remote.php/dav/files/${encodeURIComponent(username)}/${encodedPath}`
+}
+
+ipcMain.handle('nc:upload', async (_event, userPath: string, fileName: string, buffer: ArrayBuffer | Uint8Array) => {
   const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
   const authToken = String(store.get('authToken') ?? '')
-  const username = String(store.get('username') ?? '')
-  const url = `${serverUrl}/remote.php/dav/files/${encodeURIComponent(username)}${uploadPath}`
+
+  let url: string
+  try {
+    url = buildDavUploadUrl(serverUrl, String(store.get('username') ?? ''), userPath, fileName)
+  } catch (err) {
+    return { ok: false, status: 0, error: err instanceof Error ? err.message : 'Upload error' }
+  }
+
+  if (!authToken) {
+    return { ok: false, status: 0, error: 'Not authenticated — sign in again' }
+  }
+
+  let body: Buffer
+  try {
+    body = toUploadBuffer(buffer)
+  } catch (err) {
+    return { ok: false, status: 0, error: err instanceof Error ? err.message : 'Invalid file data' }
+  }
+
   return new Promise<{ ok: boolean; status: number; error?: string }>((resolve) => {
     try {
       const req = net.request({ url, method: 'PUT' })
       req.setHeader('Authorization', `Basic ${authToken}`)
       req.setHeader('OCS-APIREQUEST', 'true')
-      req.setHeader('Content-Length', String(buffer.byteLength))
+      req.setHeader('User-Agent', 'Karsaaz-Sync/1.0.0 (Windows)')
+      req.setHeader('Content-Type', 'application/octet-stream')
       req.on('response', (res) => {
         const status = res.statusCode ?? 0
         res.on('data', () => {})
-        res.on('end', () => resolve({ ok: status >= 200 && status < 300, status }))
+        res.on('end', () => {
+          if (status >= 200 && status < 300) {
+            resolve({ ok: true, status })
+          } else {
+            resolve({ ok: false, status, error: `Upload failed (HTTP ${status})` })
+          }
+        })
         res.on('error', (err) => resolve({ ok: false, status: 0, error: err.message }))
       })
       req.on('error', (err) => resolve({ ok: false, status: 0, error: err.message }))
-      req.write(Buffer.from(buffer))
-      req.end()
+      req.end(body)
     } catch (err) {
       resolve({ ok: false, status: 0, error: err instanceof Error ? err.message : 'Upload error' })
     }
@@ -358,7 +402,8 @@ app.whenReady().then(() => {
         requestHeaders: {
           ...details.requestHeaders,
           Authorization: `Basic ${authToken}`,
-          'OCS-APIREQUEST': 'true'
+          'OCS-APIREQUEST': 'true',
+          'User-Agent': 'Karsaaz-Sync/1.0.0 (Windows)'
         }
       })
     } else {

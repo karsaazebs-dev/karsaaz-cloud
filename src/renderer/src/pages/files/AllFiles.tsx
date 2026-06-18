@@ -11,8 +11,12 @@ export default function AllFiles(): JSX.Element {
   const [files, setFiles] = useState<FileItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const { uploads } = useUpload()
+  const { uploads, setCurrentPath: setUploadPath } = useUpload()
   const prevCompletedRef = useRef(0)
+
+  useEffect(() => {
+    setUploadPath(currentPath)
+  }, [currentPath, setUploadPath])
 
   const loadFiles = useCallback(async (path: string) => {
     setLoading(true)

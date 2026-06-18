@@ -98,3 +98,15 @@ export async function getUsername(): Promise<string> {
     return ''
   }
 }
+
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  try {
+    const res = await ncFetch('/ocs/v2.php/cloud/user?format=json')
+    if (!res.ok) return false
+    const data = await res.json()
+    const groups: string[] = data?.ocs?.data?.groups ?? []
+    return groups.includes('admin')
+  } catch {
+    return false
+  }
+}
