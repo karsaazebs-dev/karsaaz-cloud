@@ -8,7 +8,7 @@ $CONFIG = [
     'theme'                         => 'karsaaz',
     'reference_opengraph'           => false,
     'connectivity_check_domains'    => [],
-    'allow_local_remote_servers'    => false,
+    'allow_local_remote_servers'    => true,
     'productName'                   => 'Karsaaz Cloud',
     'defaultapp'                    => 'dashboard,files',
     'default_language'              => 'en',
@@ -23,6 +23,7 @@ $CONFIG = [
         4 => '192.168.100.25',
         5 => '192.168.18.118',
         6 => '0.0.0.0',
+        7 => '192.168.18.78',
     ],
     
     'mail_from_address'             => 'tameem.karsaaz',
@@ -35,6 +36,6 @@ $CONFIG = [
     'mail_smtpauth'                 => true,
     'mail_smtpauthtype'             => 'LOGIN',
     'mail_smtpname'                 => 'tameem.karsaaz@gmail.com',
-    'mail_smtppassword'             => 'yebfbcookpiiijar',
+    'mail_smtppassword'             => getenv('MAIL_SMTP_PASSWORD') ?: '',
     'mail_smtptimeout'              => 30,
 ];

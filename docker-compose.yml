@@ -111,6 +111,10 @@ services:
       NEXTCLOUD_ADMIN_USER: ${NC_ADMIN_USER}
       NEXTCLOUD_ADMIN_PASSWORD: ${NC_ADMIN_PASSWORD}
       NEXTCLOUD_TRUSTED_DOMAINS: ${NC_TRUSTED_DOMAINS}
+      # SMTP password injected from .env (never hard-code in airgap.config.php)
+      MAIL_SMTP_PASSWORD: ${MAIL_SMTP_PASSWORD:-}
+      COLLABORA_INTERNAL_URL: http://collabora:9980
+      COLLABORA_PUBLIC_URL: ${COLLABORA_PUBLIC_URL:-http://localhost:9980}
     volumes:
       - app_data:/var/www/html
       - ./airgap.config.php:/airgap.config.php:ro
@@ -118,6 +122,7 @@ services:
       - ./php-hardening.ini:/usr/local/etc/php/conf.d/zz-hardening.ini:ro
       - ./apache-hardening.conf:/etc/apache2/conf-enabled/zz-hardening.conf:ro
       - ./themes/karsaaz:/var/www/html/themes/karsaaz:ro
+      - ./apps/karsaaz_quota:/var/www/html/apps/karsaaz_quota:ro
     security_opt:
       - no-new-privileges:true
     cap_drop:

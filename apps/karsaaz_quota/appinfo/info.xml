@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+  - SPDX-FileCopyrightText: 2026 Karsaaz
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>karsaaz_quota</id>
+    <name>Karsaaz Storage Allocation</name>
+    <summary>Hierarchical storage quota allocation for Karsaaz Cloud</summary>
+    <description><![CDATA[
+Enables super-admins to allocate storage pools to admins, and admins to
+distribute quotas among their users. New users automatically receive a
+10 GB default quota from the system pool.
+    ]]></description>
+    <version>1.0.0</version>
+    <licence>agpl</licence>
+    <author>Karsaaz</author>
+    <namespace>KarsaazQuota</namespace>
+    <category>storage</category>
+    <bugs>https://github.com/karsaaz/cloud/issues</bugs>
+    <dependencies>
+        <nextcloud min-version="30" max-version="31"/>
+    </dependencies>
+</info>

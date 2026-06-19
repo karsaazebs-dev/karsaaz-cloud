@@ -1,0 +1,1 @@
+{"event":"task_completed","teammate":"","task_id":"1","subject":"Fix exposed SMTP password in airgap.config.php","description":"Move plaintext Gmail app password (line 63) to env var / .env secret; reference via getenv() in PHP.","timestamp":"2026-05-22T05:48:51Z"}

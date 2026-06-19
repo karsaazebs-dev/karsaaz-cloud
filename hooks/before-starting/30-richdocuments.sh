@@ -1,0 +1,27 @@
+#!/bin/sh
+# Ensure Nextcloud Office (richdocuments) points at the Collabora container.
+set -e
+
+if [ ! -d /var/www/html/custom_apps/richdocuments ]; then
+    echo "[richdocuments] app not installed — skipping"
+    exit 0
+fi
+
+sudo -u www-data php /var/www/html/occ app:enable richdocuments 2>/dev/null || runuser -u www-data -- php /var/www/html/occ app:enable richdocuments 2>/dev/null || true
+
+WOPI_INTERNAL="${COLLABORA_INTERNAL_URL:-http://collabora:9980}"
+WOPI_PUBLIC="${COLLABORA_PUBLIC_URL:-http://localhost:9980}"
+
+_run_occ() {
+  if command -v runuser >/dev/null 2>&1; then
+    runuser -u www-data -- php /var/www/html/occ "$@"
+  else
+    sudo -u www-data php /var/www/html/occ "$@"
+  fi
+}
+
+_run_occ config:app:set richdocuments wopi_url --value "$WOPI_INTERNAL"
+_run_occ config:app:set richdocuments public_wopi_url --value "$WOPI_PUBLIC"
+_run_occ config:system:set allow_local_remote_servers --value=true --type=bool
+
+echo "[richdocuments] WOPI internal=$WOPI_INTERNAL public=$WOPI_PUBLIC"
