@@ -29,19 +29,42 @@ class QuotaController extends OCSController {
         parent::__construct($appName, $request);
     }
 
-    // ── GET /api/v1/pool ──────────────────────────────────────────────────────
+    /** @return array<string, mixed> */
+    private function bodyParams(): array {
+        $params = $this->request->getParams();
+        $contentType = $this->request->getHeader('Content-Type') ?? '';
+        if (str_contains($contentType, 'application/json')) {
+            $raw = file_get_contents('php://input');
+            $json = json_decode($raw ?: '', true);
+            if (is_array($json)) {
+                return array_merge($params, $json);
+            }
+        }
+        return $params;
+    }
 
-    /**
-     * Return the calling admin's pool summary.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
+    private function requireAdmin(): ?DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if (!$this->groupManager->isAdmin($this->userId)) {
+            return new DataResponse(['error' => 'Administrator access required'], Http::STATUS_FORBIDDEN);
+        }
+        return null;
+    }
+
+    private function requireAuth(): ?DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        return null;
+    }
+
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function getPool(): DataResponse {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        if ($denied = $this->requireAdmin()) {
+            return $denied;
         }
 
         $total       = $this->service->getTotalPool($this->userId);
@@ -54,41 +77,26 @@ class QuotaController extends OCSController {
         ]);
     }
 
-    // ── GET /api/v1/users ─────────────────────────────────────────────────────
-
-    /**
-     * List all users managed by the calling admin, with their quota data.
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function getUsers(): DataResponse {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        if ($denied = $this->requireAdmin()) {
+            return $denied;
         }
 
         $users = $this->service->getManagedUsers($this->userId);
         return new DataResponse(['users' => $users]);
     }
 
-    // ── PUT /api/v1/allocate/{uid} ────────────────────────────────────────────
-
-    /**
-     * Set a user's storage quota.  Body: { "bytes": <int> }
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function allocate(string $uid): DataResponse {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        if ($denied = $this->requireAdmin()) {
+            return $denied;
         }
 
-        $bytes = (int) $this->request->getParam('bytes', 0);
+        $params = $this->bodyParams();
+        $bytes = (int) ($params['bytes'] ?? 0);
         if ($bytes <= 0) {
             return new DataResponse(['error' => 'bytes must be a positive integer'], Http::STATUS_BAD_REQUEST);
         }
@@ -106,41 +114,29 @@ class QuotaController extends OCSController {
         }
     }
 
-    // ── GET /api/v1/requests ──────────────────────────────────────────────────
-
-    /**
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function getRequests(): DataResponse {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        if ($denied = $this->requireAuth()) {
+            return $denied;
         }
 
         $requests = $this->service->getRequests($this->userId);
         return new DataResponse(['requests' => $requests]);
     }
 
-    // ── POST /api/v1/requests ─────────────────────────────────────────────────
-
-    /**
-     * Body: { "current_bytes": <int>, "requested_bytes": <int>, "reason": <string> }
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function createRequest(): DataResponse {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        if ($denied = $this->requireAuth()) {
+            return $denied;
         }
 
-        $currentBytes   = (int) $this->request->getParam('current_bytes', 0);
-        $requestedBytes = (int) $this->request->getParam('requested_bytes', 0);
-        $reason         = (string) $this->request->getParam('reason', '');
+        $params = $this->bodyParams();
+        $currentBytes   = (int) ($params['current_bytes'] ?? 0);
+        $requestedBytes = (int) ($params['requested_bytes'] ?? 0);
+        $reason         = (string) ($params['reason'] ?? '');
+        $storageType    = (string) ($params['storage_type'] ?? 'general');
 
         if ($requestedBytes <= $currentBytes) {
             return new DataResponse(
@@ -149,26 +145,29 @@ class QuotaController extends OCSController {
             );
         }
 
-        $id = $this->service->createRequest($this->userId, $currentBytes, $requestedBytes, $reason);
-        return new DataResponse(['id' => $id], Http::STATUS_CREATED);
+        try {
+            $id = $this->service->createRequest(
+                $this->userId,
+                $currentBytes,
+                $requestedBytes,
+                $reason,
+                $storageType
+            );
+            return new DataResponse(['id' => $id], Http::STATUS_CREATED);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        }
     }
 
-    // ── PUT /api/v1/requests/{id} ─────────────────────────────────────────────
-
-    /**
-     * Admin approves or rejects a request. Body: { "status": "approved"|"rejected" }
-     *
-     * @NoAdminRequired
-     * @NoCSRFRequired
-     */
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function reviewRequest(string $id): DataResponse {
-        if ($this->userId === null) {
-            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        if ($denied = $this->requireAdmin()) {
+            return $denied;
         }
 
-        $status = (string) $this->request->getParam('status', '');
+        $params = $this->bodyParams();
+        $status = (string) ($params['status'] ?? '');
         try {
             $this->service->reviewRequest($this->userId, $id, $status);
             return new DataResponse(['id' => $id, 'status' => $status]);

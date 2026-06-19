@@ -28,6 +28,9 @@ class AllocationService {
     private const DEFAULT_SUPER_ADMIN_BYTES = 2_199_023_255_552; // 2 TB
     private const DEFAULT_USER_BYTES        =        10_737_418_240; // 10 GB
 
+    /** @var list<string> */
+    private const STORAGE_TYPES = ['general', 'documents', 'media'];
+
     public function __construct(
         private IDBConnection $db,
         private IConfig       $config,
@@ -173,6 +176,10 @@ class AllocationService {
      * Return all users whose quota is managed by grantorUid, with quota data.
      */
     public function getManagedUsers(string $grantorUid): array {
+        if ($this->groupManager->isAdmin($grantorUid)) {
+            return $this->getAllUsersWithQuota($grantorUid);
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('grantee_uid', 'allocated_bytes', 'updated_at')
            ->from('kz_quota_alloc')
@@ -180,7 +187,7 @@ class AllocationService {
            ->orderBy('grantee_uid');
 
         $result = $qb->executeQuery();
-        $rows   = $result->fetchAllAssociative();
+        $rows   = $result->fetchAll();
         $result->closeCursor();
 
         return array_map(function (array $row) {
@@ -199,7 +206,19 @@ class AllocationService {
 
     // ── Request management ────────────────────────────────────────────────────
 
-    public function createRequest(string $uid, int $currentBytes, int $requestedBytes, string $reason): string {
+    public function createRequest(
+        string $uid,
+        int $currentBytes,
+        int $requestedBytes,
+        string $reason,
+        string $storageType = 'general'
+    ): string {
+        if (!in_array($storageType, self::STORAGE_TYPES, true)) {
+            throw new \InvalidArgumentException(
+                'storage_type must be one of: ' . implode(', ', self::STORAGE_TYPES)
+            );
+        }
+
         $id  = bin2hex(random_bytes(16));
         $now = $this->timeFactory->getTime();
 
@@ -211,6 +230,7 @@ class AllocationService {
                'current_bytes'   => $qb->createNamedParameter($currentBytes, IQueryBuilder::PARAM_INT),
                'requested_bytes' => $qb->createNamedParameter($requestedBytes, IQueryBuilder::PARAM_INT),
                'reason'          => $qb->createNamedParameter($reason),
+               'storage_type'    => $qb->createNamedParameter($storageType),
                'status'          => $qb->createNamedParameter('pending'),
                'reviewer_uid'    => $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
                'created_at'      => $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT),
@@ -250,7 +270,7 @@ class AllocationService {
 
         $qb->orderBy('created_at', 'DESC');
         $result = $qb->executeQuery();
-        $rows   = $result->fetchAllAssociative();
+        $rows   = $result->fetchAll();
         $result->closeCursor();
         return $rows;
     }
@@ -262,6 +282,10 @@ class AllocationService {
     public function reviewRequest(string $reviewerUid, string $requestId, string $status): void {
         if (!in_array($status, ['approved', 'rejected'], true)) {
             throw new \InvalidArgumentException('Status must be approved or rejected.');
+        }
+
+        if (!$this->groupManager->isAdmin($reviewerUid)) {
+            throw new \RuntimeException('Only an administrator can review storage requests.');
         }
 
         $request = $this->getRequestById($requestId);
@@ -285,6 +309,44 @@ class AllocationService {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * @return list<array{uid: string, displayName: string, allocated_bytes: int, used_bytes: int, updated_at: int}>
+     */
+    private function getAllUsersWithQuota(string $excludeUid): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('grantee_uid', 'allocated_bytes', 'updated_at')
+           ->from('kz_quota_alloc')
+           ->orderBy('grantee_uid');
+
+        $result = $qb->executeQuery();
+        $rows   = $result->fetchAll();
+        $result->closeCursor();
+
+        $byUid = [];
+        foreach ($rows as $row) {
+            $byUid[$row['grantee_uid']] = $row;
+        }
+
+        $users = [];
+        foreach ($this->userManager->search('') as $user) {
+            $uid = $user->getUID();
+            if ($uid === $excludeUid) {
+                continue;
+            }
+            $row  = $byUid[$uid] ?? null;
+            $used = (int) $this->config->getUserValue($uid, 'files', 'files_used', '0');
+            $users[] = [
+                'uid'             => $uid,
+                'displayName'     => $user->getDisplayName(),
+                'allocated_bytes' => $row !== null ? (int) $row['allocated_bytes'] : 0,
+                'used_bytes'      => $used,
+                'updated_at'      => $row !== null ? (int) $row['updated_at'] : 0,
+            ];
+        }
+
+        return $users;
+    }
+
     private function getGrantorOf(string $uid): ?string {
         $qb = $this->db->getQueryBuilder();
         $qb->select('grantor_uid')
@@ -301,7 +363,7 @@ class AllocationService {
            ->from('kz_quota_requests')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
         $result = $qb->executeQuery();
-        $row    = $result->fetchAssociative();
+        $row    = $result->fetch();
         $result->closeCursor();
         return $row !== false ? $row : null;
     }
