@@ -36,6 +36,12 @@ export default function AllFiles(): JSX.Element {
   }, [currentPath, loadFiles])
 
   useEffect(() => {
+    const onFilesChanged = (): void => { loadFiles(currentPath) }
+    window.addEventListener('karsaaz:files-changed', onFilesChanged)
+    return () => window.removeEventListener('karsaaz:files-changed', onFilesChanged)
+  }, [currentPath, loadFiles])
+
+  useEffect(() => {
     const completedNow = uploads.filter((u) => u.status === 'completed').length
     if (completedNow > prevCompletedRef.current) {
       prevCompletedRef.current = completedNow

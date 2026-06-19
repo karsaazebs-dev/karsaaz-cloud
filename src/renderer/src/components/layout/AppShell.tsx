@@ -9,6 +9,7 @@ import { SearchProvider } from '../../hooks/useSearch'
 import ToastContainer from '../ui/ToastContainer'
 import NetworkGuard from '../ui/NetworkGuard'
 import GlobalErrorHandler from '../ui/GlobalErrorHandler'
+import { OfficeEditorProvider } from '../../hooks/useOfficeEditor'
 
 class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   constructor(props: { children: ReactNode }) {
@@ -42,6 +43,7 @@ export default function AppShell(): JSX.Element {
       <ActionDialogProvider>
       <SearchProvider>
       <UploadProvider>
+        <OfficeEditorProvider>
         <div className="flex h-full w-full flex-col">
           {/* Titlebar drag zone — matches titleBarOverlay height (32px) so content clears native Win controls */}
           <div
@@ -64,6 +66,7 @@ export default function AppShell(): JSX.Element {
         </div>
         <GlobalErrorHandler />
         <ToastContainer />
+        </OfficeEditorProvider>
       </UploadProvider>
       </SearchProvider>
       </ActionDialogProvider>

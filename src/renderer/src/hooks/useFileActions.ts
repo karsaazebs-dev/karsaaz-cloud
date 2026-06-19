@@ -4,6 +4,8 @@ import { createShare } from '../services/sharingApi'
 import { addTagToFile } from '../services/tagsApi'
 import { togglePin } from '../services/pinnedFiles'
 import { davHrefToUserPath, resolveDavHref } from '../utils/davPaths'
+import { isOfficeEditableName, isOfficeFileId } from '../services/officeApi'
+import { useOfficeEditor } from './useOfficeEditor'
 import { getUsername } from '../services/nextcloud'
 import { useToast } from './useToast'
 import { useActionDialog } from './useActionDialog'
@@ -36,6 +38,7 @@ export function useFileActions(
 ) {
   const { toast } = useToast()
   const { prompt, confirm, selectFolder, pickMoveFolder, pickTag } = useActionDialog()
+  const office = useOfficeEditor()
 
   const handleFileAction = useCallback(async (action: FileAction, file: FileItem) => {
     const username = await getUsername()
@@ -149,12 +152,16 @@ export function useFileActions(
     if (action === 'edit') {
       if (file.isFolder) return
       try {
-        const serverUrl = ((await window.api.store.get('serverUrl')) as string ?? '').replace(/\/$/, '')
-        const url = buildEditUrl(serverUrl, file, userPath)
-        await window.api.app.openExternal(url)
-        toast('info', 'Opening in browser', file.name)
-      } catch {
-        toast('error', 'Could not open editor', 'Try opening the file in the web app')
+        if (isOfficeFileId(file.id) || isOfficeEditableName(file.name)) {
+          await office.openFile(file)
+        } else {
+          const serverUrl = ((await window.api.store.get('serverUrl')) as string ?? '').replace(/\/$/, '')
+          const url = buildEditUrl(serverUrl, file, userPath)
+          await window.api.app.openExternal(url)
+          toast('info', 'Opening in browser', file.name)
+        }
+      } catch (e) {
+        toast('error', 'Could not open editor', e instanceof Error ? e.message : file.name)
       }
       return
     }
@@ -183,7 +190,7 @@ export function useFileActions(
         toast('error', 'Tag failed', e instanceof Error ? e.message : tagName)
       }
     }
-  }, [onChanged, onShowDetails, toast, prompt, confirm, selectFolder, pickMoveFolder, pickTag])
+  }, [onChanged, onShowDetails, toast, prompt, confirm, selectFolder, pickMoveFolder, pickTag, office])
 
   return handleFileAction
 }

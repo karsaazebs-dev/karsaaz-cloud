@@ -1,6 +1,9 @@
-import { useCallback, useRef, useState, type DragEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { useUpload } from '../../hooks/useUpload'
 import { useFileActions } from '../../hooks/useFileActions'
+import { useOfficeEditor } from '../../hooks/useOfficeEditor'
+import { isOfficeEditableName, isOfficeFileId } from '../../services/officeApi'
+import type { OfficeTemplateType } from '../../services/officeApi'
 import FilterTabs from './FilterTabs'
 import FileCard from './FileCard'
 import FileRow from './FileRow'
@@ -55,18 +58,38 @@ export default function FilesBrowser({
     displayFiles
   } = useFileView(files)
   const { addFiles } = useUpload()
+  const office = useOfficeEditor()
   const [dragOver, setDragOver] = useState(false)
   const [previewFile, setPreviewFile] = useState<FileItem | null>(null)
   const [detailsFile, setDetailsFile] = useState<FileItem | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const defaultFileAction = useFileActions(onRefresh, setDetailsFile)
 
   const handleUploadClick = (): void => { fileInputRef.current?.click() }
+  const handleCameraClick = (): void => { cameraInputRef.current?.click() }
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const picked = Array.from(e.target.files ?? [])
     if (picked.length) addFiles(picked, currentPath)
     e.target.value = ''
   }
+
+  const handleCreateOffice = useCallback(async (type: OfficeTemplateType) => {
+    try {
+      await office.createDocument(currentPath, type)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Could not create document')
+    }
+  }, [office, currentPath])
+
+  const handleCreateText = useCallback(async () => {
+    try {
+      await office.createText(currentPath)
+      onRefresh?.()
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Could not create text file')
+    }
+  }, [office, currentPath, onRefresh])
 
   const counts = getTabCounts(files)
 
@@ -79,8 +102,17 @@ export default function FilesBrowser({
     if (file.isFolder && onFolderOpen) onFolderOpen(file)
   }
 
-  const handleFileClick = (file: FileItem): void => {
-    if (!file.isFolder) setPreviewFile(file)
+  const handleFileClick = async (file: FileItem): Promise<void> => {
+    if (file.isFolder) return
+    if (isOfficeFileId(file.id) || isOfficeEditableName(file.name)) {
+      try {
+        await office.openFile(file)
+      } catch {
+        setPreviewFile(file)
+      }
+      return
+    }
+    setPreviewFile(file)
   }
 
   const onDragOver = (e: DragEvent): void => {
@@ -151,7 +183,21 @@ export default function FilesBrowser({
         <div className="flex items-center gap-3">
           {headerExtra}
           <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileInputChange} />
-          <NewFileMenu onUploadFiles={handleUploadClick} onCreateFolder={onCreateFolder} />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleFileInputChange}
+          />
+          <NewFileMenu
+            onUploadFiles={handleUploadClick}
+            onUploadCamera={handleCameraClick}
+            onCreateFolder={onCreateFolder}
+            onCreateOffice={handleCreateOffice}
+            onCreateText={handleCreateText}
+          />
           <FileViewToolbar
             viewGrid={viewGrid}
             onViewChange={setViewGrid}
