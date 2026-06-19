@@ -36,6 +36,19 @@ function Initialize-KarsaazAndroidEnv {
         cmd /c mklink /J "$MobileShort" "$MobileRootPath" | Out-Null
     }
 
+    # Resolve JAVA_HOME
+    if ($null -eq $env:JAVA_HOME -or $env:JAVA_HOME -eq "") {
+        $userJavaHome = [Environment]::GetEnvironmentVariable("JAVA_HOME", "User")
+        $machineJavaHome = [Environment]::GetEnvironmentVariable("JAVA_HOME", "Machine")
+        if ($null -ne $userJavaHome -and $userJavaHome -ne "") {
+            $env:JAVA_HOME = $userJavaHome
+        } elseif ($null -ne $machineJavaHome -and $machineJavaHome -ne "") {
+            $env:JAVA_HOME = $machineJavaHome
+        } elseif (Test-Path "C:\Program Files\Android\Android Studio\jbr") {
+            $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+        }
+    }
+
     $env:ANDROID_HOME = $SdkShort
     $env:ANDROID_SDK_ROOT = $SdkShort
     $env:Path = "$SdkShort\platform-tools;$SdkShort\emulator;$SdkShort\cmdline-tools\latest\bin;$env:Path"
@@ -49,6 +62,9 @@ function Initialize-KarsaazAndroidEnv {
     if ($PersistUserEnv) {
         [Environment]::SetEnvironmentVariable("ANDROID_HOME", $SdkShort, "User")
         [Environment]::SetEnvironmentVariable("ANDROID_SDK_ROOT", $SdkShort, "User")
+        if ($null -ne $env:JAVA_HOME -and $env:JAVA_HOME -ne "") {
+            [Environment]::SetEnvironmentVariable("JAVA_HOME", $env:JAVA_HOME, "User")
+        }
 
         $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
         $entries = @(

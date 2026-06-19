@@ -14,8 +14,8 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUserQuota } from "@/src/hooks/useUserQuota";
@@ -29,14 +29,27 @@ type Step = "size" | "reason" | "success";
 
 export default function RequestStorageScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { data: userQuota, refetch: refetchQuota } = useUserQuota();
   const createRequestMutation = useCreateRequestMutation();
 
-  const [step, setStep] = useState<Step>("size");
+  // Params passed from RequestStorageModal (amount pre-selected, skip to reason step)
+  const { amount: paramAmount, startStep } = useLocalSearchParams<{
+    amount?: string;
+    startStep?: string;
+  }>();
+
+  const initialAmount = paramAmount ? parseInt(paramAmount) || 0 : 0;
+  const initialDelta: "+10 GB" | "+50 GB" | "+100 GB" | "+250 GB" | "Custom" =
+    paramAmount ? "Custom" : "+100 GB";
+
+  const [step, setStep] = useState<Step>(startStep === "reason" ? "reason" : "size");
   const [deltaSelection, setDeltaSelection] = useState<
     "+10 GB" | "+50 GB" | "+100 GB" | "+250 GB" | "Custom"
-  >("+100 GB");
-  const [customAmount, setCustomAmount] = useState("150");
+  >(initialDelta);
+  const [customAmount, setCustomAmount] = useState(
+    paramAmount ?? "150"
+  );
   const [reason, setReason] = useState("");
   const [storageType, setStorageType] = useState<StorageType>("general");
 
@@ -85,7 +98,7 @@ export default function RequestStorageScreen() {
 
   if (step === "success") {
     return (
-      <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+      <SafeAreaView style={styles.screen} edges={["top"]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.spacer40} />
@@ -121,45 +134,58 @@ export default function RequestStorageScreen() {
               <Text style={styles.detailsDateVal}>Today</Text>
             </View>
           </View>
+        </View>
 
-          <View style={styles.successActions}>
-            <Pressable
-              style={styles.gradientBtn}
-              onPress={() => {
-                refetchQuota();
-                router.replace("/(tabs)/files");
-              }}
+        {/* Sticky footer — Done & View Request Status */}
+        <View style={[styles.stickyFooter, { paddingBottom: insets.bottom + 16 }]}>
+          <Pressable
+            style={styles.gradientBtn}
+            onPress={() => {
+              refetchQuota();
+              router.replace("/(tabs)/files");
+            }}
+          >
+            <LinearGradient
+              colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientBtnStyle}
             >
-              <LinearGradient
-                colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={styles.gradientBtnStyle}
-              >
-                <Text style={styles.gradientBtnText}>Done</Text>
-              </LinearGradient>
-            </Pressable>
+              <Text style={styles.gradientBtnText}>Done</Text>
+            </LinearGradient>
+          </Pressable>
 
-            <Pressable
-              style={styles.cancelTextBtn}
-              onPress={() => {
-                refetchQuota();
-                router.replace("/manage-storage");
-              }}
-            >
-              <Text style={styles.cancelTextBtnLabel}>View Request Status</Text>
-            </Pressable>
-          </View>
+          <Pressable
+            style={styles.cancelTextBtn}
+            onPress={() => {
+              refetchQuota();
+              router.replace("/manage-storage");
+            }}
+          >
+            <Text style={styles.cancelTextBtnLabel}>View Request Status</Text>
+          </Pressable>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
       {/* Header */}
       <View style={styles.header}>
-        <BackButton onPress={() => (step === "reason" ? setStep("size") : router.back())} />
+        <BackButton onPress={() => {
+          if (step === "reason") {
+            // If we came from modal (startStep=reason), go back to dashboard
+            // Otherwise, go back to size step
+            if (startStep === "reason") {
+              router.back();
+            } else {
+              setStep("size");
+            }
+          } else {
+            router.back();
+          }
+        }} />
         <Text style={styles.headerTitle}>
           {step === "size" ? "Request Storage" : "Request info"}
         </Text>
@@ -281,7 +307,7 @@ export default function RequestStorageScreen() {
                 value={reason}
                 onChangeText={setReason}
                 placeholder="Example: I need more space for project files and backups."
-                placeholderTextColor={theme.colors.textSubtle}
+                placeholderTextColor="#a1a1aa"
               />
 
               {/* Suggestions pills */}
@@ -310,28 +336,35 @@ export default function RequestStorageScreen() {
                 ))}
               </View>
 
-              {/* Action Buttons */}
-              <View style={styles.actionsContainer}>
-                <Pressable style={styles.gradientBtn} onPress={handleSubmit} disabled={createRequestMutation.isPending}>
-                  <LinearGradient
-                    colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.gradientBtnStyle}
-                  >
-                    <Text style={styles.gradientBtnText}>
-                      {createRequestMutation.isPending ? "Submitting..." : "Review Request"}
-                    </Text>
-                  </LinearGradient>
-                </Pressable>
-
-                <Pressable style={styles.cancelTextBtn} onPress={() => router.back()}>
-                  <Text style={styles.cancelTextBtnLabel}>Cancel</Text>
-                </Pressable>
-              </View>
             </View>
           )}
         </ScrollView>
+
+        {/* Sticky footer — only shown on reason step */}
+        {step === "reason" && (
+          <View style={[styles.stickyFooter, { paddingBottom: insets.bottom + 16 }]}>
+            <Pressable
+              style={styles.gradientBtn}
+              onPress={handleSubmit}
+              disabled={createRequestMutation.isPending}
+            >
+              <LinearGradient
+                colors={[theme.colors.gradientStart, theme.colors.gradientEnd]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientBtnStyle}
+              >
+                <Text style={styles.gradientBtnText}>
+                  {createRequestMutation.isPending ? "Submitting..." : "Review Request"}
+                </Text>
+              </LinearGradient>
+            </Pressable>
+
+            <Pressable style={styles.cancelTextBtn} onPress={() => router.back()}>
+              <Text style={styles.cancelTextBtnLabel}>Cancel</Text>
+            </Pressable>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -513,7 +546,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginVertical: 8,
+    marginTop: 16,
+    marginBottom: 4,
   },
   suggPill: {
     paddingHorizontal: 12,
@@ -606,5 +640,18 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 12,
     marginTop: 16,
+  },
+  stickyFooter: {
+    paddingHorizontal: theme.spacing.screen,
+    paddingTop: 16,
+    backgroundColor: theme.colors.background,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: theme.colors.border,
+    gap: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 10,
   },
 });

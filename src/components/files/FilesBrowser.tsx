@@ -129,10 +129,10 @@ export function FilesBrowser({
   };
 
   const sortLabel = {
-    "name-asc": "Name A→Z",
-    "name-desc": "Name Z→A",
-    "date-desc": "Date",
-    "size-desc": "Size",
+    "name-asc": "A - Z ",
+    "name-desc": "Z - A ",
+    "date-desc": "Date ",
+    "size-desc": "Size ",
   }[sortOrder] ?? sortOrder;
 
   const renderListItem = ({ item }: { item: KarsaazFile }) => {

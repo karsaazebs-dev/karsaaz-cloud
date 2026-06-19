@@ -5,16 +5,17 @@
  * Figma node 1:640 — Dashboard / Home screen
  */
 
-import { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
-import type { KarsaazFile } from "@karsaaz/cloud-api";
 import { DashboardView, type QuickAccessId } from "@/src/components/home/DashboardView";
+import { RequestStorageModal } from "@/src/components/storage/RequestStorageModal";
+import { theme } from "@/src/constants/theme";
 import { useFiles } from "@/src/hooks/useFiles";
+import { useUserQuota } from "@/src/hooks/useUserQuota";
 import { useAuthStore } from "@/src/stores/authStore";
 import { useUiStore, type BrowseFilter } from "@/src/stores/uiStore";
-import { useUserQuota } from "@/src/hooks/useUserQuota";
-import { theme } from "@/src/constants/theme";
+import type { KarsaazFile } from "@karsaaz/cloud-api";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -22,6 +23,8 @@ export default function DashboardScreen() {
   const setBrowseFilter = useUiStore((s) => s.setBrowseFilter);
   const setShowAccountSwitcher = useUiStore((s) => s.setShowAccountSwitcher);
   const setShowNotEnoughStorage = useUiStore((s) => s.setShowNotEnoughStorage);
+
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const { data } = useFiles("/");
   const { data: userQuota } = useUserQuota();
@@ -63,15 +66,24 @@ export default function DashboardScreen() {
       setBrowseFilter("all");
     } else if (item === "videos") {
       setBrowseFilter("all");
-      useUiStore.getState().setSearchQuery("video");
     } else if (item === "docs") {
       setBrowseFilter("all");
-      useUiStore.getState().setSearchQuery("doc");
     } else if (item === "pdf") {
       setBrowseFilter("all");
-      useUiStore.getState().setSearchQuery(".pdf");
     }
     router.push("/(tabs)/files");
+  };
+
+  const handleLegendPress = (category: string) => {
+    // Map dashboard legend labels to manage-storage tab names
+    const tabMap: Record<string, string> = {
+      Images: "Photos",
+      Documents: "Documents",
+      Videos: "Videos",
+      Others: "Others",
+    };
+    const tab = tabMap[category] ?? "Photos";
+    router.push({ pathname: "/manage-storage" as any, params: { tab } });
   };
 
   return (
@@ -85,7 +97,12 @@ export default function DashboardScreen() {
         onQuickAccess={handleQuickAccess}
         onAvatarPress={() => setShowAccountSwitcher(true)}
         onManageStorage={() => router.push("/manage-storage" as any)}
-        onRequestStorage={() => router.push("/request-storage" as any)}
+        onRequestStorage={() => setShowRequestModal(true)}
+        onLegendPress={handleLegendPress}
+      />
+      <RequestStorageModal
+        visible={showRequestModal}
+        onClose={() => setShowRequestModal(false)}
       />
     </View>
   );

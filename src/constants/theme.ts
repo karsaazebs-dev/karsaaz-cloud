@@ -24,7 +24,7 @@ export const theme = {
     badgeText: "#2b7fff",
     infoBg: "rgba(164,179,255,0.5)",
     // Figma: accent colours
-    accent: "#4e3cf4",
+    accent: "#1D84F5",
     accentBright: "#2b7fff",
     accentText: "#4b66ff",
     link: "#1d84f5",
@@ -33,13 +33,13 @@ export const theme = {
     successBright: "#34d399",
     // Figma: gradients
     gradientStart: "#5d7cf6",
-    gradientEnd: "#4e3cf4",
+    gradientEnd: "#1D84F5",
     // Figma: tab bar & nav
     tabBar: "#1d1f2b",
     tabBarActive: "#ffffff",
     tabBarInactive: "#ffffff",
     drawerHeaderStart: "#5d7cf6",
-    drawerHeaderEnd: "#4e3cf4",
+    drawerHeaderEnd: "#1D84F5",
     // Figma: storage category colours
     storageImages: "#10b981",
     storageDocs: "#3b82f6",

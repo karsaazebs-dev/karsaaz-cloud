@@ -17,7 +17,7 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useUserQuota } from "@/src/hooks/useUserQuota";
 import { useFiles } from "@/src/hooks/useFiles";
@@ -34,10 +34,13 @@ const CATEGORIES: Category[] = ["Photos", "Videos", "Documents", "Others"];
 
 export default function ManageStorageScreen() {
   const router = useRouter();
+  const { tab } = useLocalSearchParams<{ tab?: string }>();
   const { data: userQuota, refetch: refetchQuota, isLoading: quotaLoading } = useUserQuota();
   const { data: files, deleteMutation, refetch: refetchFiles, isLoading: filesLoading } = useFiles("/");
   const hydrateRequests = useStorageRequestStore((s) => s.hydrate);
-  const [activeCategory, setActiveCategory] = useState<Category>("Photos");
+
+  const initialTab = CATEGORIES.includes(tab as Category) ? (tab as Category) : "Photos";
+  const [activeCategory, setActiveCategory] = useState<Category>(initialTab);
 
   useEffect(() => {
     hydrateRequests();

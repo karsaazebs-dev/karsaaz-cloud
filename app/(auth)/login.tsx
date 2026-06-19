@@ -3,40 +3,40 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  Pressable,
-  Image,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
-import { Ionicons } from "@expo/vector-icons";
-import {
-  fetchStatus,
-  initLoginFlow,
-  pollLoginFlow,
-  getCurrentUser,
-  configureClient,
-  buildUserAgent,
-  encodeBasicAuth,
-  loginWithPassword,
-} from "@karsaaz/cloud-api";
-import { Platform } from "react-native";
-import { brand } from "@/src/constants/brand";
-import { figmaAssets } from "@/src/constants/assets";
-import { theme } from "@/src/constants/theme";
-import { useAuthStore, getDefaultServerUrl } from "@/src/stores/authStore";
-import { PrimaryButton } from "@/src/components/ui/PrimaryButton";
 import { BackButton } from "@/src/components/ui/BackButton";
 import { LanguageSelector } from "@/src/components/ui/LanguageSelector";
+import { PrimaryButton } from "@/src/components/ui/PrimaryButton";
 import { TextField } from "@/src/components/ui/TextField";
+import { figmaAssets } from "@/src/constants/assets";
+import { brand } from "@/src/constants/brand";
+import { theme } from "@/src/constants/theme";
+import { getDefaultServerUrl, useAuthStore } from "@/src/stores/authStore";
+import { Ionicons } from "@expo/vector-icons";
+import {
+  buildUserAgent,
+  configureClient,
+  encodeBasicAuth,
+  fetchStatus,
+  getCurrentUser,
+  initLoginFlow,
+  loginWithPassword,
+  pollLoginFlow,
+} from "@karsaaz/cloud-api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { WebView } from "react-native-webview";
 
 type Step = "connect" | "credentials" | "webview";
 
@@ -70,6 +70,7 @@ function getRecentServers(): string[] {
 }
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const setSession = useAuthStore((s) => s.setSession);
   const [serverUrl, setServerUrl] = useState(getDefaultServerUrl());
   const [step, setStep] = useState<Step>("connect");
@@ -373,7 +374,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.topRow}>
           <View style={styles.spacer40} />
@@ -456,12 +457,14 @@ export default function LoginScreen() {
             <Image source={figmaAssets.login.chevronRight} style={styles.inputIcon} />
           </Pressable>
         ))}
+      </ScrollView>
 
-        <View style={styles.helpRow}>
+      <View style={[styles.helpStickyFooter, { paddingBottom: insets.bottom + 16 }]}>
+        <View style={[styles.helpRow, { marginTop: 0 }]}>
           <Text style={styles.helpText}>Need help? </Text>
           <Text style={styles.helpLink}>Setup Guide</Text>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -651,4 +654,10 @@ const styles = StyleSheet.create({
   webTitle: { fontWeight: "600", flex: 1, color: theme.colors.text },
   cancelBtn: { padding: 12, alignItems: "center" },
   cancelText: { color: theme.colors.accent, fontWeight: "600" },
+  helpStickyFooter: {
+    paddingTop: 12,
+    backgroundColor: theme.colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

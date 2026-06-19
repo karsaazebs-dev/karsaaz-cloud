@@ -26,18 +26,30 @@ async function walk(dir) {
 
 async function convertFile(filePath) {
   const buf = await readFile(filePath);
-  const head = buf.subarray(0, 64).toString("utf8").trimStart();
-  if (!head.startsWith("<svg") && !head.startsWith("<?xml")) {
+  const isPng = buf.length >= 8 &&
+    buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4E && buf[3] === 0x47 &&
+    buf[4] === 0x0D && buf[5] === 0x0A && buf[6] === 0x1A && buf[7] === 0x0A;
+
+  if (isPng) {
     return { filePath, skipped: true };
   }
 
-  const svg = normalizeSvg(buf.toString("utf8"));
-  const png = await sharp(Buffer.from(svg), { density: 192 })
-    .png()
-    .toBuffer();
-  await writeFile(filePath, png);
+  const head = buf.subarray(0, 64).toString("utf8").trimStart();
+  let convertedBuf;
+  if (head.startsWith("<svg") || head.startsWith("<?xml")) {
+    const svg = normalizeSvg(buf.toString("utf8"));
+    convertedBuf = await sharp(Buffer.from(svg), { density: 192 })
+      .png()
+      .toBuffer();
+  } else {
+    convertedBuf = await sharp(buf)
+      .png()
+      .toBuffer();
+  }
+
+  await writeFile(filePath, convertedBuf);
   const before = buf.length;
-  return { filePath, skipped: false, before, after: png.length };
+  return { filePath, skipped: false, before, after: convertedBuf.length };
 }
 
 const files = await walk(figmaDir);

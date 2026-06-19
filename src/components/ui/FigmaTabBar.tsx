@@ -106,25 +106,27 @@ export function FigmaTabBar({ state, navigation }: FigmaTabBarProps) {
             <Pressable
               key={slot.id}
               onPress={() => handlePress(slot)}
-              style={[styles.item, focused ? styles.itemActive : styles.itemInactive]}
+              style={styles.item}
               accessibilityRole="button"
               accessibilityLabel={slot.label}
             >
-              <Image
-                source={slot.image}
-                style={[styles.tabImage, focused ? styles.tabImageActive : styles.tabImageInactive]}
-                onLoad={() => {
-                  // #region agent log
-                  phase1DebugLog(
-                    "FigmaTabBar.tsx:iconLoad",
-                    "tab icon loaded",
-                    { slotId: slot.id, focused },
-                    "F"
-                  );
-                  // #endregion
-                }}
-              />
-              {focused && <Text style={styles.labelText}>{slot.label}</Text>}
+              <View style={[styles.pill, focused && styles.pillActive]}>
+                <Image
+                  source={slot.image}
+                  style={[styles.tabImage, focused ? styles.tabImageActive : styles.tabImageInactive]}
+                  onLoad={() => {
+                    // #region agent log
+                    phase1DebugLog(
+                      "FigmaTabBar.tsx:iconLoad",
+                      "tab icon loaded",
+                      { slotId: slot.id, focused },
+                      "F"
+                    );
+                    // #endregion
+                  }}
+                />
+                {focused && <Text style={styles.labelText}>{slot.label}</Text>}
+              </View>
             </Pressable>
           );
         })}
@@ -143,23 +145,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     alignItems: "center",
   },
+  // Touch target — always equal width, centers its pill content
   item: {
+    flex: 1,
     height: 44,
-    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
+  },
+  // Visual pill — natural width, wraps icon + label
+  pill: {
+    height: 44,
+    borderRadius: 22,
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
+    paddingHorizontal: 12,
+    overflow: "hidden",
   },
-  itemInactive: {
-    flex: 1,
-    paddingHorizontal: 4,
-  },
-  itemActive: {
-    flexGrow: 0,
-    flexShrink: 0,
+  pillActive: {
     backgroundColor: "#ffffff",
-    paddingHorizontal: 14,
+    borderRadius: 22,
   },
   labelText: {
     fontSize: 10,

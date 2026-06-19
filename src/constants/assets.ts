@@ -13,7 +13,8 @@ export const figmaAssets = {
     heroOrbit: require("../../assets/figma/onboarding/hero-orbit.png"),
     heroLogo: require("../../assets/figma/onboarding/hero-logo.png"),
     hero1: require("../../assets/figma/onboarding/onboarding-hero-1.png"),
-    hero2: require("../../assets/figma/onboarding/onboarding-hero-2.png"),
+    hero2: require("../../assets/figma/onboarding/photo-access.png"),
+    hero3: require("../../assets/figma/onboarding/onboarding-hero-2.png"),
     chipPdf: require("../../assets/figma/onboarding/chip-pdf.png"),
     chipExcel: require("../../assets/figma/onboarding/chip-excel.png"),
     chipDoc: require("../../assets/figma/onboarding/chip-doc.png"),
@@ -40,6 +41,7 @@ export const figmaAssets = {
   home: {
     bell: require("../../assets/figma/home/v2/bell.png"),
     avatar: require("../../assets/figma/home/v2/avatar.png"),
+    manageIcon: require("../../assets/figma/home/v2/manage-icon.png"),
     folderIcon: require("../../assets/figma/home/v2/folder-icon.png"),
     folderMenu: require("../../assets/figma/home/v2/folder-menu.png"),
     fileMenu: require("../../assets/figma/home/v2/file-menu.png"),

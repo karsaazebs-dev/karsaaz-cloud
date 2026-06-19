@@ -17,7 +17,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSharing } from "@/src/hooks/useSharing";
@@ -34,24 +34,18 @@ const TABS: { id: Tab; label: string }[] = [
 
 // ─── Internal Share Tab ───────────────────────────────────────────────────────
 
-function InternalShareTab({ path, name }: { path?: string; name?: string }) {
-  const [email, setEmail] = useState("");
+function InternalShareTab({
+  path,
+  name,
+  email,
+  setEmail,
+}: {
+  path?: string;
+  name?: string;
+  email: string;
+  setEmail: (v: string) => void;
+}) {
   const [permission, setPermission] = useState<"View" | "Edit">("View");
-  const { createMutation } = useSharing(path);
-
-  const handleShare = () => {
-    if (!path || !email.trim()) return;
-    createMutation.mutate(
-      { path, shareType: 0, permissions: permission === "Edit" ? 31 : 1 },
-      {
-        onSuccess: () => {
-          Alert.alert("Shared", `Shared with ${email}`);
-          setEmail("");
-        },
-        onError: (e) => Alert.alert("Error", String(e)),
-      }
-    );
-  };
 
   return (
     <ScrollView contentContainerStyle={styles.tabContent} keyboardShouldPersistTaps="handled">
@@ -87,26 +81,21 @@ function InternalShareTab({ path, name }: { path?: string; name?: string }) {
         </Pressable>
       </View>
       <Text style={styles.linkHint}>Only works for people with access to this file</Text>
-
-      <Pressable
-        style={[styles.shareBtn, (!email.trim() || createMutation.isPending) && styles.disabled]}
-        onPress={handleShare}
-        disabled={!email.trim() || createMutation.isPending}
-      >
-        {createMutation.isPending ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.shareBtnText}>Share</Text>
-        )}
-      </Pressable>
     </ScrollView>
   );
 }
 
 // ─── External Share Tab ───────────────────────────────────────────────────────
 
-function ExternalShareTab({ path }: { path?: string }) {
-  const [email, setEmail] = useState("");
+function ExternalShareTab({
+  path,
+  email,
+  setEmail,
+}: {
+  path?: string;
+  email: string;
+  setEmail: (v: string) => void;
+}) {
   const { sharesQuery, createMutation, deleteMutation } = useSharing(path);
   const existingLink = (sharesQuery.data as any[])?.find((s: any) => s.share_type === 3);
   const linkUrl = existingLink?.url ?? null;
@@ -172,10 +161,6 @@ function ExternalShareTab({ path }: { path?: string }) {
           <Text style={styles.removeLinkText}>Remove public link</Text>
         </Pressable>
       )}
-
-      <Pressable style={[styles.shareBtn, !email.trim() && styles.disabled]} disabled={!email.trim()}>
-        <Text style={styles.shareBtnText}>Share</Text>
-      </Pressable>
     </ScrollView>
   );
 }
@@ -245,12 +230,37 @@ function ActivityTab({ name }: { name?: string }) {
 
 export default function ShareScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { path, name } = useLocalSearchParams<{ path?: string; name?: string }>();
   const [activeTab, setActiveTab] = useState<Tab>(path ? "internal" : "activity");
   const fileName = name ?? path?.split("/").pop() ?? "File";
 
+  // Shared email state lifted up so the footer Share button can access it
+  const [email, setEmail] = useState("");
+
+  const { createMutation: internalCreateMutation } = useSharing(
+    activeTab === "internal" ? path : undefined
+  );
+
+  const handleShare = () => {
+    if (!path || !email.trim()) return;
+    internalCreateMutation.mutate(
+      { path, shareType: 0, permissions: 1 },
+      {
+        onSuccess: () => {
+          Alert.alert("Shared", `Shared with ${email}`);
+          setEmail("");
+        },
+        onError: (e) => Alert.alert("Error", String(e)),
+      }
+    );
+  };
+
+  const showShareFooter = activeTab === "internal" || activeTab === "external";
+  const shareDisabled = !email.trim() || internalCreateMutation.isPending;
+
   return (
-    <SafeAreaView style={styles.screen} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
       {/* Header area */}
       <View style={styles.headerArea}>
         <View style={styles.headerTop}>
@@ -292,15 +302,40 @@ export default function ShareScreen() {
         ))}
       </View>
 
-      {activeTab === "internal"  && <InternalShareTab path={path} name={name} />}
-      {activeTab === "external"  && <ExternalShareTab path={path} />}
-      {activeTab === "activity"  && <ActivityTab name={name} />}
+      {/* Tab content */}
+      <View style={styles.flex}>
+        {activeTab === "internal" && (
+          <InternalShareTab path={path} name={name} email={email} setEmail={setEmail} />
+        )}
+        {activeTab === "external" && (
+          <ExternalShareTab path={path} email={email} setEmail={setEmail} />
+        )}
+        {activeTab === "activity" && <ActivityTab name={name} />}
+      </View>
+
+      {/* Sticky Share footer — only on internal / external tabs */}
+      {showShareFooter && (
+        <View style={[styles.shareFooter, { paddingBottom: insets.bottom + 16 }]}>
+          <Pressable
+            style={[styles.shareBtn, shareDisabled && styles.disabled]}
+            onPress={handleShare}
+            disabled={shareDisabled}
+          >
+            {internalCreateMutation.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.shareBtnText}>Share</Text>
+            )}
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#ffffff" },
+  flex: { flex: 1 },
 
   headerArea: {
     paddingHorizontal: 20,
@@ -420,13 +455,25 @@ const styles = StyleSheet.create({
   removeLinkBtn: { alignItems: "center", paddingVertical: 8 },
   removeLinkText: { color: "#dc2626", fontSize: 13, fontWeight: "500" },
 
+  // Sticky footer
+  shareFooter: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    backgroundColor: "#ffffff",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#dfe1e4",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 10,
+  },
   shareBtn: {
     backgroundColor: theme.colors.accent,
     borderRadius: 12,
     height: 50,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 8,
   },
   shareBtnText: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
   disabled: { opacity: 0.4 },

@@ -32,7 +32,7 @@ export function PrimaryButton({
       style={({ pressed }) => [styles.wrap, pressed && styles.pressed]}
     >
       <LinearGradient
-        colors={["#4e3cf4", "#2b7fff"]}
+        colors={["#1D84F5", "#2b7fff"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.gradient}
@@ -69,5 +69,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  arrowIcon: { width: 18, height: 18, resizeMode: "contain", tintColor: "#fff" },
+  arrowIcon: {
+    width: 18,
+    height: 18,
+    resizeMode: "contain",
+    tintColor: "#fff",
+    transform: [{ rotate: "90deg" }],
+  },
 });
