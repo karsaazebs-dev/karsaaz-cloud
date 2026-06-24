@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!--
+  - SPDX-FileCopyrightText: 2026 Karsaaz
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>karsaaz_erp_bridge</id>
+    <name>Karsaaz ERP Chat Bridge</name>
+    <summary>Webhook integration — embed Karsaaz Cloud chat in any external ERP</summary>
+    <description><![CDATA[
+Allows external ERP systems to embed Nextcloud Talk chat into their own UI via a
+webhook registration + JWT auth delegation model. The ERP owns authentication and
+(optionally) the message database; Karsaaz Cloud owns the chat backend and view.
+    ]]></description>
+    <version>1.0.0</version>
+    <licence>agpl</licence>
+    <author>Karsaaz</author>
+    <namespace>KarsaazErpBridge</namespace>
+    <category>integration</category>
+    <bugs>https://github.com/karsaaz/cloud/issues</bugs>
+    <dependencies>
+        <nextcloud min-version="27" max-version="31"/>
+    </dependencies>
+    <settings>
+        <admin>OCA\KarsaazErpBridge\Settings\AdminSettings</admin>
+        <admin-section>OCA\KarsaazErpBridge\Settings\AdminSection</admin-section>
+    </settings>
+</info>

@@ -26,16 +26,15 @@ $CONFIG = [
         7 => '192.168.18.78',
     ],
     
-    'mail_from_address'             => 'tameem.karsaaz',
-    'mail_domain'                   => 'gmail.com',
+    // Self-hosted SMTP relay — mailpit catches all outgoing mail and shows it
+    // at http://localhost:8025. No external relay; works fully airgapped.
+    'mail_from_address'             => 'karsaaz',
+    'mail_domain'                   => 'karsaaz.local',
     'mail_smtpmode'                 => 'smtp',
     'mail_sendmailmode'             => 'smtp',
-    'mail_smtphost'                 => 'smtp.gmail.com',
-    'mail_smtpport'                 => 587,
-    'mail_smtpsecure'               => 'tls',
-    'mail_smtpauth'                 => true,
-    'mail_smtpauthtype'             => 'LOGIN',
-    'mail_smtpname'                 => 'tameem.karsaaz@gmail.com',
-    'mail_smtppassword'             => getenv('MAIL_SMTP_PASSWORD') ?: '',
-    'mail_smtptimeout'              => 30,
+    'mail_smtphost'                 => 'mailpit',
+    'mail_smtpport'                 => 1025,
+    'mail_smtpsecure'               => '',
+    'mail_smtpauth'                 => false,
+    'mail_smtptimeout'              => 10,
 ];

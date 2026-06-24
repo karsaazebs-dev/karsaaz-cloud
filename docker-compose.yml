@@ -111,8 +111,6 @@ services:
       NEXTCLOUD_ADMIN_USER: ${NC_ADMIN_USER}
       NEXTCLOUD_ADMIN_PASSWORD: ${NC_ADMIN_PASSWORD}
       NEXTCLOUD_TRUSTED_DOMAINS: ${NC_TRUSTED_DOMAINS}
-      # SMTP password injected from .env (never hard-code in airgap.config.php)
-      MAIL_SMTP_PASSWORD: ${MAIL_SMTP_PASSWORD:-}
       COLLABORA_INTERNAL_URL: http://collabora:9980
       COLLABORA_PUBLIC_URL: ${COLLABORA_PUBLIC_URL:-http://localhost:9980}
     volumes:
@@ -123,6 +121,7 @@ services:
       - ./apache-hardening.conf:/etc/apache2/conf-enabled/zz-hardening.conf:ro
       - ./themes/karsaaz:/var/www/html/themes/karsaaz:ro
       - ./apps/karsaaz_quota:/var/www/html/apps/karsaaz_quota:ro
+      - ./apps/karsaaz_erp_bridge:/var/www/html/apps/karsaaz_erp_bridge:ro
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -138,6 +137,223 @@ services:
     mem_limit: 2g
     pids_limit: 300
 
+  # ── MongoDB (required by Rocket.Chat) ─────────────────────────────────────
+  # Internal only — not exposed on host. Data persisted in rocketchat_mongo volume.
+  mongo:
+    image: localhost:5000/mongo:6
+    restart: unless-stopped
+    command: ["mongod", "--noauth", "--bind_ip_all"]
+    volumes:
+      - rocketchat_mongo:/data/db
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETUID
+      - SETGID
+    mem_limit: 1g
+    pids_limit: 200
+
+  # ── Rocket.Chat ────────────────────────────────────────────────────────────
+  # Build from your own source and push to localhost:5000/rocketchat:latest,
+  # or replace the image with the official rocketchat/rocketchat:latest for testing.
+  # All telemetry/marketplace/push disabled via OVERWRITE_SETTING_ env vars.
+  rocketchat:
+    image: localhost:5000/rocketchat:latest
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "${RC_PORT:-3000}:3000"
+    environment:
+      ROOT_URL: "${RC_ROOT_URL:-http://localhost:3000}"
+      MONGO_URL: "mongodb://mongo:27017/rocketchat"
+      MONGO_OPLOG_URL: "mongodb://mongo:27017/local"
+      # Disable all external connections
+      OVERWRITE_SETTING_Statistics_Enabled: "false"
+      OVERWRITE_SETTING_Nps_Next_Run_Date: ""
+      OVERWRITE_SETTING_Push_enable: "false"
+      OVERWRITE_SETTING_Livechat_enabled: "false"
+      OVERWRITE_SETTING_Marketplace_enabled: "false"
+      OVERWRITE_SETTING_Allow_Marketing_Emails: "false"
+      OVERWRITE_SETTING_Register_Server: "false"
+      OVERWRITE_SETTING_Troubleshoot_Disable_Push_Notifications: "true"
+      OVERWRITE_SETTING_Accounts_OAuth_Github: "false"
+      OVERWRITE_SETTING_Accounts_OAuth_Google: "false"
+      OVERWRITE_SETTING_Accounts_OAuth_Facebook: "false"
+      OVERWRITE_SETTING_Accounts_OAuth_LinkedIn: "false"
+      OVERWRITE_SETTING_Accounts_OAuth_Meteor: "false"
+      OVERWRITE_SETTING_Accounts_OAuth_Twitter: "false"
+      # Admin bootstrap credentials (set in .env)
+      RC_ADMIN_USER: "${RC_ADMIN_USER:-karsaaz-admin}"
+      RC_ADMIN_PASS: "${RC_ADMIN_PASS:-}"
+      RC_ADMIN_EMAIL: "${RC_ADMIN_EMAIL:-admin@karsaaz.local}"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+    mem_limit: 2g
+    pids_limit: 500
+
+  # ── Coturn — self-hosted STUN/TURN server ─────────────────────────────────
+  # Used by Nextcloud Talk and Jitsi for WebRTC ICE candidate discovery.
+  # COTURN_SECRET must be set in .env and match the value in NC Talk admin settings.
+  coturn:
+    image: localhost:5000/coturn:latest
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      DETECT_EXTERNAL_IP: "no"
+      LISTENING_PORT: "3478"
+      TLS_LISTENING_PORT: "5349"
+      REALM: "${COTURN_REALM:-karsaaz.local}"
+      STATIC_AUTH_SECRET: "${COTURN_SECRET:-}"
+      NO_TLS: "1"
+      NO_DTLS: "1"
+      CLI_PASSWORD: ""
+      FINGERPRINT: "1"
+      VERBOSE: "0"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    mem_limit: 256m
+    pids_limit: 100
+
+  # ── Jitsi Meet — self-hosted video conferencing ────────────────────────────
+  # Build from your own code and push to localhost:5000/jitsi-* images,
+  # or replace with official jitsi/* images for initial setup.
+  # All analytics/third-party services disabled.
+
+  jitsi-prosody:
+    image: localhost:5000/jitsi-prosody:latest
+    restart: unless-stopped
+    environment:
+      XMPP_DOMAIN: "${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_AUTH_DOMAIN: "auth.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_MUC_DOMAIN: "muc.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_INTERNAL_MUC_DOMAIN: "internal-muc.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      JICOFO_AUTH_USER: jicofo
+      JICOFO_AUTH_PASSWORD: "${JITSI_JICOFO_PASSWORD:-}"
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: "${JITSI_JVB_PASSWORD:-}"
+      JIBRI_AUTH_USER: jibri
+      JIBRI_AUTH_PASSWORD: "${JITSI_JIBRI_PASSWORD:-}"
+      TZ: "Asia/Karachi"
+    volumes:
+      - jitsi_prosody:/config
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    mem_limit: 512m
+    pids_limit: 100
+
+  jitsi-jicofo:
+    image: localhost:5000/jitsi-jicofo:latest
+    restart: unless-stopped
+    depends_on:
+      - jitsi-prosody
+    environment:
+      XMPP_SERVER: jitsi-prosody
+      XMPP_DOMAIN: "${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_AUTH_DOMAIN: "auth.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_INTERNAL_MUC_DOMAIN: "internal-muc.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      JICOFO_AUTH_USER: jicofo
+      JICOFO_AUTH_PASSWORD: "${JITSI_JICOFO_PASSWORD:-}"
+      TZ: "Asia/Karachi"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    mem_limit: 512m
+    pids_limit: 100
+
+  jitsi-jvb:
+    image: localhost:5000/jitsi-jvb:latest
+    restart: unless-stopped
+    depends_on:
+      - jitsi-prosody
+    ports:
+      - "${JITSI_JVB_PORT:-10000}:10000/udp"
+    environment:
+      XMPP_SERVER: jitsi-prosody
+      XMPP_AUTH_DOMAIN: "auth.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_INTERNAL_MUC_DOMAIN: "internal-muc.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: "${JITSI_JVB_PASSWORD:-}"
+      # Point JVB at Coturn for STUN (LAN IPs only — no external STUN servers)
+      JVB_STUN_SERVERS: "coturn:3478"
+      JVB_TCP_HARVESTER_DISABLED: "true"
+      TZ: "Asia/Karachi"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+    mem_limit: 1g
+    pids_limit: 200
+
+  jitsi-web:
+    image: localhost:5000/jitsi-web:latest
+    restart: unless-stopped
+    depends_on:
+      - jitsi-prosody
+      - jitsi-jicofo
+      - jitsi-jvb
+    ports:
+      - "${JITSI_PORT:-8443}:80"
+    environment:
+      PUBLIC_URL: "${JITSI_PUBLIC_URL:-http://localhost:8443}"
+      XMPP_DOMAIN: "${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_AUTH_DOMAIN: "auth.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_MUC_DOMAIN: "muc.${JITSI_DOMAIN:-jitsi.karsaaz.local}"
+      XMPP_BOSH_URL_BASE: "http://jitsi-prosody:5280"
+      JICOFO_AUTH_USER: jicofo
+      # Disable all analytics and third-party integrations
+      ENABLE_STATS_ID: "0"
+      CALLSTATS_ID: ""
+      AMPLITUDE_ID: ""
+      RTCSTATS_ENABLED: "false"
+      DISABLE_DEEP_LINKING: "1"
+      ENABLE_WELCOME_PAGE: "1"
+      TZ: "Asia/Karachi"
+    volumes:
+      - jitsi_web:/config
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - NET_BIND_SERVICE
+    mem_limit: 512m
+    pids_limit: 100
+
 volumes:
   db_data:
     name: karsaaz-cloud_db_data
@@ -145,3 +361,9 @@ volumes:
   app_data:
     name: karsaaz-cloud_app_data
     external: true
+  rocketchat_mongo:
+    name: karsaaz-cloud_rocketchat_mongo
+  jitsi_prosody:
+    name: karsaaz-cloud_jitsi_prosody
+  jitsi_web:
+    name: karsaaz-cloud_jitsi_web
