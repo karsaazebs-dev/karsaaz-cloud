@@ -469,67 +469,6 @@ export async function removeReminder(
   });
 }
 
-// ── Weather status (weather_status app) ───────────────────────────────────────
-
-const WEATHER_BASE = "/ocs/v2.php/apps/weather_status/api/v1";
-
-export async function getWeatherLocation(
-  opts: OCSOptions
-): Promise<OCSWeatherLocation> {
-  const data = await apiFetch<OCSResponse<OCSWeatherLocation>>(
-    `${WEATHER_BASE}/location?format=json`,
-    { basicAuth: opts.basicAuth }
-  );
-  return data.ocs.data;
-}
-
-export async function getWeatherForecast(
-  opts: OCSOptions
-): Promise<OCSWeatherForecast> {
-  try {
-    const data = await apiFetch<OCSResponse<OCSWeatherForecast>>(
-      `${WEATHER_BASE}/forecast?format=json`,
-      { basicAuth: opts.basicAuth }
-    );
-    return data.ocs.data;
-  } catch (e) {
-    // The server returns 404 when no forecast is available (e.g. air-gapped:
-    // it cannot reach the upstream met.no service). That is a normal state,
-    // not an error — surface it as an empty/error forecast so the widget can
-    // show its "unavailable" UI instead of throwing.
-    if (e instanceof ApiError && (e.isNotFound || e.status === 424)) {
-      return { error: "forecast_unavailable" };
-    }
-    throw e;
-  }
-}
-
-export async function setWeatherLocation(
-  opts: OCSOptions,
-  payload: { address?: string; lat?: number; lon?: number }
-): Promise<OCSWeatherLocation> {
-  const data = await apiFetch<OCSResponse<OCSWeatherLocation>>(
-    `${WEATHER_BASE}/location?format=json`,
-    {
-      method: "PUT",
-      basicAuth: opts.basicAuth,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    }
-  );
-  return data.ocs.data;
-}
-
-export async function useWeatherPersonalAddress(
-  opts: OCSOptions
-): Promise<OCSWeatherLocation> {
-  const data = await apiFetch<OCSResponse<OCSWeatherLocation>>(
-    `${WEATHER_BASE}/use-personal?format=json`,
-    { method: "PUT", basicAuth: opts.basicAuth }
-  );
-  return data.ocs.data;
-}
-
 // ── App config (provisioning_api — admin) ─────────────────────────────────────
 
 const APPCONFIG_BASE = "/ocs/v2.php/apps/provisioning_api/api/v1/config/apps";

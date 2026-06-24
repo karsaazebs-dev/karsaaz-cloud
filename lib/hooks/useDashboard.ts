@@ -6,15 +6,8 @@ import {
   getCurrentUser,
   listActivity,
   listShares,
-  getWeatherLocation,
-  getWeatherForecast,
-  setWeatherLocation,
-  useWeatherPersonalAddress,
 } from "@/lib/api/ocs";
 import { listFiles, listFilesDeep } from "@/lib/api/webdav";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
 type SessionData = { basicAuth?: string; username?: string } & Record<string, unknown>;
 
 function useAuth() {
@@ -98,57 +91,6 @@ export function useAllFilesDeep() {
     },
     enabled: !!basicAuth && !!username,
     staleTime: 5 * 60_000,
-  });
-}
-
-// ── Weather ─────────────────────────────────────────────────────────────────
-
-export function useWeatherLocation() {
-  const { basicAuth } = useAuth();
-  return useQuery({
-    queryKey: ["weather-location"],
-    queryFn: () => getWeatherLocation({ basicAuth: basicAuth! }),
-    enabled: !!basicAuth,
-    staleTime: 5 * 60_000,
-  });
-}
-
-export function useWeatherForecast() {
-  const { basicAuth } = useAuth();
-  return useQuery({
-    queryKey: ["weather-forecast"],
-    queryFn: () => getWeatherForecast({ basicAuth: basicAuth! }),
-    enabled: !!basicAuth,
-    staleTime: 30 * 60_000,
-    retry: false,
-  });
-}
-
-export function useSetWeatherLocation() {
-  const { basicAuth } = useAuth();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: { address?: string; lat?: number; lon?: number }) =>
-      setWeatherLocation({ basicAuth: basicAuth! }, payload),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["weather-location"] });
-      qc.invalidateQueries({ queryKey: ["weather-forecast"] });
-      toast.success("Location updated");
-    },
-    onError: () => toast.error("Could not set location"),
-  });
-}
-
-export function useWeatherUsePersonalAddress() {
-  const { basicAuth } = useAuth();
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => useWeatherPersonalAddress({ basicAuth: basicAuth! }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["weather-location"] });
-      qc.invalidateQueries({ queryKey: ["weather-forecast"] });
-    },
-    onError: () => toast.error("No personal address configured"),
   });
 }
 

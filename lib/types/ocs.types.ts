@@ -242,35 +242,6 @@ export interface CreateWorkflowPayload {
   events: string[];
 }
 
-// ── Weather status (weather_status app) ──────────────────────────────────────
-
-export interface OCSWeatherLocation {
-  lat: string | null;
-  lon: string | null;
-  address: string | null;
-  mode: number;
-}
-
-export interface OCSWeatherForecastPoint {
-  time: string;
-  data: {
-    instant: {
-      details: {
-        air_temperature?: number;
-        wind_speed?: number;
-        relative_humidity?: number;
-      };
-    };
-    next_1_hours?: { summary: { symbol_code: string } };
-    next_6_hours?: {
-      summary: { symbol_code: string };
-      details?: { air_temperature_max?: number; air_temperature_min?: number };
-    };
-  };
-}
-
-export type OCSWeatherForecast = OCSWeatherForecastPoint[] | { error: string };
-
 export interface OCSSharee {
   label: string;
   shareWithDescription?: string;
