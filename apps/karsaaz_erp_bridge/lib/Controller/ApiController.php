@@ -49,7 +49,9 @@ class ApiController extends OCSController {
         if ($name === '') {
             $errors['name'] = 'required';
         }
-        if (!filter_var($webhookUrl, FILTER_VALIDATE_URL) || !str_starts_with($webhookUrl, 'https://')) {
+        if (!filter_var($webhookUrl, FILTER_VALIDATE_URL)) {
+            $errors['webhook_url'] = 'webhook_url must be a valid URL';
+        } elseif (!str_starts_with($webhookUrl, 'https://') && !self::isLocalUrl($webhookUrl)) {
             $errors['webhook_url'] = 'webhook_url must use HTTPS';
         }
         if (strlen($erpJwtSecret) < 32) {
@@ -70,6 +72,13 @@ class ApiController extends OCSController {
         $credentials = $this->tenants->register($name, $webhookUrl, $erpJwtSecret, $allowedOrigins);
 
         return new DataResponse($credentials);
+    }
+
+    private static function isLocalUrl(string $url): bool {
+        $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
+        return in_array($host, ['localhost', '127.0.0.1', 'host.docker.internal'], true)
+            || str_starts_with($host, '192.168.')
+            || str_starts_with($host, '10.');
     }
 
     /**

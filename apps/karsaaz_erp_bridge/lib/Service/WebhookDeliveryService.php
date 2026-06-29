@@ -151,6 +151,13 @@ class WebhookDeliveryService {
 
     // ── Private helpers ────────────────────────────────────────────────────────
 
+    private static function isLocalUrl(string $url): bool {
+        $host = strtolower(parse_url($url, PHP_URL_HOST) ?? '');
+        return in_array($host, ['localhost', '127.0.0.1', 'host.docker.internal'], true)
+            || str_starts_with($host, '192.168.')
+            || str_starts_with($host, '10.');
+    }
+
     private function sign(string $payload, string $secret): string {
         return 'sha256=' . hash_hmac('sha256', $payload, $secret);
     }
@@ -170,7 +177,7 @@ class WebhookDeliveryService {
                     'User-Agent'           => 'Karsaaz-ERP-Bridge/1.0',
                 ],
                 'timeout' => self::TIMEOUT_SEC,
-                'verify'  => true,
+                'verify'  => !self::isLocalUrl($url),
             ]);
             $status = $response->getStatusCode();
             return ['success' => $status >= 200 && $status < 300, 'status_code' => $status];
