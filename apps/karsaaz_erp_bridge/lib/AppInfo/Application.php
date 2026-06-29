@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace OCA\KarsaazErpBridge\AppInfo;
 
-use OCA\KarsaazErpBridge\BackgroundJob\ExternalDbFlushJob;
-use OCA\KarsaazErpBridge\BackgroundJob\WebhookRetryJob;
 use OCA\KarsaazErpBridge\Listener\TalkMessageListener;
 use OCA\KarsaazErpBridge\Middleware\ApiKeyMiddleware;
 use OCP\AppFramework\App;
@@ -27,10 +25,6 @@ class Application extends App implements IBootstrap {
 
     public function register(IRegistrationContext $context): void {
         $context->registerMiddleware(ApiKeyMiddleware::class);
-
-        // Background jobs
-        $context->registerBackgroundJob(WebhookRetryJob::class);
-        $context->registerBackgroundJob(ExternalDbFlushJob::class);
 
         // Talk message listener — registered only when Talk is available
         $context->registerEventListener(
