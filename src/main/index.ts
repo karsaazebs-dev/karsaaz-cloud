@@ -381,9 +381,16 @@ app.whenReady().then(() => {
 
   // Add CORS headers to all responses (belt-and-suspenders for webSecurity:false)
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = { ...details.responseHeaders }
+    for (const key in responseHeaders) {
+      if (key.toLowerCase() === 'x-frame-options' || key.toLowerCase() === 'content-security-policy') {
+        delete responseHeaders[key]
+      }
+    }
+
     callback({
       responseHeaders: {
-        ...details.responseHeaders,
+        ...responseHeaders,
         'access-control-allow-origin': ['*'],
         'access-control-allow-headers': ['*'],
         'access-control-allow-methods': ['GET, POST, PUT, DELETE, OPTIONS, PROPFIND, MKCOL, MOVE, COPY, REPORT, PROPPATCH']
@@ -408,6 +415,25 @@ app.whenReady().then(() => {
       callback({ requestHeaders: details.requestHeaders })
     }
   })
+
+  // Redirect internal docker hostnames to the Nextcloud server's IP
+  session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
+    try {
+      const url = new URL(details.url)
+      if (url.hostname === 'collabora') {
+        const serverUrlStr = store.get('serverUrl') as string | undefined
+        if (serverUrlStr) {
+          const serverUrl = new URL(serverUrlStr)
+          url.hostname = serverUrl.hostname
+          return callback({ redirectURL: url.toString() })
+        }
+      }
+    } catch {
+      // ignore parsing errors
+    }
+    callback({})
+  })
+
 
   createWindow()
   createTray()

@@ -41,15 +41,17 @@ export async function normalizeEditorUrl(url: string): Promise<string> {
   try {
     const parsed = new URL(url)
     const server = new URL(serverUrl)
-    if (parsed.host !== server.host) {
-      parsed.protocol = server.protocol
-      parsed.host = server.host
+    
+    // If Nextcloud returned an internal docker hostname (like collabora), map it to the Nextcloud host IP
+    if (parsed.hostname === 'collabora' || parsed.hostname === 'localhost') {
+      parsed.hostname = server.hostname
+      // Keep parsed.port as 9980 (or whatever it is), only change the hostname
       return parsed.toString()
     }
   } catch {
-    // keep original
+    // keep original on parse error
   }
-  return url.replace(/https?:\/\/collabora:9980/g, 'http://localhost:9980')
+  return url
 }
 
 async function ocsPost(path: string, params: Record<string, string>): Promise<unknown> {
