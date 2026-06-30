@@ -32,7 +32,10 @@ export default function ConnectToServer(): JSX.Element {
 
   const handleContinue = async () => {
     if (!serverUrl.trim()) return
-    const cleanUrl = serverUrl.replace(/\/$/, '')
+    let cleanUrl = serverUrl.replace(/\/$/, '')
+    if (cleanUrl && !cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+      cleanUrl = 'http://' + cleanUrl
+    }
     await window.api.store.set('serverUrl', cleanUrl)
     await saveRecentServer(cleanUrl)
     navigate('/auth/login')

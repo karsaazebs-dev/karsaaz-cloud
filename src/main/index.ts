@@ -13,10 +13,13 @@ let tray: Tray | null = null
 let syncPaused = (store.get('syncPaused', false) as boolean) ?? false
 
 function readAuth(): DavAuth | null {
-  const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  let serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+    serverUrl = 'http://' + serverUrl
+  }
   const authToken = String(store.get('authToken') ?? '')
   const username = String(store.get('username') ?? '')
-  if (!serverUrl.startsWith('http') || !authToken || !username) return null
+  if (!serverUrl || !authToken || !username) return null
   return { serverUrl, authToken, username }
 }
 
@@ -135,7 +138,10 @@ function buildDavUploadUrl(serverUrl: string, username: string, userPath: string
 }
 
 ipcMain.handle('nc:upload', async (_event, userPath: string, fileName: string, buffer: ArrayBuffer | Uint8Array) => {
-  const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  let serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+    serverUrl = 'http://' + serverUrl
+  }
   const authToken = String(store.get('authToken') ?? '')
 
   let url: string
@@ -252,7 +258,10 @@ ipcMain.handle('file:download', async (_event, remotePath: string, filename: str
   })
   if (canceled || !filePath) return { ok: false, reason: 'cancelled' }
 
-  const serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  let serverUrl = String(store.get('serverUrl') ?? '').replace(/\/$/, '')
+  if (serverUrl && !serverUrl.startsWith('http://') && !serverUrl.startsWith('https://')) {
+    serverUrl = 'http://' + serverUrl
+  }
   const authToken = String(store.get('authToken') ?? '')
   const url = remotePath.startsWith('http') ? remotePath : `${serverUrl}${remotePath}`
 

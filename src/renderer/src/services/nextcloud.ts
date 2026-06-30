@@ -17,7 +17,11 @@ async function getConfig(): Promise<NextcloudConfig> {
     window.api.store.get('username')
   ])
   if (!baseUrl || !authToken) throw new Error('NOT_AUTHENTICATED')
-  config = { baseUrl: String(baseUrl).replace(/\/$/, ''), authToken: String(authToken), username: String(username ?? '') }
+  let baseStr = String(baseUrl).replace(/\/$/, '')
+  if (baseStr && !baseStr.startsWith('http://') && !baseStr.startsWith('https://')) {
+    baseStr = 'http://' + baseStr
+  }
+  config = { baseUrl: baseStr, authToken: String(authToken), username: String(username ?? '') }
   return config
 }
 

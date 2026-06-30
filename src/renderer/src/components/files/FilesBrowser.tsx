@@ -78,7 +78,12 @@ export default function FilesBrowser({
     try {
       await office.createDocument(currentPath, type)
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Could not create document')
+      const msg = e instanceof Error ? e.message : 'Could not create document'
+      if (msg.includes('ERR_CONNECTION_TIMED_OUT') || msg.includes('Destination host unreachable')) {
+        alert('Cannot connect to the Nextcloud server. Please check your network connection and ensure the server is running.')
+      } else {
+        alert(msg)
+      }
     }
   }, [office, currentPath])
 
@@ -87,7 +92,12 @@ export default function FilesBrowser({
       await office.createText(currentPath)
       onRefresh?.()
     } catch (e) {
-      alert(e instanceof Error ? e.message : 'Could not create text file')
+      const msg = e instanceof Error ? e.message : 'Could not create text file'
+      if (msg.includes('ERR_CONNECTION_TIMED_OUT') || msg.includes('Destination host unreachable')) {
+        alert('Cannot connect to the Nextcloud server. Please check your network connection and ensure the server is running.')
+      } else {
+        alert(msg)
+      }
     }
   }, [office, currentPath, onRefresh])
 
