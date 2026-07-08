@@ -17,6 +17,13 @@ const BLOCKED_RESPONSE_HEADERS = new Set([
   "connection",
   "keep-alive",
   "upgrade",
+  // Nextcloud answers an unauthenticated/expired credential with
+  // `401 WWW-Authenticate: Basic realm="Nextcloud"`. Forwarding that header to
+  // the browser makes it pop its native OS-level Basic-auth sign-in dialog
+  // (the "Sign in — http://localhost:3000" prompt). This app authenticates via
+  // its own NextAuth session, so the challenge must never reach the browser:
+  // strip it and let the SPA treat the 401 as a normal "re-login" signal.
+  "www-authenticate",
 ]);
 
 async function handler(

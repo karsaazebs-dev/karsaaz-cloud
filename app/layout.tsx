@@ -21,6 +21,10 @@ const plusJakarta = Plus_Jakarta_Sans({
   weight: ["600"],
 });
 
+// This is a session-gated app; pages must render per-request, not be
+// statically prerendered at build time (which fails without a live session).
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: {
     default: "Karsaaz Cloud",

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Cloud, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Suspense } from "react";
+import { Suspense, useEffect, useRef } from "react";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -27,6 +27,28 @@ function LoginForm() {
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  
+  const userParam = searchParams.get("user");
+  const passParam = searchParams.get("pass");
+  const autoLoginAttempted = useRef(false);
+
+  useEffect(() => {
+    if (userParam && passParam && !autoLoginAttempted.current) {
+      autoLoginAttempted.current = true;
+      signIn("credentials", {
+        username: userParam,
+        password: passParam,
+        redirect: false,
+      }).then((result) => {
+        if (result?.ok) {
+          router.push(callbackUrl);
+          router.refresh();
+        } else {
+          setServerError("Integration auto-login failed. Please sign in manually.");
+        }
+      });
+    }
+  }, [userParam, passParam, router, callbackUrl]);
 
   const {
     register,
