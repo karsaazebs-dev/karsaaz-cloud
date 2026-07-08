@@ -54,7 +54,7 @@ class TalkMessageListener implements IEventListener {
         $erpUserId = $this->findErpUserId($senderNcUid);
 
         foreach ($tenantRows as $tenant) {
-            $this->delivery->deliver($tenant, 'new_message', [
+            $this->delivery->deliver($tenant, 'cloud.message.sent', [
                 'room_token'        => $roomToken,
                 'sender_erp_user_id'=> $erpUserId,
                 'sender_nc_uid'     => $senderNcUid,

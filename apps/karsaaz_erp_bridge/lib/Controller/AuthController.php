@@ -10,9 +10,11 @@ declare(strict_types=1);
 namespace OCA\KarsaazErpBridge\Controller;
 
 use OCA\KarsaazErpBridge\Attribute\RequireApiKey;
+use OCA\KarsaazErpBridge\Middleware\ApiKeyMiddleware;
 use OCA\KarsaazErpBridge\Service\AuthBridgeService;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
+use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\OCS\OCSBadRequestException;
 use OCP\AppFramework\OCS\OCSForbiddenException;
@@ -35,14 +37,16 @@ class AuthController extends OCSController {
      * Required header: X-ERP-API-Key
      * Body: { erp_jwt: string }
      *
+     * @PublicPage
      * @NoCSRFRequired
      * @NoAdminRequired
      */
+    #[PublicPage]
     #[NoCSRFRequired]
     #[NoAdminRequired]
     #[RequireApiKey]
     public function token(): DataResponse {
-        $tenant = $this->request->getParam('_erp_tenant');
+        $tenant = ApiKeyMiddleware::$tenant;
         $erpJwt = trim((string)$this->request->getParam('erp_jwt', ''));
 
         if ($erpJwt === '') {
@@ -57,6 +61,12 @@ class AuthController extends OCSController {
             $credentials = $this->authBridge->exchangeToken($tenant, $erpJwt, $ncBaseUrl);
         } catch (\InvalidArgumentException $e) {
             throw new OCSForbiddenException($e->getMessage());
+        } catch (\Throwable $e) {
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->error(
+                'karsaaz_erp_bridge auth/token: ' . get_class($e) . ': ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine(),
+                ['app' => 'karsaaz_erp_bridge', 'exception' => $e],
+            );
+            throw new OCSBadRequestException('internal: ' . $e->getMessage());
         }
 
         return new DataResponse($credentials);

@@ -17,10 +17,16 @@ use OCP\AppFramework\Middleware;
 use OCP\IRequest;
 
 /**
- * Reads X-ERP-API-Key, hashes it, looks up the tenant, and injects the
- * tenant context into the request attributes for downstream controllers.
+ * Reads X-ERP-API-Key, hashes it, looks up the tenant, and stores it in
+ * the per-request static context for downstream controllers.
+ *
+ * NC 31 removed IRequest::setParam, so we use a static property that is
+ * safe within a single request process (prefork MPM / PHP-FPM).
  */
 class ApiKeyMiddleware extends Middleware {
+    /** Tenant row set by this middleware, read by controllers. */
+    public static ?array $tenant = null;
+
     public function __construct(
         private readonly IRequest     $request,
         private readonly TenantService $tenants,
@@ -43,7 +49,6 @@ class ApiKeyMiddleware extends Middleware {
             throw new \OCP\AppFramework\OCS\OCSForbiddenException('Invalid API key');
         }
 
-        // Store tenant in request for controller use
-        $this->request->setParam('_erp_tenant', $tenant);
+        self::$tenant = $tenant;
     }
 }

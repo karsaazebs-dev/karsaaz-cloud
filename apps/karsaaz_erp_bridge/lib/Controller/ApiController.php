@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OCA\KarsaazErpBridge\Controller;
 
 use OCA\KarsaazErpBridge\Attribute\RequireApiKey;
+use OCA\KarsaazErpBridge\Middleware\ApiKeyMiddleware;
 use OCA\KarsaazErpBridge\Service\TenantService;
 use OCA\KarsaazErpBridge\Service\WebhookDeliveryService;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -89,7 +90,7 @@ class ApiController extends OCSController {
     #[NoAdminRequired]
     #[RequireApiKey]
     public function revoke(): DataResponse {
-        $tenant = $this->request->getParam('_erp_tenant');
+        $tenant = ApiKeyMiddleware::$tenant;
         $this->tenants->revoke($tenant['tenant_id']);
         return new DataResponse(['status' => 'revoked']);
     }
@@ -102,7 +103,7 @@ class ApiController extends OCSController {
     #[NoAdminRequired]
     #[RequireApiKey]
     public function webhookTest(): DataResponse {
-        $tenant = $this->request->getParam('_erp_tenant');
+        $tenant = ApiKeyMiddleware::$tenant;
         $result = $this->delivery->sendTest($tenant);
         return new DataResponse($result);
     }

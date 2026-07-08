@@ -38,16 +38,20 @@ class TenantService {
         $apiKey     = $this->rand->generate(32, ISecureRandom::CHAR_ALPHANUMERIC);
         $hmacSecret = $this->rand->generate(32, ISecureRandom::CHAR_ALPHANUMERIC);
 
-        $this->db->insertIfNotExist(self::TABLE_TENANTS, [
-            'tenant_id'         => $tenantId,
-            'name'              => $name,
-            'api_key_hash'      => hash('sha256', $apiKey),
-            'hmac_secret'       => $hmacSecret,
-            'webhook_url'       => $webhookUrl,
-            'erp_jwt_secret_enc'=> $this->crypto->encrypt($erpJwtSecret),
-            'allowed_origins'   => json_encode(array_values($allowedOrigins)),
-            'created_at'        => time(),
-        ], ['tenant_id']);
+        // QueryBuilder auto-applies the oc_ prefix; insertIfNotExist() bypasses it in NC 30.
+        $qb = $this->db->getQueryBuilder();
+        $qb->insert(self::TABLE_TENANTS)
+            ->values([
+                'tenant_id'          => $qb->createNamedParameter($tenantId),
+                'name'               => $qb->createNamedParameter($name),
+                'api_key_hash'       => $qb->createNamedParameter(hash('sha256', $apiKey)),
+                'hmac_secret'        => $qb->createNamedParameter($hmacSecret),
+                'webhook_url'        => $qb->createNamedParameter($webhookUrl),
+                'erp_jwt_secret_enc' => $qb->createNamedParameter($this->crypto->encrypt($erpJwtSecret)),
+                'allowed_origins'    => $qb->createNamedParameter(json_encode(array_values($allowedOrigins))),
+                'created_at'         => $qb->createNamedParameter(time()),
+            ])
+            ->executeStatement();
 
         return ['tenant_id' => $tenantId, 'api_key' => $apiKey, 'hmac_secret' => $hmacSecret];
     }

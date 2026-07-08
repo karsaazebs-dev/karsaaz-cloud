@@ -39,16 +39,20 @@ class WebhookDeliveryService {
      * @return bool True if delivered successfully
      */
     public function deliver(array $tenant, string $eventType, array $data): bool {
+        $eventId = bin2hex(random_bytes(16));
         $payload = json_encode([
-            'event'     => $eventType,
-            'tenant_id' => $tenant['tenant_id'],
-            'timestamp' => gmdate('c'),
-            'data'      => $data,
+            'event_id'        => $eventId,
+            'event_type'      => $eventType,
+            'product'         => 'cloud',
+            'tenant_id'       => $tenant['tenant_id'],
+            'timestamp'       => gmdate('c'),
+            'payload_version' => '1.0',
+            'data'            => $data,
         ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $signature = $this->sign($payload, $tenant['hmac_secret']);
 
-        $delivered = $this->post($tenant['webhook_url'], $payload, $signature);
+        $delivered = $this->postWithDetails($tenant['webhook_url'], $payload, $signature, $eventId)['success'];
 
         $this->logDelivery(
             $tenant['tenant_id'],
@@ -68,17 +72,21 @@ class WebhookDeliveryService {
      * @return array{delivered:bool, status_code:int, latency_ms:int}
      */
     public function sendTest(array $tenant): array {
+        $eventId = bin2hex(random_bytes(16));
         $payload = json_encode([
-            'event'     => 'ping',
-            'tenant_id' => $tenant['tenant_id'],
-            'timestamp' => gmdate('c'),
-            'data'      => ['message' => 'Karsaaz ERP Bridge test event'],
+            'event_id'        => $eventId,
+            'event_type'      => 'cloud.ping',
+            'product'         => 'cloud',
+            'tenant_id'       => $tenant['tenant_id'],
+            'timestamp'       => gmdate('c'),
+            'payload_version' => '1.0',
+            'data'            => ['message' => 'Karsaaz ERP Bridge test event'],
         ]);
 
         $signature = $this->sign($payload, $tenant['hmac_secret']);
 
         $start  = (int)(microtime(true) * 1000);
-        $result = $this->postWithDetails($tenant['webhook_url'], $payload, $signature);
+        $result = $this->postWithDetails($tenant['webhook_url'], $payload, $signature, $eventId);
         $ms     = (int)(microtime(true) * 1000) - $start;
 
         return [
@@ -102,7 +110,10 @@ class WebhookDeliveryService {
 
         $payload   = (string)$logRow['payload'];
         $signature = $this->sign($payload, $tenant['hmac_secret']);
-        $delivered = $this->post($tenant['webhook_url'], $payload, $signature);
+        // Extract event_id from stored payload for idempotent retry
+        $decoded   = json_decode($payload, true);
+        $eventId   = is_array($decoded) ? ($decoded['event_id'] ?? '') : '';
+        $delivered = $this->postWithDetails($tenant['webhook_url'], $payload, $signature, $eventId)['success'];
 
         $newCount  = (int)$logRow['attempt_count'] + 1;
         $newStatus = $delivered ? 'delivered' : ($newCount >= self::MAX_ATTEMPTS ? 'dead' : 'failed');
@@ -162,20 +173,20 @@ class WebhookDeliveryService {
         return 'sha256=' . hash_hmac('sha256', $payload, $secret);
     }
 
-    private function post(string $url, string $payload, string $signature): bool {
-        return $this->postWithDetails($url, $payload, $signature)['success'];
-    }
-
-    private function postWithDetails(string $url, string $payload, string $signature): array {
+    private function postWithDetails(string $url, string $payload, string $signature, string $eventId = ''): array {
         try {
             $client   = $this->httpClient->newClient();
+            $headers  = [
+                'Content-Type'        => 'application/json',
+                'X-Karsaaz-Signature' => $signature,
+                'User-Agent'          => 'Karsaaz-ERP-Bridge/1.0',
+            ];
+            if ($eventId !== '') {
+                $headers['X-Karsaaz-Event-Id'] = $eventId;
+            }
             $response = $client->post($url, [
                 'body'    => $payload,
-                'headers' => [
-                    'Content-Type'         => 'application/json',
-                    'X-Karsaaz-Signature'  => $signature,
-                    'User-Agent'           => 'Karsaaz-ERP-Bridge/1.0',
-                ],
+                'headers' => $headers,
                 'timeout' => self::TIMEOUT_SEC,
                 'verify'  => !self::isLocalUrl($url),
             ]);

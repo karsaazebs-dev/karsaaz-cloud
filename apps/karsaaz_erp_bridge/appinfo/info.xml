@@ -6,8 +6,8 @@
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>karsaaz_erp_bridge</id>
-    <name>Karsaaz ERP Chat Bridge</name>
-    <summary>Webhook integration — embed Karsaaz Cloud chat in any external ERP</summary>
+    <name>Karsaaz ERP Integration</name>
+    <summary>Webhook integration — connect any external ERP system to Karsaaz Cloud</summary>
     <description><![CDATA[
 Allows external ERP systems to embed Nextcloud Talk chat into their own UI via a
 webhook registration + JWT auth delegation model. The ERP owns authentication and

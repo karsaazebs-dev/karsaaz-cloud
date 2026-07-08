@@ -3,9 +3,9 @@
 $tenants = $_['tenants'] ?? [];
 ?>
 <div id="karsaaz-erp-bridge-admin" style="padding:20px;font-family:system-ui,sans-serif;max-width:900px">
-  <h2 style="font-size:1.3rem;margin-bottom:4px">Karsaaz ERP Chat Bridge</h2>
+  <h2 style="font-size:1.3rem;margin-bottom:4px">Karsaaz ERP Integration</h2>
   <p style="color:#666;margin-bottom:24px">
-    Manage external ERP webhook registrations and monitor delivery health.
+    Register external ERP systems, manage webhook connections, and monitor delivery health.
   </p>
 
   <!-- Register new tenant -->

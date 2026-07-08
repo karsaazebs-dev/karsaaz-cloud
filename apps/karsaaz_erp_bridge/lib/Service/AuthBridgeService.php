@@ -27,6 +27,8 @@ class AuthBridgeService {
     private const NC_UID_PREFIX   = 'erp_';
     // Session password TTL (seconds) — long enough for a normal chat session
     private const SESSION_TTL     = 3600;
+    // Device-name label for the app tokens this bridge issues (used for pruning)
+    private const EMBED_TOKEN_NAME = 'Karsaaz ERP Embed';
 
     public function __construct(
         private readonly IDBConnection  $db,
@@ -46,6 +48,10 @@ class AuthBridgeService {
      */
     public function exchangeToken(array $tenant, string $erpJwt, string $ncBaseUrl): array {
         $claims = $this->validateJwt($erpJwt, $tenant['erp_jwt_secret']);
+
+        if (isset($claims['active']) && $claims['active'] === false) {
+            throw new \InvalidArgumentException('erp_user_inactive');
+        }
 
         $ncUid    = $this->resolveOrProvisionUser($tenant, $claims);
         $password = $this->setSessionPassword($ncUid);
@@ -132,14 +138,15 @@ class AuthBridgeService {
         $ncUid = $this->buildNcUid($tenantId, $erpUserId);
         $this->createNcUser($ncUid, $claims, $tenant);
 
-        // Store mapping
-        $this->db->getQueryBuilder()
-            ->insert(self::TABLE_USER_MAP)
+        // Store mapping — use a single QueryBuilder instance so all createNamedParameter
+        // calls bind to the same parameter map that executeStatement() will use.
+        $iqb = $this->db->getQueryBuilder();
+        $iqb->insert(self::TABLE_USER_MAP)
             ->values([
-                'tenant_id'   => $this->db->getQueryBuilder()->createNamedParameter($tenantId),
-                'erp_user_id' => $this->db->getQueryBuilder()->createNamedParameter($erpUserId),
-                'nc_uid'      => $this->db->getQueryBuilder()->createNamedParameter($ncUid),
-                'created_at'  => $this->db->getQueryBuilder()->createNamedParameter(time()),
+                'tenant_id'   => $iqb->createNamedParameter($tenantId),
+                'erp_user_id' => $iqb->createNamedParameter($erpUserId),
+                'nc_uid'      => $iqb->createNamedParameter($ncUid),
+                'created_at'  => $iqb->createNamedParameter(time()),
             ])
             ->executeStatement();
 
@@ -179,16 +186,51 @@ class AuthBridgeService {
     }
 
     /**
-     * Set a fresh random password on the NC user and return it.
-     * This acts as a short-lived session credential for the embed page.
+     * Issue a dedicated app token (device password) for the NC user and return it.
+     *
+     * IMPORTANT: this intentionally does NOT reset the account password. Resetting
+     * it (the old behaviour) invalidated every previously-issued credential, so a
+     * second embed / a second browser tab / any re-auth clobbered the first —
+     * surfacing as a WebDAV 401 (Basic-auth prompt) in the embedded Cloud view.
+     * App tokens coexist independently, so concurrent embeds never clobber each
+     * other. The token authenticates Basic-auth on OCS and WebDAV just like a
+     * password. Stale ERP-embed tokens (inactive beyond the TTL) are pruned
+     * best-effort to avoid unbounded growth, without touching active ones.
      */
     private function setSessionPassword(string $ncUid): string {
         $user = $this->users->get($ncUid);
         if ($user === null) {
             throw new \RuntimeException("NC user not found: $ncUid");
         }
-        $password = $this->rand->generate(24, ISecureRandom::CHAR_ALPHANUMERIC);
-        $user->setPassword($password);
+
+        /** @var \OC\Authentication\Token\IProvider $tokenProvider */
+        $tokenProvider = \OCP\Server::get(\OC\Authentication\Token\IProvider::class);
+
+        // Prune this user's stale ERP-embed tokens (best-effort; never fatal).
+        // getLastCheck() is the last time the token was validated — a good
+        // staleness proxy that (unlike getLastActivity) is on the public IToken.
+        try {
+            $cutoff = time() - self::SESSION_TTL;
+            foreach ($tokenProvider->getTokenByUser($ncUid) as $existing) {
+                if ($existing->getName() === self::EMBED_TOKEN_NAME
+                    && $existing->getLastCheck() < $cutoff) {
+                    $tokenProvider->invalidateTokenById($ncUid, $existing->getId());
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore — pruning is housekeeping only
+        }
+
+        $password = $this->rand->generate(72, ISecureRandom::CHAR_HUMAN_READABLE);
+        $tokenProvider->generateToken(
+            $password,
+            $ncUid,
+            $ncUid,
+            null,
+            self::EMBED_TOKEN_NAME,
+            \OCP\Authentication\Token\IToken::PERMANENT_TOKEN,
+            \OCP\Authentication\Token\IToken::DO_NOT_REMEMBER,
+        );
         return $password;
     }
 

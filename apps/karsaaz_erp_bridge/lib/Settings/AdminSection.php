@@ -21,7 +21,7 @@ class AdminSection implements IIconSection {
     }
 
     public function getID(): string    { return 'karsaaz_erp_bridge'; }
-    public function getName(): string  { return $this->l->t('ERP Chat Bridge'); }
+    public function getName(): string  { return $this->l->t('ERP Integration'); }
     public function getPriority(): int { return 75; }
     public function getIcon(): string  {
         return $this->url->imagePath('karsaaz_erp_bridge', 'app.svg');
